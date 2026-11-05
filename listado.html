@@ -3,58 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GameVault - Catálogo de videojuegos</title>
+  <title>Mi Biblioteca - GameVault</title>
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body class="min-vh-100 d-flex flex-column">
-  <!-- Región accesible para notificaciones y avisos -->
-  <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
+<body>
+  <!-- Contenedor global de notificaciones accesible -->
+  <div id="notificaciones-globales" class="steam-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <header class="navbar navbar-gaming py-3">
-    <div class="container">
-      <a class="brand-gaming" href="listado.html">
-        <span>🎮</span>
-        <span>GameVault</span>
-      </a>
-      <nav id="navegacion-principal" aria-label="Navegación principal">
-        <ul class="navbar-nav flex-row gap-2 me-auto mb-0 ms-lg-3">
-          <li class="nav-item">
-            <a class="nav-link-gaming active" aria-current="page" href="listado.html">Catálogo</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link-gaming" href="ficha.html">Añadir juego</a>
-          </li>
-          <li class="nav-item d-none" id="enlace-admin">
-            <a class="nav-link-gaming" href="usuarios.html">Usuarios</a>
-          </li>
-        </ul>
-      </nav>
-      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3">
-        <span id="info-usuario" class="small text-muted">
-          <strong id="nombre-usuario" class="text-light">Usuario</strong>
-          <span id="rol-usuario" class="badge bg-secondary ms-1">Rol</span>
-        </span>
-        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+  <!-- Topbar Estilo Cliente Steam -->
+  <header class="steam-topbar py-2">
+    <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-4">
+        <a href="listado.html" class="steam-brand">
+          <svg class="steam-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a10 10 0 0 0-9.95 9.04l5.37 2.22a2.82 2.82 0 0 1 2.28-.48l2.44-3.54v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.48 2.48c0 .19-.03.38-.09.56a2.84 2.84 0 0 1-5.46-.34L3.09 14.1A10 10 0 1 0 12 2zm3.92 5.44a2.52 2.52 0 1 0 0 5.04 2.52 2.52 0 0 0 0-5.04zm-6.48 7.5a1.89 1.89 0 1 0 0 3.78 1.89 1.89 0 0 0 0-3.78z"/>
+          </svg>
+          <span>GAMEVAULT</span>
+        </a>
+
+        <nav aria-label="Navegación principal">
+          <ul class="steam-nav-list">
+            <li>
+              <a href="listado.html" class="steam-nav-link" aria-current="page">BIBLIOTECA</a>
+            </li>
+            <li>
+              <a href="ficha.html" class="steam-nav-link">AÑADIR JUEGO</a>
+            </li>
+            <li id="nav-item-admin" hidden>
+              <a href="usuarios.html" id="enlace-admin" class="steam-nav-link">ADMINISTRACIÓN</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Zona de perfil de usuario -->
+      <div class="steam-user-zone">
+        <span id="usuario-activo-nombre" class="steam-username">Jugador_1</span>
+        <span id="usuario-activo-rol" class="steam-badge steam-badge--rol-usuario">Usuario</span>
+        <button type="button" id="btn-cerrar-sesion" class="btn-steam-secondary btn-steam-sm">
+          Cerrar sesión
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="container py-4 flex-grow-1">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <h1 class="h2 fw-bold m-0">Catálogo de videojuegos</h1>
-      <a href="ficha.html" class="btn btn-primary btn-sm">+ Añadir videojuego</a>
-    </div>
+  <main class="container py-4">
+    <!-- Cabecera de sección -->
+    <section aria-labelledby="titulo-biblioteca">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div>
+          <h1 id="titulo-biblioteca" class="h3 text-uppercase mb-1">Biblioteca y Backlog</h1>
+          <p class="text-secondary small mb-0">Gestiona tus títulos físicos, licencias digitales y progreso de juego</p>
+        </div>
+        <a href="ficha.html" class="btn-steam-positive">
+          + Añadir juego
+        </a>
+      </div>
 
-    <!-- Contenedor base de la página (se implementa en Sprint 2) -->
-    <section id="seccion-listado" class="card vault-card p-5 text-center text-muted" aria-label="Catálogo de videojuegos">
-      <p class="fs-5 mb-0">El catálogo y buscador de videojuegos se implementarán en el Sprint 2.</p>
+      <!-- Barra de herramientas de Biblioteca -->
+      <div class="steam-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="steam-search-wrapper flex-grow-1" style="max-width: 480px;">
+          <label for="buscador-juegos" class="visually-hidden">Buscar videojuegos en la biblioteca</label>
+          <svg class="steam-search-icon" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+          </svg>
+          <input
+            type="search"
+            id="buscador-juegos"
+            name="busqueda"
+            class="form-control steam-search-input"
+            placeholder="Buscar por título, plataforma o SKU..."
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="text-secondary small fw-semibold">
+          Mostrando <span id="contador-resultados" class="text-white fw-bold">0</span> títulos en la colección
+        </div>
+      </div>
+
+      <!-- Tabla de Biblioteca estilo Vista de Lista Detallada de Steam -->
+      <div class="steam-table-container mb-3">
+        <div class="table-responsive">
+          <table id="tabla-juegos" class="steam-table" aria-label="Colección de videojuegos">
+            <thead>
+              <tr>
+                <th scope="col">Título / SKU</th>
+                <th scope="col">Plataforma</th>
+                <th scope="col">Formato</th>
+                <th scope="col">Horas</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Ubicación / Tienda</th>
+                <th scope="col">DLCs</th>
+                <th scope="col" class="text-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="contenedor-juegos">
+              <!-- Las filas se inyectan dinámicamente clonando #tpl-juego -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estado vacío cuando no hay resultados -->
+        <div id="estado-vacio" class="p-5 text-center" hidden>
+          <p class="h6 text-uppercase text-secondary mb-2">No se encontraron videojuegos en tu biblioteca</p>
+          <p class="small text-muted mb-3">Prueba con otros términos de búsqueda o registra un título nuevo.</p>
+          <a href="ficha.html" class="btn-steam-primary btn-steam-sm">Registrar primer juego</a>
+        </div>
+      </div>
+
+      <!-- Controles de Paginación -->
+      <nav aria-label="Paginación de biblioteca" class="d-flex align-items-center justify-content-between pt-2">
+        <button type="button" id="btn-pagina-anterior" class="btn-steam-secondary btn-steam-sm" disabled>
+          &laquo; Anterior
+        </button>
+        <span id="indicador-pagina" class="small text-secondary fw-semibold">
+          Página 1 de 1
+        </span>
+        <button type="button" id="btn-pagina-siguiente" class="btn-steam-secondary btn-steam-sm" disabled>
+          Siguiente &raquo;
+        </button>
+      </nav>
     </section>
   </main>
 
-  <footer class="footer-gaming mt-auto py-3 text-center">
-    <div class="container small">
-      GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
+  <!-- Plantilla para clonar cada fila de videojuego -->
+  <template id="tpl-juego">
+    <tr class="juego-item">
+      <td>
+        <span class="steam-game-title js-juego-titulo"></span>
+        <span class="steam-game-sku js-juego-sku"></span>
+      </td>
+      <td>
+        <span class="steam-badge steam-badge--plataforma js-juego-plataforma"></span>
+      </td>
+      <td class="js-juego-formato"></td>
+      <td>
+        <span class="fw-semibold text-white js-juego-horas"></span> <span class="text-muted small">h</span>
+      </td>
+      <td>
+        <span class="steam-badge js-juego-estado"></span>
+      </td>
+      <td class="js-juego-ubicacion-tienda small"></td>
+      <td>
+        <span class="badge bg-dark border border-secondary js-juego-dlcs">0</span>
+      </td>
+      <td class="text-end">
+        <div class="d-inline-flex gap-2">
+          <a href="ficha.html" class="btn-steam-secondary btn-steam-sm js-btn-editar">
+            Editar
+          </a>
+          <button type="button" class="btn-steam-danger btn-steam-sm js-btn-eliminar">
+            Eliminar
+          </button>
+        </div>
+      </td>
+    </tr>
+  </template>
+
+  <!-- Modal nativo de confirmación de borrado -->
+  <dialog id="modal-borrar" class="steam-dialog" aria-labelledby="modal-borrar-titulo" aria-describedby="modal-borrar-desc">
+    <div class="steam-dialog-header">
+      <h2 id="modal-borrar-titulo" class="h6 text-uppercase mb-0 text-white">Confirmar eliminación</h2>
+    </div>
+    <div class="steam-dialog-body">
+      <p id="modal-borrar-desc" class="mb-2">
+        ¿Seguro que deseas eliminar este título de tu biblioteca?
+      </p>
+      <p class="mb-0 text-white fw-bold" id="modal-nombre-juego">Nombre del videojuego</p>
+    </div>
+    <div class="steam-dialog-footer">
+      <button type="button" id="btn-cancelar-borrado" class="btn-steam-secondary">
+        Cancelar
+      </button>
+      <button type="button" id="btn-confirmar-borrado" class="btn-steam-danger">
+        Eliminar definitivamente
+      </button>
+    </div>
+  </dialog>
+
+  <footer class="steam-footer">
+    <div class="container text-center">
+      <span>&copy; 2026 GameVault Library Manager. Interfaz inspirada en Steam Desktop Client.</span>
     </div>
   </footer>
 </body>

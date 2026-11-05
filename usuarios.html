@@ -3,58 +3,141 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GameVault - Administración de usuarios</title>
+  <title>Administración de Usuarios - GameVault</title>
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body class="min-vh-100 d-flex flex-column">
-  <!-- Región accesible para notificaciones y avisos -->
-  <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
+<body>
+  <!-- Contenedor global de notificaciones accesible -->
+  <div id="notificaciones-globales" class="steam-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <header class="navbar navbar-gaming py-3">
-    <div class="container">
-      <a class="brand-gaming" href="listado.html">
-        <span>🎮</span>
-        <span>GameVault</span>
-      </a>
-      <nav id="navegacion-principal" aria-label="Navegación principal">
-        <ul class="navbar-nav flex-row gap-2 me-auto mb-0 ms-lg-3">
-          <li class="nav-item">
-            <a class="nav-link-gaming" href="listado.html">Catálogo</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link-gaming" href="ficha.html">Añadir juego</a>
-          </li>
-          <li class="nav-item" id="enlace-admin">
-            <a class="nav-link-gaming active" aria-current="page" href="usuarios.html">Usuarios</a>
-          </li>
-        </ul>
-      </nav>
-      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3">
-        <span id="info-usuario" class="small text-muted">
-          <strong id="nombre-usuario" class="text-light">Admin</strong>
-          <span id="rol-usuario" class="badge bg-danger ms-1">administrador</span>
-        </span>
-        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+  <!-- Topbar Estilo Cliente Steam -->
+  <header class="steam-topbar py-2">
+    <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-4">
+        <a href="listado.html" class="steam-brand">
+          <svg class="steam-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a10 10 0 0 0-9.95 9.04l5.37 2.22a2.82 2.82 0 0 1 2.28-.48l2.44-3.54v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.48 2.48c0 .19-.03.38-.09.56a2.84 2.84 0 0 1-5.46-.34L3.09 14.1A10 10 0 1 0 12 2zm3.92 5.44a2.52 2.52 0 1 0 0 5.04 2.52 2.52 0 0 0 0-5.04zm-6.48 7.5a1.89 1.89 0 1 0 0 3.78 1.89 1.89 0 0 0 0-3.78z"/>
+          </svg>
+          <span>GAMEVAULT</span>
+        </a>
+
+        <nav aria-label="Navegación principal">
+          <ul class="steam-nav-list">
+            <li>
+              <a href="listado.html" class="steam-nav-link">BIBLIOTECA</a>
+            </li>
+            <li>
+              <a href="ficha.html" class="steam-nav-link">AÑADIR JUEGO</a>
+            </li>
+            <li id="nav-item-admin">
+              <a href="usuarios.html" id="enlace-admin" class="steam-nav-link" aria-current="page">ADMINISTRACIÓN</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Zona de perfil de usuario -->
+      <div class="steam-user-zone">
+        <span id="usuario-activo-nombre" class="steam-username">Admin_Root</span>
+        <span id="usuario-activo-rol" class="steam-badge steam-badge--rol-admin">Administrador</span>
+        <button type="button" id="btn-cerrar-sesion" class="btn-steam-secondary btn-steam-sm">
+          Cerrar sesión
+        </button>
       </div>
     </div>
   </header>
 
-  <main class="container py-4 flex-grow-1">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <h1 class="h2 fw-bold m-0">Administración de usuarios</h1>
-      <a href="listado.html" class="btn btn-outline-light btn-sm">&larr; Volver al catálogo</a>
-    </div>
+  <main class="container py-4">
+    <section aria-labelledby="titulo-admin-usuarios">
+      <div class="mb-3">
+        <h1 id="titulo-admin-usuarios" class="h3 text-uppercase mb-1">Panel de Administración de Usuarios</h1>
+        <p class="text-secondary small mb-0">Gestiona permisos y privilegios de cuentas registradas en GameVault</p>
+      </div>
 
-    <!-- Contenedor base de la página (se implementa en Sprint 2) -->
-    <section id="seccion-usuarios" class="card vault-card p-5 text-center text-muted" aria-label="Administración de usuarios">
-      <p class="fs-5 mb-0">La gestión de usuarios y roles se implementará en el Sprint 2.</p>
+      <!-- Barra de herramientas y buscador de usuarios -->
+      <div class="steam-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="steam-search-wrapper flex-grow-1" style="max-width: 460px;">
+          <label for="buscador-usuarios" class="visually-hidden">Buscar usuarios por nombre o correo</label>
+          <svg class="steam-search-icon" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+          </svg>
+          <input
+            type="search"
+            id="buscador-usuarios"
+            name="busquedaUsuarios"
+            class="form-control steam-search-input"
+            placeholder="Filtrar por nombre de usuario, email o rol..."
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="text-secondary small fw-semibold">
+          Total: <span id="contador-usuarios" class="text-white fw-bold">0</span> cuentas registradas
+        </div>
+      </div>
+
+      <!-- Tabla de Usuarios Registrados -->
+      <div class="steam-table-container mb-3">
+        <div class="table-responsive">
+          <table id="tabla-usuarios" class="steam-table" aria-label="Listado de usuarios registrados">
+            <thead>
+              <tr>
+                <th scope="col">Usuario</th>
+                <th scope="col">Email</th>
+                <th scope="col">Rol actual</th>
+                <th scope="col" class="text-end">Gestión de Permisos</th>
+              </tr>
+            </thead>
+            <tbody id="contenedor-usuarios">
+              <!-- Las filas se inyectan dinámicamente clonando #tpl-usuario -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estado vacío cuando no hay coincidencias -->
+        <div id="estado-vacio-usuarios" class="p-5 text-center" hidden>
+          <p class="h6 text-uppercase text-secondary mb-1">No se encontraron cuentas de usuario</p>
+          <p class="small text-muted mb-0">No existen registros que coincidan con el filtro aplicado.</p>
+        </div>
+      </div>
+
+      <!-- Controles de Paginación -->
+      <nav aria-label="Paginación de usuarios" class="d-flex align-items-center justify-content-between pt-2">
+        <button type="button" id="btn-usuarios-anterior" class="btn-steam-secondary btn-steam-sm" disabled>
+          &laquo; Anterior
+        </button>
+        <span id="indicador-pagina-usuarios" class="small text-secondary fw-semibold">
+          Página 1 de 1
+        </span>
+        <button type="button" id="btn-usuarios-siguiente" class="btn-steam-secondary btn-steam-sm" disabled>
+          Siguiente &raquo;
+        </button>
+      </nav>
     </section>
   </main>
 
-  <footer class="footer-gaming mt-auto py-3 text-center">
-    <div class="container small">
-      GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
+  <!-- Plantilla para clonar cada fila de usuario -->
+  <template id="tpl-usuario">
+    <tr class="usuario-item">
+      <td>
+        <span class="fw-bold text-white js-usuario-nombre"></span>
+      </td>
+      <td class="js-usuario-email text-secondary"></td>
+      <td>
+        <span class="steam-badge js-usuario-rol-badge"></span>
+      </td>
+      <td class="text-end">
+        <button type="button" class="btn-steam-secondary btn-steam-sm js-btn-cambiar-rol">
+          Cambiar rol (Usuario &leftrightarrow; Administrador)
+        </button>
+      </td>
+    </tr>
+  </template>
+
+  <footer class="steam-footer">
+    <div class="container text-center">
+      <span>&copy; 2026 GameVault Library Manager. Interfaz inspirada en Steam Desktop Client.</span>
     </div>
   </footer>
 </body>
