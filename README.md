@@ -192,6 +192,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | Rama | Funcionalidad | *Pull request* |
 |------|---------------|----------------|
 | `definicion-proyecto` | [S1-01] Configuración inicial, temática GameVault, arquitectura de páginas y Definición de Hecho (DoD) | — |
+| `estructura-html-base` | [S1-02] Estructura HTML base de las 5 páginas y enlace a Bootstrap | [#2](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/2) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
