@@ -14,16 +14,16 @@
   <header class="navbar navbar-gaming py-3">
     <div class="container">
       <a class="brand-gaming" href="listado.html">
-        <span class="brand-icon">🎮</span>
+        <span>🎮</span>
         <span>GameVault</span>
       </a>
       <nav id="navegacion-principal" aria-label="Navegación principal">
-        <ul class="navbar-nav flex-row gap-2 me-auto mb-0 ms-lg-4">
+        <ul class="navbar-nav flex-row gap-2 me-auto mb-0 ms-lg-3">
           <li class="nav-item">
             <a class="nav-link-gaming" href="listado.html">Catálogo</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link-gaming active" aria-current="page" href="ficha.html">+ Añadir juego</a>
+            <a class="nav-link-gaming active" aria-current="page" href="ficha.html">Añadir juego</a>
           </li>
           <li class="nav-item d-none" id="enlace-admin">
             <a class="nav-link-gaming" href="usuarios.html">Usuarios</a>
@@ -31,160 +31,26 @@
         </ul>
       </nav>
       <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3">
-        <div id="info-usuario" class="d-flex align-items-center gap-2">
-          <span class="badge bg-dark border border-secondary text-light p-2">👤 <strong id="nombre-usuario">Usuario</strong></span>
-          <span id="rol-usuario" class="badge bg-primary badge-usuario-rol">jugador</span>
-        </div>
-        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Salir</button>
+        <span id="info-usuario" class="small text-muted">
+          <strong id="nombre-usuario" class="text-light">Usuario</strong>
+          <span id="rol-usuario" class="badge bg-secondary ms-1">Rol</span>
+        </span>
+        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
       </div>
     </div>
   </header>
 
   <main class="container py-4 flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <div>
-        <h1 id="titulo-pagina" class="h2 fw-bold m-0">Ficha de Videojuego</h1>
-        <p class="text-muted small m-0 mt-1">Registra o actualiza los datos técnicos de tu copia.</p>
-      </div>
+      <h1 id="titulo-pagina" class="h2 fw-bold m-0">Ficha de videojuego</h1>
       <a href="listado.html" class="btn btn-outline-light btn-sm">&larr; Volver al catálogo</a>
     </div>
 
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-9">
-        <div class="card vault-card p-3 p-sm-4 p-md-5">
-          <form id="form-juego" novalidate>
-            <!-- 1. Título y Plataforma -->
-            <div class="row g-3 mb-3">
-              <div class="col-12 col-md-7">
-                <label for="campo-titulo" class="form-label fw-semibold">Título del videojuego *</label>
-                <input type="text" id="campo-titulo" name="titulo" class="form-control" placeholder="Ej. The Witcher 3: Wild Hunt" required>
-                <div id="error-titulo" class="invalid-feedback" aria-live="polite"></div>
-              </div>
-              <div class="col-12 col-md-5">
-                <label for="campo-plataforma" class="form-label fw-semibold">Plataforma *</label>
-                <select id="campo-plataforma" name="plataforma" class="form-select" required>
-                  <option value="">Selecciona plataforma...</option>
-                  <option value="PC">PC</option>
-                  <option value="PS5">PlayStation 5</option>
-                  <option value="Xbox Series X">Xbox Series X</option>
-                  <option value="Nintendo Switch">Nintendo Switch</option>
-                  <option value="Retro">Retro / Clásicos</option>
-                </select>
-                <div id="error-plataforma" class="invalid-feedback" aria-live="polite"></div>
-              </div>
-            </div>
-
-            <!-- 2. Formato (Condicional) -->
-            <fieldset class="mb-4 p-3 rounded bg-dark border border-secondary border-opacity-25">
-              <legend class="col-form-label fw-semibold pt-0 text-light small text-uppercase">Formato de la copia *</legend>
-              <div class="d-flex gap-4">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="formato" id="formato-fisico" value="Físico" checked>
-                  <label class="form-check-label" for="formato-fisico">
-                    💿 Formato Físico (Disco / Cartucho)
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="formato" id="formato-digital" value="Digital">
-                  <label class="form-check-label" for="formato-digital">
-                    🌐 Formato Digital (Descarga)
-                  </label>
-                </div>
-              </div>
-
-              <!-- Sección condicional: Físico -->
-              <div id="seccion-fisico" class="row g-3 mt-2 pt-2 border-top border-secondary border-opacity-25">
-                <div class="col-12 col-md-6">
-                  <label for="campo-ean" class="form-label small">Código de barras EAN-13</label>
-                  <input type="text" id="campo-ean" name="ean13" class="form-control form-control-sm" placeholder="13 dígitos con algoritmo mod 10">
-                  <div id="error-ean" class="invalid-feedback" aria-live="polite"></div>
-                </div>
-                <div class="col-12 col-md-6">
-                  <label for="campo-estanteria" class="form-label small">Ubicación en estantería</label>
-                  <input type="text" id="campo-estanteria" name="estanteria" class="form-control form-control-sm" placeholder="EST-A-01">
-                  <div id="error-estanteria" class="invalid-feedback" aria-live="polite"></div>
-                </div>
-              </div>
-
-              <!-- Sección condicional: Digital -->
-              <div id="seccion-digital" class="row g-3 mt-2 pt-2 border-top border-secondary border-opacity-25 d-none">
-                <div class="col-12">
-                  <label for="campo-tienda" class="form-label small">Tienda o distribuidor digital</label>
-                  <select id="campo-tienda" name="tienda" class="form-select form-select-sm">
-                    <option value="">Selecciona tienda digital...</option>
-                    <option value="Steam">Steam</option>
-                    <option value="PlayStation Store">PlayStation Store</option>
-                    <option value="Nintendo eShop">Nintendo eShop</option>
-                    <option value="Epic Games">Epic Games Store</option>
-                    <option value="Xbox Store">Xbox Store</option>
-                    <option value="GOG">GOG.com</option>
-                  </select>
-                  <div id="error-tienda" class="invalid-feedback" aria-live="polite"></div>
-                </div>
-              </div>
-            </fieldset>
-
-            <!-- 3. Metadatos de Partida: Fecha, Horas, Estado y SKU -->
-            <div class="row g-3 mb-4">
-              <div class="col-6 col-md-3">
-                <label for="campo-fecha" class="form-label fw-semibold">Fecha compra</label>
-                <input type="date" id="campo-fecha" name="fechaAdquisicion" class="form-control">
-                <div id="error-fecha" class="invalid-feedback" aria-live="polite"></div>
-              </div>
-              <div class="col-6 col-md-3">
-                <label for="campo-horas" class="form-label fw-semibold">Horas jugadas</label>
-                <input type="number" id="campo-horas" name="horasJugadas" min="0" value="0" class="form-control">
-                <div id="error-horas" class="invalid-feedback" aria-live="polite"></div>
-              </div>
-              <div class="col-6 col-md-3">
-                <label for="campo-estado" class="form-label fw-semibold">Estado de progreso</label>
-                <select id="campo-estado" name="estado" class="form-select">
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Jugando">Jugando</option>
-                  <option value="Completado">Completado</option>
-                  <option value="Abandonado">Abandonado</option>
-                </select>
-              </div>
-              <div class="col-6 col-md-3">
-                <label for="campo-sku" class="form-label fw-semibold">Código SKU</label>
-                <input type="text" id="campo-sku" name="sku" class="form-control" placeholder="GAME-XXX-0000">
-                <div id="error-sku" class="invalid-feedback" aria-live="polite"></div>
-              </div>
-            </div>
-
-            <!-- 4. Grupo dinámico: DLCs y Expansiones (0 a 3 filas con <template>) -->
-            <fieldset class="mb-4 p-3 rounded bg-dark border border-secondary border-opacity-25">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <legend class="col-form-label fw-semibold pt-0 text-light small text-uppercase m-0">DLCs y Expansiones (0 a 3)</legend>
-                <button type="button" id="btn-agregar-dlc" class="btn btn-outline-light btn-sm">+ Añadir DLC</button>
-              </div>
-              <div id="contenedor-dlcs" class="d-flex flex-column gap-2 mt-2">
-                <p id="sin-dlcs" class="text-muted small m-0 fst-italic">Sin expansiones ni DLCs registrados.</p>
-              </div>
-            </fieldset>
-
-            <div class="d-flex justify-content-end gap-2 pt-3 border-top border-secondary border-opacity-25">
-              <a href="listado.html" class="btn btn-outline-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">Guardar en la Bóveda</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <!-- Contenedor base de la página (se implementa en Sprint 2) -->
+    <section id="seccion-ficha" class="card vault-card p-5 text-center text-muted" aria-label="Ficha de videojuego">
+      <p class="fs-5 mb-0">El formulario de alta y edición de videojuegos se implementará en el Sprint 2.</p>
+    </section>
   </main>
-
-  <!-- Template para grupo dinámico de DLCs -->
-  <template id="tpl-dlc">
-    <div class="fila-dlc p-2 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25 d-flex gap-2 align-items-center">
-      <input type="text" name="dlcNombre[]" class="form-control form-control-sm" placeholder="Título del DLC o expansión" required>
-      <select name="dlcEstado[]" class="form-select form-select-sm" style="max-width: 160px;">
-        <option value="Pendiente">Pendiente</option>
-        <option value="Jugando">Jugando</option>
-        <option value="Completado">Completado</option>
-      </select>
-      <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-dlc" aria-label="Eliminar DLC">✕</button>
-    </div>
-  </template>
 
   <footer class="footer-gaming mt-auto py-3 text-center">
     <div class="container small">

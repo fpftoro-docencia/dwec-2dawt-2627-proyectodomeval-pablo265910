@@ -1,214 +1,141 @@
 /* ==========================================================================
-   GameVault - Hoja de estilos personalizada (Estética Gaming Moderna)
-   Diseñada con tema oscuro, contrastes accesibles WCAG AA/AAA y efectos
-   luminosos sin dependencias JS externas (solo CSS puro sobre Bootstrap 5).
+   GameVault - Estilos Personalizados (Estilo Dark Slate / Steam & Discord)
+   Diseño sobrio, moderno y limpio en tonos pizarra oscuro sin dependencias JS.
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. Variables y Paleta Gaming
-   -------------------------------------------------------------------------- */
 :root {
-  /* Fondos y superficies */
-  --gv-bg-body: #0a0c14;
-  --gv-bg-surface: #121624;
-  --gv-bg-card: #181d30;
-  --gv-bg-card-hover: #1f263f;
-  --gv-bg-input: #0e111d;
+  /* Fondos y Superficies (Dark Slate) */
+  --gv-bg-body: #0b0f19;
+  --gv-bg-surface: #131b2e;
+  --gv-bg-card: #1e293b;
+  --gv-bg-input: #0f172a;
 
-  /* Bordes y divisores */
-  --gv-border: rgba(255, 255, 255, 0.09);
-  --gv-border-accent: rgba(99, 102, 241, 0.35);
-  --gv-border-glow: rgba(129, 140, 248, 0.5);
+  /* Bordes sutiles y definidos */
+  --gv-border: #334155;
+  --gv-border-subtle: rgba(148, 163, 184, 0.12);
 
-  /* Acentos de color */
-  --gv-primary: #6366f1;
-  --gv-primary-hover: #4f46e5;
-  --gv-primary-glow: rgba(99, 102, 241, 0.4);
-  --gv-accent-cyan: #06b6d4;
-  --gv-accent-purple: #a855f7;
-  --gv-accent-emerald: #10b981;
+  /* Acentos tipo Steam / Discord Blurple */
+  --gv-primary: #5865f2;
+  --gv-primary-hover: #4752c4;
+  --gv-accent-teal: #14b8a6;
   --gv-accent-amber: #f59e0b;
   --gv-accent-rose: #f43f5e;
+  --gv-accent-emerald: #10b981;
 
-  /* Tipografía y texto */
+  /* Tipografía */
   --gv-text-heading: #f8fafc;
-  --gv-text-body: #e2e8f0;
+  --gv-text-body: #cbd5e1;
   --gv-text-muted: #94a3b8;
-  --gv-text-subtle: #64748b;
 }
 
 /* --------------------------------------------------------------------------
-   2. Reset y Fondo Global
+   1. Fondo Global y Tipografía
    -------------------------------------------------------------------------- */
 body {
   background-color: var(--gv-bg-body) !important;
   color: var(--gv-text-body) !important;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.1) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 60%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
   scrollbar-color: #334155 var(--gv-bg-body);
   scrollbar-width: thin;
 }
 
-/* Títulos y textos */
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   color: var(--gv-text-heading) !important;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .text-muted {
   color: var(--gv-text-muted) !important;
 }
 
-/* Accesibilidad: Indicadores de foco de alta visibilidad */
+/* Foco accesible y discreto */
 :focus-visible {
-  outline: 2px solid var(--gv-accent-cyan) !important;
-  outline-offset: 3px !important;
+  outline: 2px solid var(--gv-primary) !important;
+  outline-offset: 2px !important;
 }
 
 /* --------------------------------------------------------------------------
-   3. Cabecera y Navegación (Glassmorphism Gaming)
+   2. Barra de Navegación
    -------------------------------------------------------------------------- */
 .navbar-gaming {
-  background: rgba(10, 12, 20, 0.85) !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background-color: var(--gv-bg-surface) !important;
   border-bottom: 1px solid var(--gv-border);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-  position: sticky;
-  top: 0;
-  z-index: 1030;
 }
 
 .brand-gaming {
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #38bdf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: #ffffff !important;
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  text-decoration: none;
-  font-size: 1.5rem;
-  transition: opacity 0.2s ease;
 }
 
 .brand-gaming:hover {
-  opacity: 0.9;
-}
-
-.brand-gaming .brand-icon {
-  -webkit-text-fill-color: initial;
+  color: var(--gv-primary) !important;
 }
 
 .nav-link-gaming {
   color: var(--gv-text-muted) !important;
   font-weight: 500;
-  padding: 0.5rem 1rem !important;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
+  padding: 0.45rem 0.85rem !important;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .nav-link-gaming:hover {
-  color: var(--gv-text-heading) !important;
-  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .nav-link-gaming[aria-current="page"],
 .nav-link-gaming.active {
   color: #ffffff !important;
-  background: rgba(99, 102, 241, 0.18);
-  border: 1px solid var(--gv-border-accent);
-  box-shadow: 0 0 12px var(--gv-primary-glow);
-}
-
-/* Zona de usuario en cabecera */
-.badge-usuario-rol {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.35rem 0.65rem;
-  border-radius: 2rem;
+  background-color: rgba(88, 101, 242, 0.18);
+  border: 1px solid rgba(88, 101, 242, 0.4);
 }
 
 /* --------------------------------------------------------------------------
-   4. Tarjetas y Paneles (Glass Cards)
+   3. Tarjetas y Paneles
    -------------------------------------------------------------------------- */
 .vault-card {
-  background: linear-gradient(180deg, rgba(24, 29, 48, 0.92) 0%, rgba(18, 22, 36, 0.92) 100%) !important;
+  background-color: var(--gv-bg-card) !important;
   border: 1px solid var(--gv-border) !important;
-  border-radius: 1rem !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.vault-card:hover {
-  border-color: rgba(99, 102, 241, 0.3) !important;
-}
-
-/* Tarjeta interactiva de videojuego */
-.vault-game-card {
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-}
-
-.vault-game-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(99, 102, 241, 0.35), 0 0 0 1px var(--gv-border-accent) !important;
-  border-color: var(--gv-primary) !important;
-}
-
-/* Banner de carátula placeholder */
-.game-card-cover {
-  height: 160px;
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  border-bottom: 1px solid var(--gv-border);
-  font-size: 3.5rem;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* --------------------------------------------------------------------------
-   5. Controles de Formulario (Dark Gaming Inputs)
+   4. Formularios y Controles
    -------------------------------------------------------------------------- */
 .form-label {
   color: var(--gv-text-heading) !important;
-  font-size: 0.9rem;
-  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
 }
 
 .form-control,
 .form-select {
   background-color: var(--gv-bg-input) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid var(--gv-border) !important;
   color: var(--gv-text-heading) !important;
-  border-radius: 0.65rem !important;
-  padding: 0.65rem 0.9rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  border-radius: 0.5rem !important;
+  padding: 0.55rem 0.85rem;
 }
 
 .form-control::placeholder {
-  color: var(--gv-text-subtle) !important;
+  color: #64748b !important;
 }
 
 .form-control:focus,
 .form-select:focus {
-  background-color: #121626 !important;
-  border-color: var(--gv-accent-cyan) !important;
-  box-shadow: 0 0 0 0.25rem rgba(6, 182, 212, 0.25) !important;
+  background-color: #111827 !important;
+  border-color: var(--gv-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25) !important;
   color: #ffffff !important;
 }
 
@@ -219,172 +146,72 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 .form-check-input {
   background-color: var(--gv-bg-input) !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  accent-color: var(--gv-primary);
+  border: 1px solid var(--gv-border) !important;
 }
 
 .form-check-input:checked {
   background-color: var(--gv-primary) !important;
   border-color: var(--gv-primary) !important;
-  box-shadow: 0 0 10px var(--gv-primary-glow) !important;
 }
 
 .form-check-label {
   color: var(--gv-text-body);
 }
 
-/* Validación y Errores accesibles */
+/* Estados de validación */
 .is-invalid {
   border-color: var(--gv-accent-rose) !important;
-  box-shadow: 0 0 0 0.25rem rgba(244, 63, 94, 0.25) !important;
 }
 
 .invalid-feedback {
   color: #fda4af !important;
-  font-size: 0.825rem;
-  font-weight: 500;
-  margin-top: 0.35rem;
+  font-size: 0.8rem;
 }
 
 .is-valid {
   border-color: var(--gv-accent-emerald) !important;
-  box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
 }
 
 .valid-feedback {
   color: #6ee7b7 !important;
-  font-size: 0.825rem;
-  font-weight: 500;
+  font-size: 0.8rem;
 }
 
 /* --------------------------------------------------------------------------
-   6. Botones Gaming
+   5. Botones
    -------------------------------------------------------------------------- */
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-  border: none !important;
+  background-color: var(--gv-primary) !important;
+  border-color: var(--gv-primary) !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.45);
-  font-weight: 600 !important;
-  letter-spacing: 0.01em;
-  padding: 0.6rem 1.4rem;
-  border-radius: 0.65rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500 !important;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.65);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
+  background-color: var(--gv-primary-hover) !important;
+  border-color: var(--gv-primary-hover) !important;
 }
 
 .btn-outline-light {
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--gv-border) !important;
   color: var(--gv-text-body) !important;
-  border-radius: 0.65rem;
-  transition: all 0.2s ease;
+  border-radius: 0.5rem;
 }
 
 .btn-outline-light:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
-}
-
-.btn-outline-secondary {
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  color: var(--gv-text-muted) !important;
-  border-radius: 0.65rem;
-}
-
-.btn-outline-secondary:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: #64748b !important;
   color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 /* --------------------------------------------------------------------------
-   7. Insignias / Badges Gaming
-   -------------------------------------------------------------------------- */
-/* Plataformas */
-.badge-plat-pc {
-  background: rgba(14, 165, 233, 0.15) !important;
-  color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-}
-
-.badge-plat-ps5 {
-  background: rgba(59, 130, 246, 0.15) !important;
-  color: #60a5fa !important;
-  border: 1px solid rgba(96, 165, 250, 0.35);
-}
-
-.badge-plat-xbox {
-  background: rgba(34, 197, 94, 0.15) !important;
-  color: #4ade80 !important;
-  border: 1px solid rgba(74, 222, 128, 0.35);
-}
-
-.badge-plat-switch {
-  background: rgba(239, 68, 68, 0.15) !important;
-  color: #f87171 !important;
-  border: 1px solid rgba(248, 113, 113, 0.35);
-}
-
-.badge-plat-retro {
-  background: rgba(245, 158, 11, 0.15) !important;
-  color: #fbbf24 !important;
-  border: 1px solid rgba(251, 191, 36, 0.35);
-}
-
-/* Formatos */
-.badge-fmt-fisico {
-  background: rgba(168, 85, 247, 0.15) !important;
-  color: #c084fc !important;
-  border: 1px solid rgba(192, 132, 252, 0.35);
-}
-
-.badge-fmt-digital {
-  background: rgba(6, 182, 212, 0.15) !important;
-  color: #22d3ee !important;
-  border: 1px solid rgba(34, 211, 238, 0.35);
-}
-
-/* Estados de progreso */
-.badge-st-pendiente {
-  background: rgba(148, 163, 184, 0.15) !important;
-  color: #cbd5e1 !important;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.badge-st-jugando {
-  background: rgba(245, 158, 11, 0.15) !important;
-  color: #fbbf24 !important;
-  border: 1px solid rgba(245, 158, 11, 0.35);
-}
-
-.badge-st-completado {
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: #34d399 !important;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-}
-
-.badge-st-abandonado {
-  background: rgba(244, 63, 94, 0.15) !important;
-  color: #fb7185 !important;
-  border: 1px solid rgba(244, 63, 94, 0.35);
-}
-
-/* --------------------------------------------------------------------------
-   8. Región de Avisos Accesible (Sticky Toast Bar)
+   6. Región Accesible de Avisos
    -------------------------------------------------------------------------- */
 #contenedor-avisos {
   position: sticky;
-  top: 4.5rem;
+  top: 1rem;
   z-index: 1040;
   min-height: 10px;
   pointer-events: none;
@@ -392,100 +219,35 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 #contenedor-avisos .alert {
   pointer-events: auto;
-  border-radius: 0.75rem;
-  background: rgba(18, 22, 36, 0.96) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+  border-radius: 0.5rem;
+  background-color: var(--gv-bg-card) !important;
   border: 1px solid var(--gv-border);
   color: var(--gv-text-heading) !important;
-  padding: 0.85rem 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 #contenedor-avisos .alert-success {
-  border-left: 5px solid var(--gv-accent-emerald) !important;
+  border-left: 4px solid var(--gv-accent-emerald) !important;
 }
 
 #contenedor-avisos .alert-info {
-  border-left: 5px solid var(--gv-accent-cyan) !important;
+  border-left: 4px solid var(--gv-primary) !important;
 }
 
 #contenedor-avisos .alert-warning {
-  border-left: 5px solid var(--gv-accent-amber) !important;
+  border-left: 4px solid var(--gv-accent-amber) !important;
 }
 
 #contenedor-avisos .alert-danger {
-  border-left: 5px solid var(--gv-accent-rose) !important;
+  border-left: 4px solid var(--gv-accent-rose) !important;
 }
 
 /* --------------------------------------------------------------------------
-   9. Tablas Gaming (Administración)
-   -------------------------------------------------------------------------- */
-.table-gaming {
-  --bs-table-bg: transparent !important;
-  --bs-table-color: var(--gv-text-body) !important;
-  --bs-table-hover-bg: rgba(99, 102, 241, 0.08) !important;
-  --bs-table-hover-color: #ffffff !important;
-  border-color: var(--gv-border) !important;
-}
-
-.table-gaming thead th {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-  color: var(--gv-text-muted) !important;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  border-bottom: 1px solid var(--gv-border) !important;
-  padding: 1rem 1.25rem;
-}
-
-.table-gaming tbody td {
-  padding: 1rem 1.25rem;
-  vertical-align: middle;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* --------------------------------------------------------------------------
-   10. Paginación Gaming
-   -------------------------------------------------------------------------- */
-.pagination-gaming .page-link {
-  background-color: var(--gv-bg-card);
-  border-color: var(--gv-border);
-  color: var(--gv-text-body);
-  border-radius: 0.5rem;
-  margin: 0 0.2rem;
-  transition: all 0.2s ease;
-}
-
-.pagination-gaming .page-link:hover {
-  background-color: var(--gv-bg-card-hover);
-  border-color: var(--gv-border-accent);
-  color: #ffffff;
-}
-
-.pagination-gaming .page-item.active .page-link {
-  background: var(--gv-primary);
-  border-color: var(--gv-primary);
-  box-shadow: 0 0 10px var(--gv-primary-glow);
-  color: #ffffff;
-}
-
-.pagination-gaming .page-item.disabled .page-link {
-  background-color: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.05);
-  color: var(--gv-text-subtle);
-}
-
-/* --------------------------------------------------------------------------
-   11. Pie de Página
+   7. Pie de Página
    -------------------------------------------------------------------------- */
 .footer-gaming {
-  background: rgba(10, 12, 20, 0.9) !important;
+  background-color: var(--gv-bg-surface) !important;
   border-top: 1px solid var(--gv-border);
-  color: var(--gv-text-subtle);
+  color: var(--gv-text-muted);
 }
