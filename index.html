@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameVault - Iniciar sesión</title>
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="bg-light min-vh-100 d-flex flex-column">
+  <!-- Región accesible para notificaciones y avisos -->
+  <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
+
+  <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3 text-light" href="index.html">🎮 GameVault</a>
+      <nav aria-label="Navegación de acceso">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link text-light" href="registro.html">Crear cuenta</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container my-auto py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-5">
+        <div class="card vault-card shadow-sm border-0">
+          <div class="card-body p-4 p-md-5">
+            <h1 class="h3 fw-bold text-center mb-4 text-dark">Iniciar sesión</h1>
+            <p class="text-muted text-center mb-4">Introduce tus credenciales para acceder a tu colección.</p>
+
+            <form id="form-login" novalidate>
+              <div class="mb-3">
+                <label for="campo-usuario" class="form-label fw-semibold">Nombre de usuario</label>
+                <input type="text" id="campo-usuario" name="usuario" class="form-control" autocomplete="username" required>
+                <div id="error-usuario" class="invalid-feedback" aria-live="polite"></div>
+              </div>
+
+              <div class="mb-3">
+                <label for="campo-clave" class="form-label fw-semibold">Contraseña</label>
+                <input type="password" id="campo-clave" name="clave" class="form-control" autocomplete="current-password" required>
+                <div id="error-clave" class="invalid-feedback" aria-live="polite"></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Entrar</button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top">
+              <span class="text-muted">¿No tienes cuenta todavía?</span>
+              <a href="registro.html" class="ms-1 fw-semibold text-decoration-none">Regístrate aquí</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-auto py-3 bg-white text-center text-muted border-top">
+    <div class="container small">
+      GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
+    </div>
+  </footer>
+</body>
+</html>

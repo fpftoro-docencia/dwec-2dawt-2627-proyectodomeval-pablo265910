@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameVault - Catálogo de videojuegos</title>
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="bg-light min-vh-100 d-flex flex-column">
+  <!-- Región accesible para notificaciones y avisos -->
+  <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
+
+  <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3 text-light" href="listado.html">🎮 GameVault</a>
+      <nav id="navegacion-principal" aria-label="Navegación principal">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active text-light" aria-current="page" href="listado.html">Catálogo</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light" href="ficha.html">Añadir juego</a>
+          </li>
+          <li class="nav-item d-none" id="enlace-admin">
+            <a class="nav-link text-light" href="usuarios.html">Usuarios</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3 text-light">
+        <span id="info-usuario" class="small">
+          <strong id="nombre-usuario">Usuario</strong>
+          <span id="rol-usuario" class="badge bg-secondary ms-1">Rol</span>
+        </span>
+        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-4 flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <h1 class="h2 fw-bold text-dark m-0">Mi Catálogo de Videojuegos</h1>
+      <a href="ficha.html" class="btn btn-primary fw-semibold">+ Añadir videojuego</a>
+    </div>
+
+    <!-- Barra de búsqueda y filtros -->
+    <section class="card vault-card shadow-sm border-0 mb-4" aria-label="Filtros del catálogo">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-12 col-md-6">
+            <label for="campo-busqueda" class="form-label visually-hidden">Buscar videojuegos</label>
+            <input type="search" id="campo-busqueda" class="form-control" placeholder="Buscar por título o SKU...">
+          </div>
+          <div class="col-6 col-md-3">
+            <label for="filtro-plataforma" class="visually-hidden">Filtrar por plataforma</label>
+            <select id="filtro-plataforma" class="form-select">
+              <option value="">Todas las plataformas</option>
+              <option value="PC">PC</option>
+              <option value="PS5">PlayStation 5</option>
+              <option value="Xbox Series X">Xbox Series X</option>
+              <option value="Nintendo Switch">Nintendo Switch</option>
+              <option value="Retro">Retro</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-3">
+            <label for="filtro-estado" class="visually-hidden">Filtrar por estado</label>
+            <select id="filtro-estado" class="form-select">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Jugando">Jugando</option>
+              <option value="Completado">Completado</option>
+              <option value="Abandonado">Abandonado</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contenedor del listado -->
+    <section id="seccion-listado" aria-label="Listado de videojuegos">
+      <div id="contenedor-tarjetas" class="row g-4">
+        <div class="col-12 text-center text-muted py-5">
+          <p class="fs-5">Cargando catálogo...</p>
+        </div>
+      </div>
+      <!-- Paginación accesible -->
+      <nav id="nav-paginacion" class="mt-4 d-flex justify-content-center" aria-label="Paginación de videojuegos">
+        <ul id="lista-paginacion" class="pagination"></ul>
+      </nav>
+    </section>
+  </main>
+
+  <footer class="mt-auto py-3 bg-white text-center text-muted border-top">
+    <div class="container small">
+      GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
+    </div>
+  </footer>
+</body>
+</html>
