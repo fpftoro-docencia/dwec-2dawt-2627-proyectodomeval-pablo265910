@@ -9,7 +9,7 @@
 
 ## Mi proyecto
 
-**GameVault** es una aplicación web de gestión (CRUD) para que coleccionistas y jugadores organicen y controlen su colección personal de videojuegos, tanto físicos como digitales. Permite catalogar títulos, registrar horas jugadas, controlar préstamos a conocidos con datos de contacto y gestionar DLCs o expansiones adquiridas. Toda la persistencia es local en el navegador del usuario (`localStorage` por usuario y `sessionStorage` para la sesión), sin dependencias de librerías JS externas ni APIs remotas, maquetada exclusivamente con el CSS de Bootstrap.
+**GameVault** es una aplicación web de gestión (CRUD) para que cada usuario registrado organice y controle su colección personal de videojuegos, diferenciando de forma realista entre ediciones **físicas** (en disco/cartucho) y **digitales** (Steam, PlayStation Store, eShop, etc.). Permite catalogar títulos, registrar horas de juego, controlar en qué tienda o estantería están y gestionar sus expansiones/DLCs. Toda la persistencia es local en el navegador del usuario (`localStorage` por usuario y `sessionStorage` para la sesión), sin dependencias de librerías externas (salvo el CSS de Bootstrap) y sin APIs remotas.
 
 **Web publicada:** <!-- https://<proyecto>.vercel.app (se añadirá en el Sprint 3 al desplegar en Vercel) -->
 
@@ -17,16 +17,17 @@
 
 | Campo | Control | Obligatorio | Regla de validación | Mensaje si no se cumple |
 |-------|---------|:-----------:|---------------------|-------------------------|
-| Código EAN-13 | `<input type="text">` | Sí | Longitud exacta de 13 dígitos numéricos (`/^\d{13}$/`) y algoritmo de control ponderado módulo 10. | «El código de barras debe tener 13 dígitos y un dígito de control EAN-13 válido.» |
-| Título del juego | `<input type="text">` | Sí | Texto entre 2 y 100 caracteres. | «El título del videojuego es obligatorio (entre 2 y 100 caracteres).» |
-| Plataforma | `<select>` | Sí | Debe seleccionarse una opción válida: *PC*, *PlayStation 5*, *Xbox Series X*, *Nintendo Switch* o *Retro*. | «Selecciona una plataforma válida de la lista.» |
-| Fecha de adquisición | `<input type="date">` | Sí | Fecha válida no posterior al día actual (`max = hoy` asignado por JS). | «La fecha de adquisición es obligatoria y no puede ser posterior a hoy.» |
+| Título del juego | `<input type="text">` | Sí | Texto obligatorio (entre 2 y 100 caracteres). | «El título del videojuego es obligatorio (entre 2 y 100 caracteres).» |
+| Plataforma | `<select>` | Sí | Selección obligatoria entre: *PC*, *PlayStation 5*, *Xbox Series X*, *Nintendo Switch* o *Retro*. | «Selecciona una plataforma válida de la lista.» |
+| Formato | `<input type="radio">` | Sí | Selección exclusiva entre *Físico* o *Digital* (activa la lógica condicional). | «Debes seleccionar el formato del juego (Físico o Digital).» |
+| Fecha de adquisición | `<input type="date">` | Sí | Fecha no futura (`max = hoy` asignado dinámicamente por JS). | «La fecha de adquisición es obligatoria y no puede ser posterior a hoy.» |
 | Horas jugadas | `<input type="number">` | Sí | Número entero mayor o igual a 0. | «Las horas jugadas deben ser un número igual o superior a 0.» |
-| Formato | `<input type="radio">` | Sí | Selección exclusiva entre *Físico* o *Digital*. | «Debes seleccionar el formato del juego (Físico o Digital).» |
-| ¿Está prestado? *(Condicional)* | `<input type="checkbox">` | No | Casilla booleana. Si se activa, muestra y habilita los campos de Nombre del prestatario y Teléfono. | — |
-| Nombre del prestatario *(Condicional)* | `<input type="text">` | Sí (si prestado) | Obligatorio si está prestado; longitud entre 2 y 50 caracteres. | «Indica el nombre de la persona a quien le prestaste el juego.» |
-| Teléfono de contacto *(Condicional)* | `<input type="tel">` | Sí (si prestado) | Número de teléfono móvil español válido (`/^[67]\d{8}$/`). | «Introduce un teléfono móvil válido de 9 dígitos que comience por 6 o 7.» |
-| DLCs / Expansiones *(Grupo dinámico)* | `<template>` (0 a 3 filas) | No | De 0 a 3 elementos. Cada fila clonada requiere Título del DLC (`text`) y Estado (`select`: *Pendiente*, *Jugando*, *Completado*). | «Cada DLC añadido debe incluir un título válido y su estado.» |
+| Estado de progreso | `<select>` | Sí | Selección obligatoria entre: *Pendiente*, *Jugando*, *Completado* o *Abandonado*. | «Selecciona el estado de progreso actual del juego.» |
+| Código de inventario (SKU) | `<input type="text">` | Sí | Expresión regular de catálogo interno (`/^GAME-[A-Z]{3}-\d{4}$/`). | «El código de catálogo debe seguir el formato GAME-XXX-0000 (ej. GAME-RPG-0042).» |
+| Código de barras EAN-13 *(Condicional: solo Físico)* | `<input type="text">` | Sí (si físico) | 13 dígitos numéricos (`/^\d{13}$/`) y cumplimiento del algoritmo de control ponderado (módulo 10). | «El código de barras debe tener 13 dígitos y un dígito de control EAN-13 válido.» |
+| Ubicación en estantería *(Condicional: solo Físico)* | `<input type="text">` | Sí (si físico) | Formato de balda mediante regex (`/^EST-[A-Z]-\d{2}$/`). | «La ubicación debe indicar estantería y balda en formato EST-X-00 (ej. EST-A-03).» |
+| Tienda digital *(Condicional: solo Digital)* | `<select>` | Sí (si digital) | Selección entre: *Steam*, *PlayStation Store*, *Nintendo eShop*, *Epic Games Store*, *Xbox Store*. | «Selecciona la tienda digital donde adquiriste el juego.» |
+| DLCs / Expansiones *(Grupo dinámico)* | `<template>` (0 a 3 filas) | No | De 0 a 3 elementos clonados de `<template id="tpl-dlc">`. Cada fila requiere Nombre del DLC (`text`) y Estado (`select`: *Pendiente*, *Jugando*, *Completado*). | «Cada DLC añadido debe incluir un título válido y su estado.» |
 
 ### El registro de usuarios
 
@@ -179,7 +180,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | Sprint | *Tag* | Qué incluye | Reflexión |
 |--------|-------|-------------|-----------|
 | 1 | `v0.1` | Usuarios, sesión en `sessionStorage`, roles con primer usuario administrador, registro con validador reactivo de contraseña (`\p{Ll}`, `\p{Lu}`), login con SHA-256 (`resumirClave`), maquetación base de las 5 páginas, sistema de eventos propios `aviso`, tests unitarios con `AlmacenFalso` y workflow CI paso 1 (calidad y tests). | *Pendiente de cierre de Sprint 1.* |
-| 2 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y teléfono, campo condicional de préstamo, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | *Pendiente de cierre de Sprint 2.* |
+| 2 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y estantería, lógica condicional de formato físico vs digital, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | *Pendiente de cierre de Sprint 2.* |
 | 3 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3.* |
 
 **Tablero de Trello:** [GameVault - Tablero de Seguimiento (DWEC)](https://trello.com/b/b1iXcn0Q/gamevault-proyecto-dom-dwec) *(compartido con el profesor)*
