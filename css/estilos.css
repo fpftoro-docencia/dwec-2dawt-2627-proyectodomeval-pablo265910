@@ -1,0 +1,60 @@
+/* ==========================================================================
+   GameVault - Hoja de estilos personalizada
+   Complementa y personaliza el diseño de Bootstrap 5 sin usar Bootstrap JS
+   ========================================================================== */
+
+:root {
+  --gv-primary: #5c3cfc;
+  --gv-primary-hover: #4829e0;
+  --gv-bg-subtle: #f8f9fa;
+  --gv-focus-ring: rgba(92, 60, 252, 0.25);
+}
+
+/* Accesibilidad: Indicadores de foco claros */
+:focus-visible {
+  outline: 3px solid var(--gv-primary);
+  outline-offset: 2px;
+}
+
+/* Región accesible de avisos y notificaciones */
+#contenedor-avisos {
+  position: sticky;
+  top: 1rem;
+  z-index: 1050;
+  min-height: 10px;
+  pointer-events: none;
+}
+
+#contenedor-avisos .alert {
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.75rem;
+}
+
+/* Barra de navegación de GameVault */
+.navbar-brand-vault {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--gv-primary) !important;
+}
+
+/* Indicador de página activa */
+.nav-link[aria-current="page"] {
+  font-weight: 600;
+  border-bottom: 2px solid var(--gv-primary);
+}
+
+/* Tarjetas y contenedores */
+.vault-card {
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Campos con validación en tiempo real */
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.is-valid {
+  border-color: #198754 !important;
+}

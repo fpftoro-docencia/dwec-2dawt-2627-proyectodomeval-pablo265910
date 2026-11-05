@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameVault - Ficha de videojuego</title>
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="bg-light min-vh-100 d-flex flex-column">
+  <!-- Región accesible para notificaciones y avisos -->
+  <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
+
+  <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3 text-light" href="listado.html">🎮 GameVault</a>
+      <nav id="navegacion-principal" aria-label="Navegación principal">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link text-light" href="listado.html">Catálogo</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active text-light" aria-current="page" href="ficha.html">Añadir juego</a>
+          </li>
+          <li class="nav-item d-none" id="enlace-admin">
+            <a class="nav-link text-light" href="usuarios.html">Usuarios</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3 text-light">
+        <span id="info-usuario" class="small">
+          <strong id="nombre-usuario">Usuario</strong>
+          <span id="rol-usuario" class="badge bg-secondary ms-1">Rol</span>
+        </span>
+        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-4 flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 id="titulo-pagina" class="h2 fw-bold text-dark m-0">Ficha de Videojuego</h1>
+      <a href="listado.html" class="btn btn-outline-secondary btn-sm">&larr; Volver al catálogo</a>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8">
+        <div class="card vault-card shadow-sm border-0">
+          <div class="card-body p-4 p-md-5">
+            <form id="form-juego" novalidate>
+              <p class="text-muted mb-4">Completa los datos del videojuego para incorporarlo a tu colección.</p>
+
+              <!-- Campos base se implementarán en Sprint 2 -->
+              <div class="mb-3">
+                <label for="campo-titulo" class="form-label fw-semibold">Título del videojuego</label>
+                <input type="text" id="campo-titulo" name="titulo" class="form-control" required>
+                <div id="error-titulo" class="invalid-feedback" aria-live="polite"></div>
+              </div>
+
+              <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <a href="listado.html" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary fw-semibold">Guardar videojuego</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-auto py-3 bg-white text-center text-muted border-top">
+    <div class="container small">
+      GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
+    </div>
+  </footer>
+</body>
+</html>

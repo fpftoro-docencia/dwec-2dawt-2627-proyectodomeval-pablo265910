@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameVault - Administración de usuarios</title>
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="bg-light min-vh-100 d-flex flex-column">
+  <!-- Región accesible para notificaciones y avisos -->
+  <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
+
+  <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3 text-light" href="listado.html">🎮 GameVault</a>
+      <nav id="navegacion-principal" aria-label="Navegación principal">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link text-light" href="listado.html">Catálogo</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-light" href="ficha.html">Añadir juego</a>
+          </li>
+          <li class="nav-item" id="enlace-admin">
+            <a class="nav-link active text-light" aria-current="page" href="usuarios.html">Usuarios</a>
+          </li>
+        </ul>
+      </nav>
+      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3 text-light">
+        <span id="info-usuario" class="small">
+          <strong id="nombre-usuario">Admin</strong>
+          <span id="rol-usuario" class="badge bg-danger ms-1">administrador</span>
+        </span>
+        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-4 flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="h2 fw-bold text-dark m-0">Administración de Usuarios</h1>
+        <p class="text-muted small m-0 mt-1">Gestión de cuentas y asignación de roles de la plataforma.</p>
+      </div>
+      <a href="listado.html" class="btn btn-outline-secondary btn-sm">&larr; Volver al catálogo</a>
+    </div>
+
+    <section class="card vault-card shadow-sm border-0" aria-label="Listado de usuarios registrados">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="tabla-usuarios">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-4">Usuario</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Rol</th>
+                <th scope="col" class="text-end pe-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-tabla-usuarios">
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">Cargando usuarios...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mt-auto py-3 bg-white text-center text-muted border-top">
+    <div class="container small">
+      GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
+    </div>
+  </footer>
+</body>
+</html>
