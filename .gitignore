@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+
+# Compilación y distribución
+dist/
+
+# Informes de pruebas y cobertura
+coverage/
+playwright-report/
+test-results/
+
+# Variables de entorno y secretos
+.env
+.env.local
+.env.*.local
+
+# Archivos del sistema y editores
+.DS_Store
+Thumbs.db
+*.swp
+*.log
