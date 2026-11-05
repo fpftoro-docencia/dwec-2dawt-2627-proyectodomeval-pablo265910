@@ -7,32 +7,35 @@
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body class="bg-light min-vh-100 d-flex flex-column">
+<body class="min-vh-100 d-flex flex-column">
   <!-- Región accesible para notificaciones y avisos -->
   <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
 
-  <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+  <header class="navbar navbar-gaming py-3">
     <div class="container">
-      <a class="navbar-brand fw-bold fs-3 text-light" href="listado.html">🎮 GameVault</a>
+      <a class="brand-gaming" href="listado.html">
+        <span class="brand-icon">🎮</span>
+        <span>GameVault</span>
+      </a>
       <nav id="navegacion-principal" aria-label="Navegación principal">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav flex-row gap-2 me-auto mb-0 ms-lg-4">
           <li class="nav-item">
-            <a class="nav-link text-light" href="listado.html">Catálogo</a>
+            <a class="nav-link-gaming" href="listado.html">Catálogo</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-light" href="ficha.html">Añadir juego</a>
+            <a class="nav-link-gaming" href="ficha.html">+ Añadir juego</a>
           </li>
           <li class="nav-item" id="enlace-admin">
-            <a class="nav-link active text-light" aria-current="page" href="usuarios.html">Usuarios</a>
+            <a class="nav-link-gaming active" aria-current="page" href="usuarios.html">Usuarios</a>
           </li>
         </ul>
       </nav>
-      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3 text-light">
-        <span id="info-usuario" class="small">
-          <strong id="nombre-usuario">Admin</strong>
-          <span id="rol-usuario" class="badge bg-danger ms-1">administrador</span>
-        </span>
-        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3">
+        <div id="info-usuario" class="d-flex align-items-center gap-2">
+          <span class="badge bg-dark border border-secondary text-light p-2">👑 <strong id="nombre-usuario">Admin</strong></span>
+          <span id="rol-usuario" class="badge bg-danger badge-usuario-rol">administrador</span>
+        </div>
+        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Salir</button>
       </div>
     </div>
   </header>
@@ -40,36 +43,90 @@
   <main class="container py-4 flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
       <div>
-        <h1 class="h2 fw-bold text-dark m-0">Administración de Usuarios</h1>
-        <p class="text-muted small m-0 mt-1">Gestión de cuentas y asignación de roles de la plataforma.</p>
+        <h1 class="h2 fw-bold m-0">Administración de Usuarios</h1>
+        <p class="text-muted small m-0 mt-1">Control de acceso y asignación de permisos de GameVault.</p>
       </div>
-      <a href="listado.html" class="btn btn-outline-secondary btn-sm">&larr; Volver al catálogo</a>
+      <a href="listado.html" class="btn btn-outline-light btn-sm">&larr; Volver al catálogo</a>
     </div>
 
-    <section class="card vault-card shadow-sm border-0" aria-label="Listado de usuarios registrados">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0" id="tabla-usuarios">
-            <thead class="table-light">
-              <tr>
-                <th scope="col" class="ps-4">Usuario</th>
-                <th scope="col">Correo</th>
-                <th scope="col">Rol</th>
-                <th scope="col" class="text-end pe-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpo-tabla-usuarios">
-              <tr>
-                <td colspan="4" class="text-center text-muted py-4">Cargando usuarios...</td>
-              </tr>
-            </tbody>
-          </table>
+    <!-- Buscador de usuarios -->
+    <section class="card vault-card p-3 mb-4" aria-label="Búsqueda de usuarios">
+      <div class="row g-3 align-items-center">
+        <div class="col-12 col-md-6">
+          <label for="campo-busqueda-usuarios" class="form-label visually-hidden">Buscar usuario</label>
+          <div class="input-group">
+            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted">🔍</span>
+            <input type="search" id="campo-busqueda-usuarios" class="form-control" placeholder="Buscar por nombre de usuario o correo...">
+          </div>
         </div>
+        <div class="col-12 col-md-6 text-md-end text-muted small">
+          <span id="total-usuarios-badge" class="badge bg-dark border border-secondary text-light">Total: 3 usuarios</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabla gaming de usuarios -->
+    <section class="card vault-card overflow-hidden p-0 mb-4" aria-label="Tabla de usuarios registrados">
+      <div class="table-responsive">
+        <table class="table table-gaming align-middle mb-0" id="tabla-usuarios">
+          <thead>
+            <tr>
+              <th scope="col">Usuario</th>
+              <th scope="col">Correo Electrónico</th>
+              <th scope="col">Rol Actual</th>
+              <th scope="col" class="text-end">Acciones de Rol</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-tabla-usuarios">
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fs-5">👑</span>
+                  <div>
+                    <strong class="text-light">admin_vault</strong>
+                    <span class="badge bg-primary bg-opacity-25 text-info ms-1 small">Tú</span>
+                  </div>
+                </div>
+              </td>
+              <td><code>admin@gamevault.local</code></td>
+              <td><span class="badge bg-danger badge-usuario-rol">administrador</span></td>
+              <td class="text-end">
+                <button type="button" class="btn btn-outline-secondary btn-sm" disabled title="No puedes revocar tu propio rol de administrador">Cambiar rol</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fs-5">🎮</span>
+                  <strong class="text-light">pixel_master</strong>
+                </div>
+              </td>
+              <td><code>pixel@gamevault.local</code></td>
+              <td><span class="badge bg-secondary badge-usuario-rol">usuario</span></td>
+              <td class="text-end">
+                <button type="button" class="btn btn-outline-light btn-sm">Promocionar a Admin</button>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fs-5">🕹️</span>
+                  <strong class="text-light">speedrunner_99</strong>
+                </div>
+              </td>
+              <td><code>speed@gamevault.local</code></td>
+              <td><span class="badge bg-secondary badge-usuario-rol">usuario</span></td>
+              <td class="text-end">
+                <button type="button" class="btn btn-outline-light btn-sm">Promocionar a Admin</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </main>
 
-  <footer class="mt-auto py-3 bg-white text-center text-muted border-top">
+  <footer class="footer-gaming mt-auto py-3 text-center">
     <div class="container small">
       GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
     </div>

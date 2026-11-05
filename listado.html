@@ -7,71 +7,89 @@
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
-<body class="bg-light min-vh-100 d-flex flex-column">
+<body class="min-vh-100 d-flex flex-column">
   <!-- Región accesible para notificaciones y avisos -->
   <div id="contenedor-avisos" class="container mt-3" role="status" aria-live="polite"></div>
 
-  <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
+  <header class="navbar navbar-gaming py-3">
     <div class="container">
-      <a class="navbar-brand fw-bold fs-3 text-light" href="listado.html">🎮 GameVault</a>
+      <a class="brand-gaming" href="listado.html">
+        <span class="brand-icon">🎮</span>
+        <span>GameVault</span>
+      </a>
       <nav id="navegacion-principal" aria-label="Navegación principal">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav flex-row gap-2 me-auto mb-0 ms-lg-4">
           <li class="nav-item">
-            <a class="nav-link active text-light" aria-current="page" href="listado.html">Catálogo</a>
+            <a class="nav-link-gaming active" aria-current="page" href="listado.html">Catálogo</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-light" href="ficha.html">Añadir juego</a>
+            <a class="nav-link-gaming" href="ficha.html">+ Añadir juego</a>
           </li>
           <li class="nav-item d-none" id="enlace-admin">
-            <a class="nav-link text-light" href="usuarios.html">Usuarios</a>
+            <a class="nav-link-gaming" href="usuarios.html">Usuarios</a>
           </li>
         </ul>
       </nav>
-      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3 text-light">
-        <span id="info-usuario" class="small">
-          <strong id="nombre-usuario">Usuario</strong>
-          <span id="rol-usuario" class="badge bg-secondary ms-1">Rol</span>
-        </span>
-        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Cerrar sesión</button>
+      <div id="zona-usuario" class="d-flex align-items-center ms-auto gap-3">
+        <div id="info-usuario" class="d-flex align-items-center gap-2">
+          <span class="badge bg-dark border border-secondary text-light p-2">👤 <strong id="nombre-usuario">Usuario</strong></span>
+          <span id="rol-usuario" class="badge bg-primary badge-usuario-rol">jugador</span>
+        </div>
+        <button id="btn-cerrar-sesion" class="btn btn-outline-light btn-sm" type="button">Salir</button>
       </div>
     </div>
   </header>
 
   <main class="container py-4 flex-grow-1">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <h1 class="h2 fw-bold text-dark m-0">Mi Catálogo de Videojuegos</h1>
-      <a href="ficha.html" class="btn btn-primary fw-semibold">+ Añadir videojuego</a>
+    <!-- Encabezado de la página -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <h1 class="h2 fw-bold m-0">Mi Bóveda de Videojuegos</h1>
+        <p class="text-muted small m-0 mt-1">Explora, filtra y organiza tu colección personal.</p>
+      </div>
+      <a href="ficha.html" class="btn btn-primary d-inline-flex align-items-center gap-2">
+        <span>+</span> Añadir nuevo juego
+      </a>
     </div>
 
-    <!-- Barra de búsqueda y filtros -->
-    <section class="card vault-card shadow-sm border-0 mb-4" aria-label="Filtros del catálogo">
-      <div class="card-body">
-        <div class="row g-3 align-items-center">
-          <div class="col-12 col-md-6">
-            <label for="campo-busqueda" class="form-label visually-hidden">Buscar videojuegos</label>
-            <input type="search" id="campo-busqueda" class="form-control" placeholder="Buscar por título o SKU...">
+    <!-- Barra de búsqueda y filtros con estilo gaming -->
+    <section class="card vault-card p-3 mb-4" aria-label="Filtros del catálogo">
+      <div class="row g-3 align-items-center">
+        <div class="col-12 col-md-5">
+          <label for="campo-busqueda" class="form-label visually-hidden">Buscar en el catálogo</label>
+          <div class="input-group">
+            <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted">🔍</span>
+            <input type="search" id="campo-busqueda" class="form-control" placeholder="Buscar por título, SKU o tienda...">
           </div>
-          <div class="col-6 col-md-3">
-            <label for="filtro-plataforma" class="visually-hidden">Filtrar por plataforma</label>
-            <select id="filtro-plataforma" class="form-select">
-              <option value="">Todas las plataformas</option>
-              <option value="PC">PC</option>
-              <option value="PS5">PlayStation 5</option>
-              <option value="Xbox Series X">Xbox Series X</option>
-              <option value="Nintendo Switch">Nintendo Switch</option>
-              <option value="Retro">Retro</option>
-            </select>
-          </div>
-          <div class="col-6 col-md-3">
-            <label for="filtro-estado" class="visually-hidden">Filtrar por estado</label>
-            <select id="filtro-estado" class="form-select">
-              <option value="">Todos los estados</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Jugando">Jugando</option>
-              <option value="Completado">Completado</option>
-              <option value="Abandonado">Abandonado</option>
-            </select>
-          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <label for="filtro-plataforma" class="visually-hidden">Filtrar por plataforma</label>
+          <select id="filtro-plataforma" class="form-select">
+            <option value="">Todas las plataformas</option>
+            <option value="PC">PC (Steam/Epic)</option>
+            <option value="PS5">PlayStation 5</option>
+            <option value="Xbox Series X">Xbox Series X</option>
+            <option value="Nintendo Switch">Nintendo Switch</option>
+            <option value="Retro">Retro / Clásicos</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label for="filtro-formato" class="visually-hidden">Filtrar por formato</label>
+          <select id="filtro-formato" class="form-select">
+            <option value="">Cualquier formato</option>
+            <option value="Físico">Físico</option>
+            <option value="Digital">Digital</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
+          <label for="filtro-estado" class="visually-hidden">Filtrar por estado</label>
+          <select id="filtro-estado" class="form-select">
+            <option value="">Todos los estados</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Jugando">Jugando</option>
+            <option value="Completado">Completado</option>
+            <option value="Abandonado">Abandonado</option>
+          </select>
         </div>
       </div>
     </section>
@@ -79,18 +97,135 @@
     <!-- Contenedor del listado -->
     <section id="seccion-listado" aria-label="Listado de videojuegos">
       <div id="contenedor-tarjetas" class="row g-4">
-        <div class="col-12 text-center text-muted py-5">
-          <p class="fs-5">Cargando catálogo...</p>
+        <!-- Ejemplo visual de tarjeta gaming para preview -->
+        <div class="col-12 col-sm-6 col-lg-4">
+          <article class="card vault-card vault-game-card">
+            <div class="game-card-cover">
+              <span>🗡️</span>
+              <span class="position-absolute top-0 end-0 m-2 badge badge-plat-ps5">PS5</span>
+              <span class="position-absolute bottom-0 start-0 m-2 badge badge-fmt-fisico">Físico</span>
+            </div>
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h2 class="h5 fw-bold m-0 text-truncate" title="Elden Ring">Elden Ring</h2>
+                <span class="badge badge-st-jugando">Jugando</span>
+              </div>
+              <p class="text-muted small mb-2"><code>GAME-ELD-2022</code> &bull; Estantería: <code>EST-A-01</code></p>
+              <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top border-secondary border-opacity-25">
+                <span>⏱️ 84 horas</span>
+                <span class="badge bg-dark border border-secondary border-opacity-50 text-light">📦 1 DLC</span>
+              </div>
+              <div class="d-flex gap-2 mt-3 pt-2">
+                <a href="ficha.html?id=1" class="btn btn-outline-light btn-sm flex-grow-1">Editar</a>
+                <button type="button" class="btn btn-outline-danger btn-sm" aria-label="Eliminar Elden Ring">🗑️</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+          <article class="card vault-card vault-game-card">
+            <div class="game-card-cover" style="background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);">
+              <span>🛸</span>
+              <span class="position-absolute top-0 end-0 m-2 badge badge-plat-pc">PC</span>
+              <span class="position-absolute bottom-0 start-0 m-2 badge badge-fmt-digital">Digital &bull; Steam</span>
+            </div>
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h2 class="h5 fw-bold m-0 text-truncate" title="Cyberpunk 2077">Cyberpunk 2077</h2>
+                <span class="badge badge-st-completado">Completado</span>
+              </div>
+              <p class="text-muted small mb-2"><code>GAME-CPK-2077</code></p>
+              <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top border-secondary border-opacity-25">
+                <span>⏱️ 120 horas</span>
+                <span class="badge bg-dark border border-secondary border-opacity-50 text-light">📦 1 DLC</span>
+              </div>
+              <div class="d-flex gap-2 mt-3 pt-2">
+                <a href="ficha.html?id=2" class="btn btn-outline-light btn-sm flex-grow-1">Editar</a>
+                <button type="button" class="btn btn-outline-danger btn-sm" aria-label="Eliminar Cyberpunk 2077">🗑️</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+          <article class="card vault-card vault-game-card">
+            <div class="game-card-cover" style="background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #d97706 100%);">
+              <span>🍄</span>
+              <span class="position-absolute top-0 end-0 m-2 badge badge-plat-switch">Switch</span>
+              <span class="position-absolute bottom-0 start-0 m-2 badge badge-fmt-fisico">Físico</span>
+            </div>
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h2 class="h5 fw-bold m-0 text-truncate" title="Zelda: Tears of the Kingdom">Zelda: TotK</h2>
+                <span class="badge badge-st-pendiente">Pendiente</span>
+              </div>
+              <p class="text-muted small mb-2"><code>GAME-ZEL-2023</code> &bull; Estantería: <code>EST-N-04</code></p>
+              <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top border-secondary border-opacity-25">
+                <span>⏱️ 0 horas</span>
+                <span class="badge bg-dark border border-secondary border-opacity-50 text-light">📦 0 DLCs</span>
+              </div>
+              <div class="d-flex gap-2 mt-3 pt-2">
+                <a href="ficha.html?id=3" class="btn btn-outline-light btn-sm flex-grow-1">Editar</a>
+                <button type="button" class="btn btn-outline-danger btn-sm" aria-label="Eliminar Zelda TotK">🗑️</button>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
-      <!-- Paginación accesible -->
-      <nav id="nav-paginacion" class="mt-4 d-flex justify-content-center" aria-label="Paginación de videojuegos">
-        <ul id="lista-paginacion" class="pagination"></ul>
+
+      <!-- Paginación accesible Gaming -->
+      <nav id="nav-paginacion" class="mt-5 d-flex justify-content-center" aria-label="Paginación de videojuegos">
+        <ul id="lista-paginacion" class="pagination pagination-gaming">
+          <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
+          <li class="page-item active"><span class="page-link" aria-current="page">1</span></li>
+          <li class="page-item"><a class="page-link" href="?pagina=2">2</a></li>
+          <li class="page-item"><a class="page-link" href="?pagina=3">3</a></li>
+          <li class="page-item"><a class="page-link" href="?pagina=2">Siguiente &raquo;</a></li>
+        </ul>
       </nav>
     </section>
   </main>
 
-  <footer class="mt-auto py-3 bg-white text-center text-muted border-top">
+  <!-- Diálogo modal nativo <dialog> para confirmación de borrado -->
+  <dialog id="dialogo-borrado" class="vault-card text-light border-0 p-4" aria-labelledby="dialogo-titulo" aria-describedby="dialogo-descripcion">
+    <h2 id="dialogo-titulo" class="h4 fw-bold text-danger mb-3">¿Eliminar videojuego?</h2>
+    <p id="dialogo-descripcion" class="text-muted small mb-4">Esta acción no se puede deshacer. El juego se eliminará permanentemente de tu colección.</p>
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" id="btn-cancelar-borrado" class="btn btn-outline-secondary">Cancelar</button>
+      <button type="button" id="btn-confirmar-borrado" class="btn btn-danger">Eliminar</button>
+    </div>
+  </dialog>
+
+  <!-- Template nativo HTML para renderizado dinámico en Sprint 2 -->
+  <template id="tpl-tarjeta-juego">
+    <div class="col-12 col-sm-6 col-lg-4">
+      <article class="card vault-card vault-game-card">
+        <div class="game-card-cover">
+          <span class="icono-caratula">🎮</span>
+          <span class="position-absolute top-0 end-0 m-2 badge badge-plataforma">Plataforma</span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge badge-formato">Formato</span>
+        </div>
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h2 class="h5 fw-bold m-0 text-truncate titulo-juego">Título</h2>
+            <span class="badge badge-estado">Estado</span>
+          </div>
+          <p class="text-muted small mb-2 info-sku-ubicacion"></p>
+          <div class="d-flex justify-content-between align-items-center small text-muted pt-2 border-top border-secondary border-opacity-25">
+            <span class="horas-jugadas">0 horas</span>
+            <span class="badge bg-dark border border-secondary border-opacity-50 text-light badge-dlcs">0 DLCs</span>
+          </div>
+          <div class="d-flex gap-2 mt-3 pt-2">
+            <a href="#" class="btn btn-outline-light btn-sm flex-grow-1 enlace-editar">Editar</a>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-borrar" aria-label="Eliminar">🗑️</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </template>
+
+  <footer class="footer-gaming mt-auto py-3 text-center">
     <div class="container small">
       GameVault &copy; 2026 - Gestión de Colecciones de Videojuegos (DWEC)
     </div>
