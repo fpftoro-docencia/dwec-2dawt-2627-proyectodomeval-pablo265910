@@ -14,7 +14,7 @@
   <header class="navbar navbar-gaming py-3">
     <div class="container">
       <a class="brand-gaming" href="index.html">
-        <span class="brand-icon">🎮</span>
+        <span>🎮</span>
         <span>GameVault</span>
       </a>
       <nav aria-label="Navegación de acceso">
@@ -30,35 +30,32 @@
   <main class="container my-auto py-5">
     <div class="row justify-content-center">
       <div class="col-12 col-md-9 col-lg-6">
-        <div class="card vault-card p-3 p-sm-4 p-md-5">
-          <div class="text-center mb-4">
-            <div class="display-6 mb-2">⚡</div>
-            <h1 class="h3 fw-bold mb-2">Crea tu Bóveda Gamer</h1>
-            <p class="text-muted small">Registra tu perfil para llevar el control de horas, DLCs y formatos.</p>
-          </div>
+        <div class="card vault-card p-4 p-md-5">
+          <h1 class="h3 fw-bold text-center mb-3">Crear cuenta</h1>
+          <p class="text-muted text-center small mb-4">Regístrate para organizar tu colección en GameVault.</p>
 
           <form id="form-registro" novalidate>
             <div class="mb-3">
-              <label for="campo-usuario" class="form-label fw-semibold">Nombre de usuario</label>
-              <input type="text" id="campo-usuario" name="usuario" class="form-control" placeholder="Ej. retro_gamer99" autocomplete="username" required>
-              <div class="form-text">Entre 3 y 15 caracteres (letras, números, guiones).</div>
+              <label for="campo-usuario" class="form-label">Nombre de usuario</label>
+              <input type="text" id="campo-usuario" name="usuario" class="form-control" autocomplete="username" required>
+              <div class="form-text">Entre 3 y 15 caracteres alfanuméricos.</div>
               <div id="error-usuario" class="invalid-feedback" aria-live="polite"></div>
             </div>
 
             <div class="mb-3">
-              <label for="campo-correo" class="form-label fw-semibold">Correo electrónico</label>
-              <input type="email" id="campo-correo" name="correo" class="form-control" placeholder="jugador@ejemplo.com" autocomplete="email" required>
+              <label for="campo-correo" class="form-label">Correo electrónico</label>
+              <input type="email" id="campo-correo" name="correo" class="form-control" autocomplete="email" required>
               <div id="error-correo" class="invalid-feedback" aria-live="polite"></div>
             </div>
 
             <div class="mb-3">
-              <label for="campo-clave" class="form-label fw-semibold">Contraseña</label>
-              <input type="password" id="campo-clave" name="clave" class="form-control" placeholder="Crea una contraseña segura" autocomplete="new-password" required>
+              <label for="campo-clave" class="form-label">Contraseña</label>
+              <input type="password" id="campo-clave" name="clave" class="form-control" autocomplete="new-password" required>
               <div id="error-clave" class="invalid-feedback" aria-live="polite"></div>
 
               <!-- Requisitos reactivos de contraseña -->
-              <div class="p-3 mt-2 rounded bg-dark border border-secondary border-opacity-25">
-                <p class="small fw-semibold text-muted mb-2">Tu contraseña debe contener:</p>
+              <div class="p-3 mt-2 rounded bg-black bg-opacity-25 border border-secondary border-opacity-25">
+                <p class="small fw-semibold text-muted mb-2">Requisitos de contraseña:</p>
                 <ul id="requisitos-clave" class="list-unstyled small mb-0 d-flex flex-column gap-1">
                   <li id="req-longitud" class="text-muted">❌ Mínimo 8 caracteres</li>
                   <li id="req-minuscula" class="text-muted">❌ Al menos una letra minúscula (\p{Ll})</li>
@@ -69,26 +66,26 @@
             </div>
 
             <div class="mb-3">
-              <label for="campo-repeticion" class="form-label fw-semibold">Confirmar contraseña</label>
-              <input type="password" id="campo-repeticion" name="repeticion" class="form-control" placeholder="Repite tu contraseña" autocomplete="new-password" required>
+              <label for="campo-repeticion" class="form-label">Repetir contraseña</label>
+              <input type="password" id="campo-repeticion" name="repeticion" class="form-control" autocomplete="new-password" required>
               <div id="error-repeticion" class="invalid-feedback" aria-live="polite"></div>
             </div>
 
             <div class="mb-4 form-check">
               <input type="checkbox" id="campo-aceptacion" name="aceptacion" class="form-check-input" required>
               <label for="campo-aceptacion" class="form-check-label small">
-                Acepto los términos de servicio y la política de GameVault
+                Acepto las condiciones de uso de GameVault
               </label>
               <div id="error-aceptacion" class="invalid-feedback" aria-live="polite"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 fs-6">
-              Crear mi cuenta &rarr;
+            <button type="submit" class="btn btn-primary w-100 py-2">
+              Registrarse
             </button>
           </form>
 
           <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
-            <span class="text-muted small">¿Ya eres miembro?</span>
+            <span class="text-muted small">¿Ya tienes cuenta?</span>
             <a href="index.html" class="ms-1 fw-semibold text-info text-decoration-none small">Inicia sesión</a>
           </div>
         </div>
