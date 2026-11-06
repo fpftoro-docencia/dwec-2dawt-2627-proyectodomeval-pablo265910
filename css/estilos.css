@@ -340,9 +340,12 @@ body {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--gv-border-subtle);
-  border-radius: var(--gv-radius-md);
+  border-radius: var(--gv-radius-lg);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
   transition: 
     transform 0.35s var(--gv-ease-apple),
     border-color 0.35s var(--gv-ease-apple),
@@ -367,6 +370,59 @@ body {
   box-shadow: 
     0 24px 44px -12px rgba(0, 0, 0, 0.8),
     0 0 24px rgba(41, 151, 255, 0.16);
+}
+
+/* Columna Izquierda: Escaparate visual de la consola */
+.gv-card-console-side {
+  width: 155px;
+  min-width: 135px;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.4) 100%);
+  border-right: 1px solid var(--gv-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gv-card-console-img {
+  width: 100%;
+  max-width: 110px;
+  height: auto;
+  max-height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.65));
+  transition: transform 0.4s var(--gv-ease-apple);
+}
+
+.gv-card-game:hover .gv-card-console-img {
+  transform: scale(1.06) translateY(-2px);
+}
+
+/* Columna Derecha: Metadatos y acciones del juego */
+.gv-card-info-side {
+  flex: 1;
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+@media (max-width: 575.98px) {
+  .gv-card-game {
+    flex-direction: column;
+  }
+  .gv-card-console-side {
+    width: 100%;
+    height: 140px;
+    border-right: none;
+    border-bottom: 1px solid var(--gv-border-subtle);
+  }
+  .gv-card-console-img {
+    max-height: 110px;
+  }
 }
 
 /* ==========================================================================
