@@ -63,7 +63,7 @@
 
         <div class="col-12 col-lg-5 d-flex flex-column align-items-lg-end gap-3">
           <p id="contador-resultados" class="text-secondary small mb-0" aria-live="polite">
-            Mostrando <strong class="text-light font-mono">5</strong> videojuegos
+            Mostrando <strong class="text-light font-mono">0</strong> videojuegos
           </p>
           <a href="ficha.html" class="btn-gv-primary text-decoration-none">
             + Añadir videojuego
@@ -74,7 +74,7 @@
     </section>
 
     <!-- Estado vacío estilo Apple (Empty State) -->
-    <section id="estado-vacio-catalogo" class="gv-surface p-5 text-center my-4 animate-fade-up delay-1" aria-labelledby="titulo-vacio" hidden>
+    <section id="estado-vacio-catalogo" class="gv-surface p-5 text-center my-4 animate-fade-up delay-1" aria-labelledby="titulo-vacio">
       <div class="mx-auto mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 4rem; height: 4rem; background: rgba(41, 151, 255, 0.12); color: var(--apple-blue); font-size: 1.5rem;" aria-hidden="true">
         &#127918;
       </div>
@@ -87,214 +87,7 @@
 
     <!-- Grid Bento donde se inyectan las tarjetas de videojuegos -->
     <section aria-label="Listado de videojuegos">
-      <div id="grid-catalogo" class="row row-cols-1 row-cols-lg-2 g-4">
-        
-        <!-- 1. PlayStation 5 -->
-        <div class="col">
-          <article class="gv-card-game h-100">
-            <div class="gv-card-console-side">
-              <img 
-                src="img/consolas/playstation-5.svg" 
-                alt="PlayStation 5" 
-                class="gv-card-console-img js-juego-consola-img">
-            </div>
-            <div class="gv-card-info-side">
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <div class="d-flex flex-wrap align-items-center gap-1">
-                    <span class="gv-badge gv-badge-meta js-juego-plataforma">PlayStation 5</span>
-                    <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
-                  </div>
-                  <span class="gv-badge gv-badge-jugando js-juego-estado">Jugando</span>
-                </div>
-                <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Elden Ring</h3>
-                <p class="font-mono small text-secondary mb-3">
-                  SKU: <span class="text-light js-juego-sku">GAME-RPG-0042</span>
-                </p>
-                <dl class="row small mb-0 g-2 pt-2 border-top border-secondary border-opacity-25">
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">84</span> h</dd>
-                  </div>
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-A-03</dd>
-                  </div>
-                </dl>
-              </div>
-              <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-                <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-                <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- 2. Xbox Series X -->
-        <div class="col">
-          <article class="gv-card-game h-100">
-            <div class="gv-card-console-side">
-              <img 
-                src="img/consolas/xbox-series-x.svg" 
-                alt="Xbox Series X" 
-                class="gv-card-console-img js-juego-consola-img">
-            </div>
-            <div class="gv-card-info-side">
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <div class="d-flex flex-wrap align-items-center gap-1">
-                    <span class="gv-badge gv-badge-meta js-juego-plataforma">Xbox Series X</span>
-                    <span class="gv-badge gv-badge-meta js-juego-formato">Digital</span>
-                  </div>
-                  <span class="gv-badge gv-badge-completado js-juego-estado">Completado</span>
-                </div>
-                <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Forza Horizon 5</h3>
-                <p class="font-mono small text-secondary mb-3">
-                  SKU: <span class="text-light js-juego-sku">GAME-RAC-0105</span>
-                </p>
-                <dl class="row small mb-0 g-2 pt-2 border-top border-secondary border-opacity-25">
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">112</span> h</dd>
-                  </div>
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal js-juego-detalle-label">Tienda digital</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">Xbox Store</dd>
-                  </div>
-                </dl>
-              </div>
-              <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-                <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-                <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- 3. Nintendo Switch -->
-        <div class="col">
-          <article class="gv-card-game h-100">
-            <div class="gv-card-console-side">
-              <img 
-                src="img/consolas/nintendo-switch.svg" 
-                alt="Nintendo Switch" 
-                class="gv-card-console-img js-juego-consola-img">
-            </div>
-            <div class="gv-card-info-side">
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <div class="d-flex flex-wrap align-items-center gap-1">
-                    <span class="gv-badge gv-badge-meta js-juego-plataforma">Nintendo Switch</span>
-                    <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
-                  </div>
-                  <span class="gv-badge gv-badge-jugando js-juego-estado">Jugando</span>
-                </div>
-                <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Zelda: Tears of the Kingdom</h3>
-                <p class="font-mono small text-secondary mb-3">
-                  SKU: <span class="text-light js-juego-sku">GAME-ADV-0077</span>
-                </p>
-                <dl class="row small mb-0 g-2 pt-2 border-top border-secondary border-opacity-25">
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">145</span> h</dd>
-                  </div>
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-B-01</dd>
-                  </div>
-                </dl>
-              </div>
-              <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-                <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-                <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- 4. PC -->
-        <div class="col">
-          <article class="gv-card-game h-100">
-            <div class="gv-card-console-side">
-              <img 
-                src="img/consolas/pc.svg" 
-                alt="PC" 
-                class="gv-card-console-img js-juego-consola-img">
-            </div>
-            <div class="gv-card-info-side">
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <div class="d-flex flex-wrap align-items-center gap-1">
-                    <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
-                    <span class="gv-badge gv-badge-meta js-juego-formato">Digital</span>
-                  </div>
-                  <span class="gv-badge gv-badge-jugando js-juego-estado">Jugando</span>
-                </div>
-                <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Cyberpunk 2077</h3>
-                <p class="font-mono small text-secondary mb-3">
-                  SKU: <span class="text-light js-juego-sku">GAME-RPG-0207</span>
-                </p>
-                <dl class="row small mb-0 g-2 pt-2 border-top border-secondary border-opacity-25">
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">92</span> h</dd>
-                  </div>
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal js-juego-detalle-label">Tienda digital</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">Steam</dd>
-                  </div>
-                </dl>
-              </div>
-              <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-                <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-                <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- 5. Retro -->
-        <div class="col">
-          <article class="gv-card-game h-100">
-            <div class="gv-card-console-side">
-              <img 
-                src="img/consolas/retro.svg" 
-                alt="Retro" 
-                class="gv-card-console-img js-juego-consola-img">
-            </div>
-            <div class="gv-card-info-side">
-              <div>
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                  <div class="d-flex flex-wrap align-items-center gap-1">
-                    <span class="gv-badge gv-badge-meta js-juego-plataforma">Retro</span>
-                    <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
-                  </div>
-                  <span class="gv-badge gv-badge-completado js-juego-estado">Completado</span>
-                </div>
-                <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Chrono Trigger</h3>
-                <p class="font-mono small text-secondary mb-3">
-                  SKU: <span class="text-light js-juego-sku">GAME-RET-1995</span>
-                </p>
-                <dl class="row small mb-0 g-2 pt-2 border-top border-secondary border-opacity-25">
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">35</span> h</dd>
-                  </div>
-                  <div class="col-6">
-                    <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación</dt>
-                    <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-RETRO-01</dd>
-                  </div>
-                </dl>
-              </div>
-              <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-                <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-                <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-      </div>
+      <div id="grid-catalogo" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4"></div>
     </section>
 
     <!-- Controles de paginación accesibles Apple Pills -->
@@ -314,50 +107,34 @@
 
   </main>
 
-  <!-- Template de tarjeta de videojuego Apple Card (Consola a la izquierda + Info a la derecha) -->
+  <!-- Template de tarjeta de videojuego — Tipografía Hero + Consola de fondo -->
   <template id="tpl-juego">
     <div class="col">
       <article class="gv-card-game h-100">
-        <!-- Columna Izquierda: Escaparate de la Consola -->
-        <div class="gv-card-console-side">
-          <img 
-            src="img/consolas/playstation-5.svg" 
-            alt="Consola" 
-            class="gv-card-console-img js-juego-consola-img">
+        <!-- Zona Hero: Título protagonista + consola decorativa -->
+        <div class="gv-card-hero">
+          <img src="img/consolas/playstation-5.svg" alt="" class="gv-card-console-bg js-juego-consola-img" aria-hidden="true">
+          <div class="gv-card-hero-badges">
+            <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
+            <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
+            <span class="gv-badge gv-badge-jugando js-juego-estado" style="margin-left:auto">Jugando</span>
+          </div>
+          <h3 class="gv-card-hero-title js-juego-titulo">Título del videojuego</h3>
+          <span class="gv-card-hero-sku">SKU: <span class="js-juego-sku">GAME-RPG-0001</span></span>
         </div>
 
-        <!-- Columna Derecha: Información del Juego -->
+        <!-- Zona Datos: Metadatos y acciones -->
         <div class="gv-card-info-side">
-          <div>
-            <!-- Fila superior: Plataforma, Formato y Estado de progreso -->
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-              <div class="d-flex flex-wrap align-items-center gap-1">
-                <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
-                <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
-              </div>
-              <span class="gv-badge gv-badge-jugando js-juego-estado">Jugando</span>
+          <dl class="row small mb-0 g-2">
+            <div class="col-6">
+              <dt class="text-secondary fw-normal">Tiempo jugado</dt>
+              <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">0</span> h</dd>
             </div>
-
-            <!-- Título y código SKU -->
-            <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Título del videojuego</h3>
-            <p class="font-mono small text-secondary mb-3">
-              SKU: <span class="text-light js-juego-sku">GAME-RPG-0001</span>
-            </p>
-
-            <!-- Metadatos: Horas y Ubicación/Tienda -->
-            <dl class="row small mb-0 g-2 pt-2 border-top border-secondary border-opacity-25">
-              <div class="col-6">
-                <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-                <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">0</span> h</dd>
-              </div>
-              <div class="col-6">
-                <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación / Tienda</dt>
-                <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-A-01</dd>
-              </div>
-            </dl>
-          </div>
-
-          <!-- Acciones: Editar y Eliminar -->
+            <div class="col-6">
+              <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación / Tienda</dt>
+              <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-A-01</dd>
+            </div>
+          </dl>
           <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
             <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
             <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
