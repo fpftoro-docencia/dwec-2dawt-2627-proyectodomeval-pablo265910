@@ -1,7 +1,7 @@
-# Nombre de tu aplicación
+# GameVault (Gestor de Biblioteca y Backlog de Videojuegos)
 
 <!-- Sprint 2: la insignia de tu workflow, con tu organización y tu repositorio. -->
-![Integración continua](https://github.com/<organización>/<repositorio>/actions/workflows/ci.yml/badge.svg)
+![Integración continua](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/workflows/ci.yml/badge.svg)
 
 <!-- Completa cada sección a medida que avanzas en los sprints. Borra los comentarios como este
      cuando termines. Este README es también la portada de la documentación que genera `npm run docs`.
@@ -9,43 +9,54 @@
 
 ## Mi proyecto
 
-<!-- Sprint 1. De qué es tu aplicación y para quién, en dos o tres frases. -->
+**GameVault** es una aplicación web de gestión (CRUD) para que cada usuario registrado organice y controle su colección personal de videojuegos, diferenciando de forma realista entre ediciones **físicas** (en disco/cartucho) y **digitales** (Steam, PlayStation Store, eShop, etc.). Permite catalogar títulos, registrar horas de juego, controlar en qué tienda o estantería están y gestionar sus expansiones/DLCs. Toda la persistencia es local en el navegador del usuario (`localStorage` por usuario y `sessionStorage` para la sesión), sin dependencias de librerías externas (salvo el CSS de Bootstrap) y sin APIs remotas.
 
-**Web publicada:** <!-- https://<proyecto>.vercel.app -->
+**Web publicada:** <!-- https://<proyecto>.vercel.app (se añadirá en el Sprint 3 al desplegar en Vercel) -->
 
 ### La entidad
 
-<!-- Sprint 2 (puedes adelantarla en el sprint 1). Una fila por campo, con los mínimos del requisito 13:
-     marca el campo condicional y el grupo dinámico (con su mínimo y su máximo). -->
-
 | Campo | Control | Obligatorio | Regla de validación | Mensaje si no se cumple |
 |-------|---------|:-----------:|---------------------|-------------------------|
-| | | | | |
+| Título del juego | `<input type="text">` | Sí | Texto obligatorio (entre 2 y 100 caracteres). | «El título del videojuego es obligatorio (entre 2 y 100 caracteres).» |
+| Plataforma | `<select>` | Sí | Selección obligatoria entre: *PC*, *PlayStation 5*, *Xbox Series X*, *Nintendo Switch* o *Retro*. | «Selecciona una plataforma válida de la lista.» |
+| Formato | `<input type="radio">` | Sí | Selección exclusiva entre *Físico* o *Digital* (activa la lógica condicional). | «Debes seleccionar el formato del juego (Físico o Digital).» |
+| Fecha de adquisición | `<input type="date">` | Sí | Fecha no futura (`max = hoy` asignado dinámicamente por JS). | «La fecha de adquisición es obligatoria y no puede ser posterior a hoy.» |
+| Horas jugadas | `<input type="number">` | Sí | Número entero mayor o igual a 0. | «Las horas jugadas deben ser un número igual o superior a 0.» |
+| Estado de progreso | `<select>` | Sí | Selección obligatoria entre: *Pendiente*, *Jugando*, *Completado* o *Abandonado*. | «Selecciona el estado de progreso actual del juego.» |
+| Código de inventario (SKU) | `<input type="text">` | Sí | Expresión regular de catálogo interno (`/^GAME-[A-Z]{3}-\d{4}$/`). | «El código de catálogo debe seguir el formato GAME-XXX-0000 (ej. GAME-RPG-0042).» |
+| Código de barras EAN-13 *(Condicional: solo Físico)* | `<input type="text">` | Sí (si físico) | 13 dígitos numéricos (`/^\d{13}$/`) y cumplimiento del algoritmo de control ponderado (módulo 10). | «El código de barras debe tener 13 dígitos y un dígito de control EAN-13 válido.» |
+| Ubicación en estantería *(Condicional: solo Físico)* | `<input type="text">` | Sí (si físico) | Formato de balda mediante regex (`/^EST-[A-Z]-\d{2}$/`). | «La ubicación debe indicar estantería y balda en formato EST-X-00 (ej. EST-A-03).» |
+| Tienda digital *(Condicional: solo Digital)* | `<select>` | Sí (si digital) | Selección entre: *Steam*, *PlayStation Store*, *Nintendo eShop*, *Epic Games Store*, *Xbox Store*. | «Selecciona la tienda digital donde adquiriste el juego.» |
+| DLCs / Expansiones *(Grupo dinámico)* | `<template>` (0 a 3 filas) | No | De 0 a 3 elementos clonados de `<template id="tpl-dlc">`. Cada fila requiere Nombre del DLC (`text`) y Estado (`select`: *Pendiente*, *Jugando*, *Completado*). | «Cada DLC añadido debe incluir un título válido y su estado.» |
 
 ### El registro de usuarios
 
 | Campo | Control | Regla | Mensaje |
-|-------|---------|-------|---------|
-| | | | |
+|---|---|---|---|
+| Nombre de usuario | `<input type="text">` | Longitud entre 3 y 15 caracteres alfanuméricos (`/^[a-zA-Z0-9_-]{3,15}$/`) y no ocupado previamente. | «El usuario debe tener entre 3 y 15 caracteres alfanuméricos y no estar ocupado.» |
+| Correo electrónico | `<input type="email">` | Formato estándar de correo electrónico válido. | «Introduce una dirección de correo electrónico válida.» |
+| Contraseña | `<input type="password">` | Mínimo 8 caracteres, al menos una minúscula (`\p{Ll}`), una mayúscula (`\p{Lu}`) y un número. | «La contraseña debe tener al menos 8 caracteres, una minúscula, una mayúscula y un número.» |
+| Repetir contraseña | `<input type="password">` | Coincidencia exacta con el campo Contraseña. | «Las contraseñas no coinciden.» |
+| Aceptación de condiciones | `<input type="checkbox">` | Casilla obligatoria (`required`). | «Debes aceptar las condiciones de uso para continuar.» |
 
 ### Páginas
 
 | Página | Acceso | Qué hace |
-|--------|--------|----------|
-| `index.html` | Pública | |
-| `registro.html` | Pública | |
-| `listado.html` | Usuarios | |
-| `ficha.html` | Usuarios | |
-| `usuarios.html` | Administradores | |
+|---|---|---|
+| `index.html` | Pública | Inicio de sesión. Calcula el resumen criptográfico SHA-256 (`resumirClave`), evita el doble envío y redirige al listado si ya existe sesión activa. |
+| `registro.html` | Pública | Registro de nuevos usuarios con validación reactiva de los requisitos de contraseña (`\p{Ll}`, `\p{Lu}`). El primer usuario adquiere rol de Administrador. Inicia sesión automáticamente y redirige con aviso. |
+| `listado.html` | Usuarios | Catálogo y control de backlog del usuario. Renderizado mediante `<template>`, buscador con *debounce* (insensible a tildes/mayúsculas), paginación dinámica (`?pagina=1`) y borrado con modal nativo `<dialog>`. |
+| `ficha.html` | Usuarios | Alta (`ficha.html`) o edición (`ficha.html?id=...`). Validación accesible en tiempo real (`blur` en fase de captura, `aria-invalid`, `aria-describedby`), campos condicionales y grupo dinámico con `<template>`. |
+| `usuarios.html` | Administradores | Zona de administración protegida. Listado de usuarios con buscador y paginación. Conmutador de roles (usuario / administrador) con protección contra auto-revocación del propio rol. |
 
 ## Arquitectura y módulos
 
 <!-- 1. Un diagrama (Mermaid) de tus módulos y de qué usa cada uno.
      2. Tabla con cada módulo: qué hace, si usa el DOM y qué exporta.
      3. Cómo están hechos tus objetos (funciones fábrica o clases) y qué patrones de diseño usas
-        (al menos dos): dónde y por qué.
+         (al menos dos): dónde y por qué.
      4. Cómo reciben las páginas lo que necesitan (almacenamiento, sesión, navegación) y por qué así
-        se pueden probar.
+         se pueden probar.
      5. Qué documenta tu JSDoc y cómo se genera la documentación (`npm run docs`). -->
 
 ## Cómo ejecutarlo
@@ -152,34 +163,41 @@
 
 ### Definición de Hecho
 
-<!-- Sprint 1. Tu lista de condiciones para dar una tarea por terminada. Cada una tiene que poder
-     comprobarse. Si la cambias en algún sprint, di qué cambiaste y por qué. -->
+Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tablero de Trello, debe cumplir obligatoriamente todas las condiciones verificables siguientes:
 
-- [ ] <!-- … -->
+- [x] **Funcionalidad completa:** El código implementa todos los requisitos técnicos y de negocio de la tarea respetando el contrato de la aplicación sin librerías externas de JS.
+- [x] **Semántica y Accesibilidad:** Estructura HTML basada en elementos semánticos estándar (`<dialog>`, `<template>`, `<select>`, `<button>`), con gestión accesible de estados e interacción (`role="status"`, `aria-invalid`, `aria-describedby`, `aria-current="page"`).
+- [x] **Calidad de código (Linting & Formato):** El código cumple con las reglas configuradas en ESLint (incluidas las 3 reglas adicionales) y Prettier; `npm run lint` y `npm run format:check` se ejecutan sin errores ni advertencias.
+- [x] **Pruebas automatizadas en verde:** Se han desarrollado los tests unitarios o de integración correspondientes con `AlmacenFalso` y pasan limpiamente al ejecutar `npm test`.
+- [x] **Cobertura verificada:** Las funciones lógicas puras (validadores y paginación) mantienen una cobertura de líneas igual o superior al 90% (`npm run coverage`).
+- [x] **Empaquetado validado:** El script de compilación `npm run build` genera la versión distribuible en la carpeta `dist/` sin errores.
+- [x] **Control de versiones ordenado:** El desarrollo se realiza en una rama propia de funcionalidad con commits semánticos y concisos.
+- [x] **Integración Continua aprobada:** La Pull Request asociada cuenta con todos los checks del workflow de GitHub Actions (`ci.yml`) en verde antes de fusionarse a `main`.
+- [x] **Sincronización del tablero:** La tarjeta correspondiente en Trello se ha desplazado a la columna «Hecho».
 
 ### Sprints
 
-<!-- Una fila por sprint. La reflexión: qué salió bien, qué no, qué cambias para el siguiente
-     (cuatro o cinco líneas, sobre tu trabajo y no sobre el enunciado). -->
+| Sprint | Fecha límite | *Tag* | Qué incluye | Reflexión |
+|--------|--------------|-------|-------------|-----------|
+| 1 | 12 nov 2026 | `v0.1` | Usuarios, sesión en `sessionStorage`, roles con primer usuario administrador, registro con validador reactivo de contraseña (`\p{Ll}`, `\p{Lu}`), login con SHA-256 (`resumirClave`), maquetación base de las 5 páginas, sistema de eventos propios `aviso`, tests unitarios con `AlmacenFalso` y workflow CI paso 1 (calidad y tests). | *Pendiente de cierre de Sprint 1.* |
+| 2 | 19 nov 2026 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y estantería, lógica condicional de formato físico vs digital, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | *Pendiente de cierre de Sprint 2.* |
+| 3 | 26 nov 2026 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3.* |
 
-| Sprint | *Tag* | Qué incluye | Reflexión |
-|--------|-------|-------------|-----------|
-| 1 | `v0.1` | | |
-| 2 | `v0.2` | | |
-| 3 | `v1.0` | | |
-
-**Tablero de Trello:** <!-- enlace (compartido con el profesor) -->
+**Tablero de Trello:** [GameVault - Tablero de Seguimiento (DWEC)](https://trello.com/b/b1iXcn0Q/gamevault-proyecto-dom-dwec) *(compartido con el profesor)*
 
 **Blog del proyecto:** [blog/README.md](blog/README.md) <!-- dificultades y problemas conceptuales de cada sprint -->
 
 ### Ramas y versiones
 
-<!-- 1. Tabla con tus ramas: nombre, qué funcionalidad y enlace a su pull request.
-     2. Si integras con merge o con rebase, y por qué.
-     3. Qué deja fuera tu .gitignore y por qué. -->
-
 | Rama | Funcionalidad | *Pull request* |
 |------|---------------|----------------|
-| | | |
+| `definicion-proyecto` | [S1-01] Configuración inicial, temática GameVault, arquitectura de páginas y Definición de Hecho (DoD) | — |
+| `estructura-html-base` | [S1-02] Estructura HTML base de las 5 páginas y enlace a Bootstrap | [#2](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/2) |
+| `cabecera-sesion` | [S1-03] Cabecera común, menú de navegación y sesión de usuario | [#7](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/7) |
+| `nueva-estetica-minimalista` | Actualización de diseño Dark Minimalism, plantillas HTML y recursos gráficos | [#8](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/8) |
+
+**Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
+
+**Política de `.gitignore`:** Se excluyen dependencias de paquetes (`node_modules/`), artefactos de build (`dist/`), informes de cobertura (`coverage/`), reportes y trazas de Playwright (`playwright-report/`, `test-results/`), variables de entorno locales (`.env*`) y archivos de configuración del sistema operativo (`.DS_Store`, `Thumbs.db`), ya que son archivos generados en local, volátiles o sensibles que no deben formar parte del repositorio compartido.
 
 **Versión de entrega:** `v1.0`

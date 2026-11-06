@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <!-- Sombra base -->
+  <ellipse cx="100" cy="225" rx="60" ry="10" fill="#000000" opacity="0.6"/>
+  
+  <!-- Torre Monolítica Xbox Series X en perspectiva ligera -->
+  <!-- Cara izquierda / frontal -->
+  <path d="M 62 48 L 122 36 L 122 216 L 62 216 Z" fill="#141416" stroke="#27272a" stroke-width="1"/>
+  <!-- Cara derecha lateral con profundidad -->
+  <path d="M 122 36 L 148 44 L 148 206 L 122 216 Z" fill="#0a0a0c" stroke="#1f1f23" stroke-width="1"/>
+  
+  <!-- Rejilla superior con brillo verde Xbox icónico -->
+  <path d="M 62 48 L 122 36 L 148 44 L 88 56 Z" fill="#107c10"/>
+  <!-- Degradado de curvatura cóncava superior -->
+  <path d="M 62 48 L 122 36 L 148 44 L 88 56 Z" fill="url(#xbox-top-grid)"/>
+
+  <!-- Puntos verdes de ventilación que brillan -->
+  <circle cx="102" cy="44" r="14" fill="#52b834" opacity="0.75" filter="drop-shadow(0 0 8px #52b834)"/>
+  <circle cx="102" cy="44" r="9" fill="#107c10"/>
+
+  <!-- Botón de encendido Xbox Logo brillante en frontal superior izquierdo -->
+  <circle cx="75" cy="68" r="4.5" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+  <!-- X grabada en el botón -->
+  <path d="M 73 66 L 77 70 M 77 66 L 73 70" stroke="#18181b" stroke-width="1.2" stroke-linecap="round"/>
+
+  <!-- Ranura de discos Blu-Ray en la parte inferior izquierda -->
+  <line x1="69" y1="140" x2="69" y2="190" stroke="#000000" stroke-width="2"/>
+  <line x1="70" y1="140" x2="70" y2="190" stroke="#3f3f46" stroke-width="0.8"/>
+  <circle cx="69" cy="134" r="1.5" fill="#71717a"/>
+
+  <!-- Puerto USB 3.0 frontal inferior derecho -->
+  <rect x="106" y="196" width="3" height="7" rx="0.8" fill="#27272a" stroke="#3f3f46" stroke-width="0.5"/>
+  <circle cx="107.5" cy="188" r="1.5" fill="#71717a"/>
+
+  <defs>
+    <radialGradient id="xbox-top-grid" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#107c10" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#0a3c0a" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#141416"/>
+    </radialGradient>
+  </defs>
+</svg>
