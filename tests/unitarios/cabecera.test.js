@@ -16,28 +16,28 @@ describe('componente cabecera.js', () => {
     iniciarSesion('jugador_normal', 'usuario', almacen);
     iniciarCabecera(document, { almacen });
 
-    const nombre = document.querySelector('#usuario-activo-nombre');
-    const rol = document.querySelector('#usuario-activo-rol');
-    const itemAdmin = document.querySelector('#nav-item-admin');
+    const nombre = document.querySelector('#sesion-usuario, #usuario-activo-nombre');
+    const rol = document.querySelector('#sesion-rol, #usuario-activo-rol');
+    const enlaceAdmin = document.querySelector('#nav-link-admin, #nav-item-admin, #enlace-admin');
 
     expect(nombre.textContent).toBe('jugador_normal');
     expect(rol.textContent).toBe('Usuario');
-    expect(rol.classList.contains('steam-badge--rol-usuario')).toBe(true);
-    expect(itemAdmin.hidden).toBe(true);
+    expect(rol.classList.contains('gv-badge-meta') || rol.classList.contains('steam-badge--rol-usuario')).toBe(true);
+    expect(enlaceAdmin.hidden).toBe(true);
   });
 
   it('muestra enlace de administración para rol administrador', () => {
     iniciarSesion('admin_master', 'administrador', almacen);
     iniciarCabecera(document, { almacen });
 
-    const nombre = document.querySelector('#usuario-activo-nombre');
-    const rol = document.querySelector('#usuario-activo-rol');
-    const itemAdmin = document.querySelector('#nav-item-admin');
+    const nombre = document.querySelector('#sesion-usuario, #usuario-activo-nombre');
+    const rol = document.querySelector('#sesion-rol, #usuario-activo-rol');
+    const enlaceAdmin = document.querySelector('#nav-link-admin, #nav-item-admin, #enlace-admin');
 
     expect(nombre.textContent).toBe('admin_master');
     expect(rol.textContent).toBe('Administrador');
-    expect(rol.classList.contains('steam-badge--rol-admin')).toBe(true);
-    expect(itemAdmin.hidden).toBe(false);
+    expect(rol.classList.contains('gv-badge-admin') || rol.classList.contains('steam-badge--rol-admin')).toBe(true);
+    expect(enlaceAdmin.hidden).toBe(false);
   });
 
   it('el botón de cerrar sesión elimina la sesión y llama a la navegación', () => {

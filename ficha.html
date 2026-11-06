@@ -1,102 +1,84 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ficha de Videojuego - GameVault</title>
+  <title>Ficha de Videojuego — GameVault</title>
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-  <!-- Contenedor global de notificaciones accesible -->
-  <div id="notificaciones-globales" class="steam-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Topbar Estilo Cliente Steam -->
-  <header class="steam-topbar py-2">
-    <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <div class="d-flex align-items-center gap-4">
-        <a href="listado.html" class="steam-brand">
-          <svg class="steam-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2a10 10 0 0 0-9.95 9.04l5.37 2.22a2.82 2.82 0 0 1 2.28-.48l2.44-3.54v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.48 2.48c0 .19-.03.38-.09.56a2.84 2.84 0 0 1-5.46-.34L3.09 14.1A10 10 0 1 0 12 2zm3.92 5.44a2.52 2.52 0 1 0 0 5.04 2.52 2.52 0 0 0 0-5.04zm-6.48 7.5a1.89 1.89 0 1 0 0 3.78 1.89 1.89 0 0 0 0-3.78z"/>
-          </svg>
-          <span>GAMEVAULT</span>
-        </a>
+  <!-- Cabecera común -->
+  <header class="gv-header">
+    <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <a href="listado.html" class="gv-brand">
+        <span class="gv-brand-icon" aria-hidden="true">GV</span>
+        <span>GameVault</span>
+      </a>
 
-        <nav aria-label="Navegación principal">
-          <ul class="steam-nav-list">
-            <li>
-              <a href="listado.html" class="steam-nav-link">BIBLIOTECA</a>
-            </li>
-            <li>
-              <a href="ficha.html" class="steam-nav-link" aria-current="page">AÑADIR JUEGO</a>
-            </li>
-            <li id="nav-item-admin" hidden>
-              <a href="usuarios.html" id="enlace-admin" class="steam-nav-link">ADMINISTRACIÓN</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
+      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-1">
+        <a href="listado.html" class="gv-nav-link">Catálogo</a>
+        <a href="ficha.html" class="gv-nav-link" aria-current="page">Nueva ficha</a>
+        <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link">Usuarios</a>
+      </nav>
 
-      <!-- Zona de perfil de usuario -->
-      <div class="steam-user-zone">
-        <span id="usuario-activo-nombre" class="steam-username">Jugador_1</span>
-        <span id="usuario-activo-rol" class="steam-badge steam-badge--rol-usuario">Usuario</span>
-        <button type="button" id="btn-cerrar-sesion" class="btn-steam-secondary btn-steam-sm">
-          Cerrar sesión
-        </button>
+      <div id="panel-sesion" class="d-flex align-items-center gap-2">
+        <div class="gv-session-pill" aria-label="Usuario en sesión">
+          <span id="sesion-usuario" class="fw-medium">pablo_dev</span>
+          <span id="sesion-rol" class="gv-badge gv-badge-meta">Usuario</span>
+        </div>
+        <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
       </div>
     </div>
   </header>
 
-  <main class="container py-4" style="max-width: 920px;">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <!-- Contenido principal -->
+  <main class="container py-4 py-md-5 flex-grow-1" style="max-width: 820px;">
+    
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4 animate-fade-up">
       <div>
-        <h1 id="titulo-pagina-ficha" class="h3 text-uppercase mb-1">Añadir juego a la biblioteca</h1>
-        <p class="text-secondary small mb-0">Configura las propiedades técnicas, formato y expansiones del título</p>
+        <h1 id="titulo-pagina-ficha" class="h4 fw-bold mb-1">Alta y Edición de Videojuego</h1>
+        <p class="text-secondary small mb-0">Completa los metadatos técnicos, formato de edición y expansiones asociadas.</p>
       </div>
-      <a href="listado.html" class="btn-steam-secondary btn-steam-sm">
-        &larr; Volver a Biblioteca
-      </a>
+      <a href="listado.html" class="btn-gv-ghost text-decoration-none">&larr; Volver al catálogo</a>
     </div>
 
-    <form id="form-ficha-juego" action="listado.html" method="post" novalidate>
-      <!-- Campo oculto para modo edición -->
-      <input type="hidden" id="juego-id" name="id" value="">
-
-      <!-- PANEL 1: DATOS GENERALES -->
-      <fieldset class="steam-section-panel">
-        <legend class="steam-section-title">Datos generales del título</legend>
-
+    <form id="form-ficha" class="gv-surface p-4 p-md-5 animate-fade-up delay-1" action="#" method="post" novalidate>
+      
+      <!-- SECCIÓN 1: Información Principal -->
+      <fieldset class="mb-4">
+        <legend class="h6 fw-semibold text-uppercase text-secondary small mb-3">1. Información general</legend>
+        
         <div class="row g-3">
           <!-- Título del juego -->
-          <div class="col-md-8">
-            <label for="titulo" class="form-label">Título del juego</label>
-            <input
-              type="text"
-              id="titulo"
-              name="titulo"
-              class="form-control"
-              placeholder="Ej. Elden Ring"
-              minlength="2"
-              maxlength="100"
-              required
-              aria-invalid="false"
-              aria-describedby="error-titulo"
-            >
-            <div id="error-titulo" class="field-error"></div>
+          <div class="col-12 col-md-8">
+            <label for="ficha-titulo" class="form-label">Título del videojuego *</label>
+            <input 
+              type="text" 
+              id="ficha-titulo" 
+              name="titulo" 
+              class="form-control" 
+              placeholder="ej. Elden Ring" 
+              minlength="2" 
+              maxlength="100" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-titulo">
+            <div id="error-ficha-titulo" class="field-error" role="alert" aria-live="polite"></div>
           </div>
 
           <!-- Plataforma -->
-          <div class="col-md-4">
-            <label for="plataforma" class="form-label">Plataforma</label>
-            <select
-              id="plataforma"
-              name="plataforma"
-              class="form-select"
-              required
-              aria-invalid="false"
-              aria-describedby="error-plataforma"
-            >
+          <div class="col-12 col-md-4">
+            <label for="ficha-plataforma" class="form-label">Plataforma *</label>
+            <select 
+              id="ficha-plataforma" 
+              name="plataforma" 
+              class="form-select" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-plataforma">
               <option value="">Selecciona plataforma...</option>
               <option value="PC">PC</option>
               <option value="PlayStation 5">PlayStation 5</option>
@@ -104,271 +86,248 @@
               <option value="Nintendo Switch">Nintendo Switch</option>
               <option value="Retro">Retro</option>
             </select>
-            <div id="error-plataforma" class="field-error"></div>
-          </div>
-
-          <!-- Código de inventario SKU -->
-          <div class="col-md-4">
-            <label for="sku" class="form-label">Código de inventario SKU</label>
-            <input
-              type="text"
-              id="sku"
-              name="sku"
-              class="form-control"
-              placeholder="GAME-RPG-0042"
-              pattern="^GAME-[A-Z]{3}-[0-9]{4}$"
-              required
-              aria-invalid="false"
-              aria-describedby="error-sku"
-            >
-            <div id="error-sku" class="field-error"></div>
+            <div id="error-ficha-plataforma" class="field-error" role="alert" aria-live="polite"></div>
           </div>
 
           <!-- Fecha de adquisición -->
-          <div class="col-md-4">
-            <label for="fecha-adquisicion" class="form-label">Fecha de adquisición</label>
-            <input
-              type="date"
-              id="fecha-adquisicion"
-              name="fechaAdquisicion"
-              class="form-control"
-              required
-              aria-invalid="false"
-              aria-describedby="error-fecha-adquisicion"
-            >
-            <div id="error-fecha-adquisicion" class="field-error"></div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="ficha-fecha" class="form-label">Fecha de adquisición *</label>
+            <input 
+              type="date" 
+              id="ficha-fecha" 
+              name="fechaAdquisicion" 
+              class="form-control" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-fecha">
+            <div id="error-ficha-fecha" class="field-error" role="alert" aria-live="polite"></div>
           </div>
 
           <!-- Horas jugadas -->
-          <div class="col-md-2">
-            <label for="horas-jugadas" class="form-label">Horas jugadas</label>
-            <input
-              type="number"
-              id="horas-jugadas"
-              name="horasJugadas"
-              class="form-control"
-              min="0"
-              step="1"
-              value="0"
-              required
-              aria-invalid="false"
-              aria-describedby="error-horas-jugadas"
-            >
-            <div id="error-horas-jugadas" class="field-error"></div>
+          <div class="col-12 col-sm-6 col-md-4">
+            <label for="ficha-horas" class="form-label">Horas jugadas *</label>
+            <input 
+              type="number" 
+              id="ficha-horas" 
+              name="horasJugadas" 
+              class="form-control font-mono" 
+              min="0" 
+              step="1" 
+              value="0" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-horas">
+            <div id="error-ficha-horas" class="field-error" role="alert" aria-live="polite"></div>
           </div>
 
           <!-- Estado de progreso -->
-          <div class="col-md-2">
-            <label for="estado" class="form-label">Estado de progreso</label>
-            <select
-              id="estado"
-              name="estado"
-              class="form-select"
-              required
-              aria-invalid="false"
-              aria-describedby="error-estado"
-            >
-              <option value="">Selecciona...</option>
+          <div class="col-12 col-md-4">
+            <label for="ficha-estado" class="form-label">Estado de progreso *</label>
+            <select 
+              id="ficha-estado" 
+              name="estado" 
+              class="form-select" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-estado">
               <option value="Pendiente">Pendiente</option>
               <option value="Jugando">Jugando</option>
               <option value="Completado">Completado</option>
               <option value="Abandonado">Abandonado</option>
             </select>
-            <div id="error-estado" class="field-error"></div>
+            <div id="error-ficha-estado" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+
+          <!-- Código SKU -->
+          <div class="col-12">
+            <label for="ficha-sku" class="form-label">Código de inventario SKU</label>
+            <input 
+              type="text" 
+              id="ficha-sku" 
+              name="sku" 
+              class="form-control font-mono" 
+              placeholder="GAME-RPG-0042" 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-sku">
+            <div id="error-ficha-sku" class="field-error" role="alert" aria-live="polite"></div>
           </div>
         </div>
       </fieldset>
 
-      <!-- PANEL 2: FORMATO DE LA EDICIÓN Y BLOQUES CONDICIONALES -->
-      <fieldset class="steam-section-panel">
-        <legend class="steam-section-title">Formato de la edición</legend>
-
-        <div class="mb-3">
-          <div class="d-flex gap-4">
-            <div class="form-check">
-              <input
-                type="radio"
-                id="formato-fisico"
-                name="formato"
-                value="fisico"
-                class="form-check-input"
-                required
-                aria-invalid="false"
-                aria-describedby="error-formato"
-              >
-              <label for="formato-fisico" class="form-check-label fw-semibold">
-                Edición Física (Disco / Cartucho)
-              </label>
-            </div>
-
-            <div class="form-check">
-              <input
-                type="radio"
-                id="formato-digital"
-                name="formato"
-                value="digital"
-                class="form-check-input"
-                required
-                aria-invalid="false"
-                aria-describedby="error-formato"
-              >
-              <label for="formato-digital" class="form-check-label fw-semibold">
-                Edición Digital (Licencia de tienda)
-              </label>
-            </div>
+      <!-- SECCIÓN 2: Selector de Formato (Físico vs Digital) -->
+      <fieldset class="mb-4" aria-describedby="error-ficha-formato">
+        <legend class="form-label mb-2">Formato de la edición *</legend>
+        
+        <div class="gv-radio-card-group">
+          <div class="gv-radio-card">
+            <input 
+              type="radio" 
+              id="formato-fisico" 
+              name="formato" 
+              value="Fisico" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-formato">
+            <label for="formato-fisico" class="gv-radio-card-label">
+              <span class="fw-semibold text-light">Edición Física</span>
+              <span class="small text-secondary">Disco o cartucho con código EAN-13 y ubicación en estantería.</span>
+            </label>
           </div>
-          <div id="error-formato" class="field-error"></div>
+
+          <div class="gv-radio-card">
+            <input 
+              type="radio" 
+              id="formato-digital" 
+              name="formato" 
+              value="Digital" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-formato">
+            <label for="formato-digital" class="gv-radio-card-label">
+              <span class="fw-semibold text-light">Edición Digital</span>
+              <span class="small text-secondary">Licencia vinculada a una plataforma o tienda digital.</span>
+            </label>
+          </div>
         </div>
 
-        <!-- Bloque Condicional: Formato Físico -->
-        <fieldset id="grupo-fisico" class="pt-3 border-top border-secondary border-opacity-25" hidden disabled>
-          <legend class="visually-hidden">Detalles de edición física</legend>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="ean13" class="form-label">Código de barras EAN-13</label>
-              <input
-                type="text"
-                id="ean13"
-                name="ean13"
-                class="form-control"
-                placeholder="Ej. 3391892018240"
-                minlength="13"
-                maxlength="13"
-                pattern="^[0-9]{13}$"
-                required
-                aria-invalid="false"
-                aria-describedby="error-ean13"
-              >
-              <div id="error-ean13" class="field-error"></div>
-            </div>
-
-            <div class="col-md-6">
-              <label for="ubicacion" class="form-label">Ubicación en estantería</label>
-              <input
-                type="text"
-                id="ubicacion"
-                name="ubicacion"
-                class="form-control"
-                placeholder="EST-A-03"
-                required
-                aria-invalid="false"
-                aria-describedby="error-ubicacion"
-              >
-              <div id="error-ubicacion" class="field-error"></div>
-            </div>
-          </div>
-        </fieldset>
-
-        <!-- Bloque Condicional: Formato Digital -->
-        <fieldset id="grupo-digital" class="pt-3 border-top border-secondary border-opacity-25" hidden disabled>
-          <legend class="visually-hidden">Detalles de edición digital</legend>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="tienda-digital" class="form-label">Tienda digital</label>
-              <select
-                id="tienda-digital"
-                name="tiendaDigital"
-                class="form-select"
-                required
-                aria-invalid="false"
-                aria-describedby="error-tienda-digital"
-              >
-                <option value="">Selecciona tienda digital...</option>
-                <option value="Steam">Steam</option>
-                <option value="PlayStation Store">PlayStation Store</option>
-                <option value="Nintendo eShop">Nintendo eShop</option>
-                <option value="Epic Games Store">Epic Games Store</option>
-                <option value="Xbox Store">Xbox Store</option>
-              </select>
-              <div id="error-tienda-digital" class="field-error"></div>
-            </div>
-          </div>
-        </fieldset>
+        <div id="error-ficha-formato" class="field-error" role="alert" aria-live="polite"></div>
       </fieldset>
 
-      <!-- PANEL 3: GRUPO DINÁMICO DE DLCs / EXPANSIONES (0 a 3 filas) -->
-      <fieldset class="steam-section-panel">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom border-secondary border-opacity-25 pb-2 mb-3">
-          <legend class="steam-section-title border-0 pb-0 mb-0 w-auto">
-            DLCs y Expansiones (Máximo 3)
-          </legend>
-          <button type="button" id="btn-add-dlc" class="btn-steam-positive btn-steam-sm">
-            + Añadir DLC / Expansión
+      <!-- BLOQUE CONDICIONAL A: Físico -->
+      <fieldset id="bloque-fisico" class="gv-conditional-block mb-4" hidden>
+        <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Física</legend>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label for="ficha-ean" class="form-label">Código de barras EAN-13</label>
+            <input 
+              type="text" 
+              id="ficha-ean" 
+              name="ean13" 
+              class="form-control font-mono" 
+              placeholder="4020628663124" 
+              maxlength="13" 
+              inputmode="numeric" 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-ean">
+            <div id="error-ficha-ean" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label for="ficha-ubicacion" class="form-label">Ubicación en estantería</label>
+            <input 
+              type="text" 
+              id="ficha-ubicacion" 
+              name="ubicacion" 
+              class="form-control font-mono" 
+              placeholder="EST-A-03" 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-ubicacion">
+            <div id="error-ficha-ubicacion" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- BLOQUE CONDICIONAL B: Digital -->
+      <fieldset id="bloque-digital" class="gv-conditional-block mb-4" hidden>
+        <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Digital</legend>
+        <div class="row g-3">
+          <div class="col-12">
+            <label for="ficha-tienda" class="form-label">Tienda digital</label>
+            <select 
+              id="ficha-tienda" 
+              name="tiendaDigital" 
+              class="form-select" 
+              aria-invalid="false" 
+              aria-describedby="error-ficha-tienda">
+              <option value="">Selecciona una tienda...</option>
+              <option value="Steam">Steam</option>
+              <option value="PlayStation Store">PlayStation Store</option>
+              <option value="Nintendo eShop">Nintendo eShop</option>
+              <option value="Epic Games Store">Epic Games Store</option>
+              <option value="Xbox Store">Xbox Store</option>
+            </select>
+            <div id="error-ficha-tienda" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- SECCIÓN 3: Grupo dinámico de DLCs / Expansiones (Máx. 3) -->
+      <fieldset class="mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+          <div>
+            <legend class="h6 fw-semibold text-uppercase text-secondary small mb-0">2. DLCs y Expansiones</legend>
+            <p class="text-secondary small mb-0">Puedes añadir hasta un máximo de 3 expansiones para este título.</p>
+          </div>
+          <button type="button" id="btn-anadir-dlc" class="btn-gv-ghost">
+            + Añadir DLC
           </button>
         </div>
 
-        <div id="contenedor-dlcs">
-          <!-- Aquí se insertan dinámicamente hasta 3 copias de #tpl-dlc -->
-        </div>
-        <div id="error-dlcs-global" class="field-error"></div>
+        <div id="lista-dlcs" class="d-flex flex-column gap-3" aria-live="polite"></div>
+        <div id="error-ficha-dlcs" class="field-error" role="alert" aria-live="polite"></div>
       </fieldset>
 
-      <!-- Acciones del Formulario -->
-      <div class="d-flex justify-content-end gap-3 pt-2">
-        <a href="listado.html" class="btn-steam-secondary">
-          Cancelar
-        </a>
-        <button type="submit" id="btn-guardar-juego" class="btn-steam-primary">
-          Guardar en la biblioteca
+      <hr class="my-4 border-secondary border-opacity-25">
+
+      <!-- Acciones de envío -->
+      <div class="d-flex flex-wrap justify-content-end gap-2">
+        <a href="listado.html" class="btn-gv-ghost text-decoration-none">Cancelar</a>
+        <button type="submit" id="btn-guardar-ficha" class="btn-gv-primary">
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span class="btn-text">Guardar videojuego</span>
         </button>
       </div>
+
     </form>
   </main>
 
-  <!-- Plantilla para clonar cada fila de DLC / Expansión -->
+  <!-- Template de fila dinámica de DLC -->
   <template id="tpl-dlc">
-    <div class="steam-dlc-row js-fila-dlc">
+    <div class="gv-dlc-row js-fila-dlc">
       <div class="row g-3 align-items-start">
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
           <label for="dlc-nombre-0" class="form-label js-label-dlc-nombre">Nombre del DLC</label>
-          <input
-            type="text"
-            id="dlc-nombre-0"
-            name="dlcNombre[]"
-            class="form-control js-input-dlc-nombre"
-            placeholder="Ej. Shadow of the Erdtree"
-            minlength="2"
-            maxlength="80"
-            required
-            aria-invalid="false"
-            aria-describedby="error-dlc-nombre-0"
-          >
-          <div id="error-dlc-nombre-0" class="field-error js-error-dlc-nombre"></div>
+          <input 
+            type="text" 
+            id="dlc-nombre-0" 
+            name="dlcNombre[]" 
+            class="form-control js-input-dlc-nombre" 
+            placeholder="ej. Shadow of the Erdtree" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="error-dlc-nombre-0">
+          <div id="error-dlc-nombre-0" class="field-error js-error-dlc-nombre" role="alert" aria-live="polite"></div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-12 col-sm-8 col-md-4">
           <label for="dlc-estado-0" class="form-label js-label-dlc-estado">Estado del DLC</label>
-          <select
-            id="dlc-estado-0"
-            name="dlcEstado[]"
-            class="form-select js-select-dlc-estado"
-            required
-            aria-invalid="false"
-            aria-describedby="error-dlc-estado-0"
-          >
-            <option value="">Selecciona estado...</option>
+          <select 
+            id="dlc-estado-0" 
+            name="dlcEstado[]" 
+            class="form-select js-select-dlc-estado" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="error-dlc-estado-0">
             <option value="Pendiente">Pendiente</option>
             <option value="Jugando">Jugando</option>
             <option value="Completado">Completado</option>
           </select>
-          <div id="error-dlc-estado-0" class="field-error js-error-dlc-estado"></div>
+          <div id="error-dlc-estado-0" class="field-error js-error-dlc-estado" role="alert" aria-live="polite"></div>
         </div>
 
-        <div class="col-md-2 d-flex align-items-end pt-md-4">
-          <button type="button" class="btn-steam-danger btn-steam-sm w-100 js-btn-eliminar-dlc">
-            Quitar DLC
+        <div class="col-12 col-sm-4 col-md-2 d-flex align-items-end pt-md-4">
+          <button type="button" class="btn-gv-danger w-100 js-btn-quitar-dlc" aria-label="Eliminar fila de DLC">
+            Quitar
           </button>
         </div>
       </div>
     </div>
   </template>
 
-  <footer class="steam-footer">
-    <div class="container text-center">
-      <span>&copy; 2026 GameVault Library Manager. Interfaz inspirada en Steam Desktop Client.</span>
-    </div>
-  </footer>
-  <script type=module>
+  <!-- Contenedor global de notificaciones -->
+  <div id="region-avisos" class="gv-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module">
     import { iniciarCabecera } from './js/cabecera.js';
     iniciarCabecera();
   </script>

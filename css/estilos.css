@@ -1,709 +1,682 @@
 /* ==========================================================================
-   GAMEVAULT - STEAM DESKTOP & DECK UI DESIGN SYSTEM
-   Sobrescritura de Bootstrap 5.3 + Componentes Nativos HTML5
+   GAMEVAULT — DESIGN SYSTEM & CUSTOM STYLESHEET
+   Estética: Dark Minimalism (Linear / Vercel / Raycast)
+   Dependencia base: Bootstrap 5.3 CSS (data-bs-theme="dark")
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 :root {
-  /* Paleta Oficial Steam Dark UI */
-  --steam-bg-base: #171a21;
-  --steam-bg-surface: #1b2838;
-  --steam-bg-elevated: #2a475e;
-  --steam-bg-header: #171d25;
-  --steam-bg-input: #101822;
-  --steam-bg-input-hover: #16202d;
-  --steam-border: #324454;
-  --steam-border-subtle: rgba(102, 192, 244, 0.15);
+  /* Paleta base */
+  --gv-bg-main: #090d16;
+  --gv-bg-surface: rgba(17, 24, 39, 0.75);
+  --gv-bg-surface-solid: #111827;
+  --gv-bg-elevated: rgba(30, 41, 59, 0.55);
+  --gv-bg-input: rgba(9, 13, 22, 0.85);
 
-  /* Tipografía y Texto */
-  --steam-text-main: #ffffff;
-  --steam-text-secondary: #c7d5e0;
-  --steam-text-muted: #8f98a0;
-  --steam-font-sans: 'Motiva Sans', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Bordes y divisores */
+  --gv-border-subtle: rgba(255, 255, 255, 0.08);
+  --gv-border-hover: rgba(255, 255, 255, 0.18);
+  --gv-border-accent: rgba(99, 102, 241, 0.55);
 
-  /* Acentos y Estados */
-  --steam-accent-blue: #66c0f4;
-  --steam-gradient-primary: linear-gradient(90deg, #06BFFF 0%, #2D73FF 100%);
-  --steam-gradient-primary-hover: linear-gradient(90deg, #2ccaff 0%, #4684ff 100%);
-  --steam-green-base: #5c7e10;
-  --steam-green-hover: #6fa720;
-  --steam-green-text: #a4d007;
-  --steam-danger-base: #962929;
-  --steam-danger-hover: #c94a4a;
-  --steam-danger-text: #ff7b7b;
-  --steam-warning-text: #eab308;
+  /* Acento primario (Índigo / Violeta eléctrico) */
+  --gv-accent-primary: #6366f1;
+  --gv-accent-secondary: #8b5cf6;
+  --gv-accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gv-accent-glow: 0 0 24px rgba(99, 102, 241, 0.28);
 
-  /* Variables Bootstrap 5.3 Sobrescritas */
-  --bs-body-bg: var(--steam-bg-base);
-  --bs-body-color: var(--steam-text-secondary);
-  --bs-body-font-family: var(--steam-font-sans);
-  --bs-border-color: var(--steam-border);
-  --bs-primary: #66c0f4;
-  --bs-link-color: #66c0f4;
-  --bs-link-hover-color: #ffffff;
+  /* Texto */
+  --gv-text-primary: #f8fafc;
+  --gv-text-secondary: #94a3b8;
+  --gv-text-muted: #64748b;
 
-  /* Sombras y Transiciones */
-  --steam-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.65);
-  --steam-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --steam-transition: 0.18s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* Estados semánticos */
+  --gv-status-pending-bg: rgba(148, 163, 184, 0.12);
+  --gv-status-pending-text: #cbd5e1;
+  --gv-status-pending-border: rgba(148, 163, 184, 0.25);
+
+  --gv-status-playing-bg: rgba(59, 130, 246, 0.14);
+  --gv-status-playing-text: #60a5fa;
+  --gv-status-playing-border: rgba(59, 130, 246, 0.3);
+
+  --gv-status-completed-bg: rgba(16, 185, 129, 0.14);
+  --gv-status-completed-text: #34d399;
+  --gv-status-completed-border: rgba(16, 185, 129, 0.3);
+
+  --gv-status-dropped-bg: rgba(244, 63, 94, 0.14);
+  --gv-status-dropped-text: #fb7185;
+  --gv-status-dropped-border: rgba(244, 63, 94, 0.3);
+
+  --gv-danger: #f43f5e;
+  --gv-success: #10b981;
+  --gv-warning: #f59e0b;
+
+  /* Tipografía */
+  --gv-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --gv-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Curvas de animación */
+  --gv-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --gv-radius-sm: 0.5rem;
+  --gv-radius-md: 0.75rem;
+  --gv-radius-lg: 1rem;
 }
 
 /* ==========================================================================
-   BASE Y LAYOUT GENERAL
+   RESET Y BASE
    ========================================================================== */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
 body {
+  background-color: var(--gv-bg-main);
+  background-image: 
+    radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.10) 0%, transparent 45%),
+    radial-gradient(circle at 85% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
+  background-attachment: fixed;
+  color: var(--gv-text-primary);
+  font-family: var(--gv-font-sans);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--steam-bg-base);
-  background-image: radial-gradient(circle at 50% 0%, var(--steam-bg-surface) 0%, var(--steam-bg-base) 75%);
-  background-attachment: fixed;
-  color: var(--steam-text-secondary);
-  font-family: var(--steam-font-sans);
-  font-size: 0.95rem;
-  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  selection-background-color: var(--gv-accent-primary);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: var(--steam-text-main);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #ffffff;
 }
 
-a {
-  color: var(--steam-accent-blue);
-  text-decoration: none;
-  transition: color var(--steam-transition);
-}
-
-a:hover,
-a:focus-visible {
-  color: var(--steam-text-main);
-}
-
-main {
-  flex: 1;
+.font-mono {
+  font-family: var(--gv-font-mono);
+  letter-spacing: -0.02em;
 }
 
 /* ==========================================================================
-   TOPBAR ESTILO CLIENTE STEAM
+   ANIMACIONES Y KEYFRAMES
    ========================================================================== */
 
-.steam-topbar {
-  background-color: var(--steam-bg-header);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-up {
+  animation: fadeInUp 0.5s var(--gv-ease-out) both;
+}
+
+.delay-1 { animation-delay: 0.06s; }
+.delay-2 { animation-delay: 0.12s; }
+.delay-3 { animation-delay: 0.18s; }
+.delay-4 { animation-delay: 0.24s; }
+
+/* ==========================================================================
+   SUPERFICIES GLASSMORPHISM & TARJETAS
+   ========================================================================== */
+
+.gv-surface {
+  background: var(--gv-bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-lg);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+}
+
+.gv-card-game {
+  background: var(--gv-bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-md);
+  transition: 
+    transform 0.28s var(--gv-ease-out),
+    border-color 0.28s var(--gv-ease-out),
+    box-shadow 0.28s var(--gv-ease-out);
+  animation: fadeInUp 0.45s var(--gv-ease-out) both;
+}
+
+.gv-card-game:hover {
+  transform: translateY(-3px);
+  border-color: var(--gv-border-accent);
+  box-shadow: 
+    0 14px 30px -10px rgba(0, 0, 0, 0.65),
+    0 0 18px rgba(99, 102, 241, 0.16);
+}
+
+/* ==========================================================================
+   CABECERA Y NAVEGACIÓN GLOBAL
+   ========================================================================== */
+
+.gv-header {
   position: sticky;
   top: 0;
   z-index: 1020;
+  background: rgba(9, 13, 22, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--gv-border-subtle);
 }
 
-.steam-brand {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--steam-text-main);
-  text-transform: uppercase;
+.gv-brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.025em;
+  color: var(--gv-text-primary);
+  text-decoration: none;
 }
 
-.steam-brand-icon {
-  width: 28px;
-  height: 28px;
-  fill: var(--steam-accent-blue);
-}
-
-.steam-nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.steam-nav-link {
-  color: var(--steam-text-secondary);
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.5rem 0.25rem;
-  position: relative;
-  transition: color var(--steam-transition);
-}
-
-.steam-nav-link:hover {
-  color: var(--steam-text-main);
-}
-
-.steam-nav-link[aria-current="page"] {
-  color: var(--steam-accent-blue);
-}
-
-.steam-nav-link[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: var(--steam-accent-blue);
-  box-shadow: 0 0 8px var(--steam-accent-blue);
-  border-radius: 2px;
-}
-
-.steam-user-zone {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  background: rgba(16, 24, 34, 0.65);
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--steam-border);
-  border-radius: 3px;
-}
-
-.steam-username {
-  color: var(--steam-accent-blue);
-  font-weight: 600;
-  font-size: 0.88rem;
-}
-
-/* ==========================================================================
-   PANELES, TARJETAS Y CONTENEDORES DE AUTENTICACIÓN
-   ========================================================================== */
-
-.steam-auth-wrapper {
-  min-height: calc(100vh - 60px);
-  display: flex;
+.gv-brand-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--gv-accent-gradient);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
 }
 
-.steam-panel {
-  background: linear-gradient(180deg, var(--steam-bg-surface) 0%, #16202d 100%);
-  border: 1px solid var(--steam-border);
-  border-radius: 4px;
-  box-shadow: var(--steam-shadow-lg);
-  padding: 2rem;
+.gv-nav-link {
+  color: var(--gv-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--gv-radius-sm);
+  text-decoration: none;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-.steam-auth-card {
-  width: 100%;
-  max-width: 460px;
-  position: relative;
-  overflow: hidden;
+.gv-nav-link:hover {
+  color: var(--gv-text-primary);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.steam-auth-card--wide {
-  max-width: 540px;
+.gv-nav-link[aria-current="page"] {
+  color: var(--gv-text-primary);
+  background: rgba(99, 102, 241, 0.14);
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
-.steam-auth-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--steam-gradient-primary);
-}
-
-.steam-section-panel {
-  background: rgba(27, 40, 56, 0.85);
-  border: 1px solid var(--steam-border);
-  border-radius: 4px;
-  box-shadow: var(--steam-shadow-card);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.steam-section-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--steam-accent-blue);
-  border-bottom: 1px solid var(--steam-border);
-  padding-bottom: 0.6rem;
-  margin-bottom: 1.25rem;
+.gv-session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: 999px;
+  font-size: 0.8125rem;
 }
 
 /* ==========================================================================
-   FORMULARIOS, INPUTS Y SELECTS (ESTÉTICA STEAM + WAI-ARIA)
+   CONTROLES DE FORMULARIO Y ACCESIBILIDAD
    ========================================================================== */
 
 .form-label {
-  color: var(--steam-text-secondary);
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #cbd5e1;
   margin-bottom: 0.4rem;
 }
 
 .form-control,
 .form-select {
-  background-color: var(--steam-bg-input);
-  border: 1px solid var(--steam-border);
-  border-radius: 3px;
-  color: var(--steam-text-main);
+  background-color: var(--gv-bg-input);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  color: var(--gv-text-primary);
+  font-size: 0.9rem;
   padding: 0.6rem 0.85rem;
-  font-size: 0.92rem;
-  transition: border-color var(--steam-transition), background-color var(--steam-transition);
+  transition: 
+    border-color 0.2s var(--gv-ease-out),
+    box-shadow 0.2s var(--gv-ease-out),
+    background-color 0.2s var(--gv-ease-out);
 }
 
 .form-control::placeholder {
-  color: var(--steam-text-muted);
-  opacity: 0.75;
+  color: var(--gv-text-muted);
 }
 
-.form-control:hover,
-.form-select:hover {
-  background-color: var(--steam-bg-input-hover);
-}
-
-.form-control:focus,
-.form-select:focus {
-  background-color: var(--steam-bg-input-hover);
-  border-color: var(--steam-accent-blue);
-  color: var(--steam-text-main);
-  box-shadow: none;
+.form-control:focus-visible,
+.form-select:focus-visible {
+  background-color: #090d16;
+  border-color: var(--gv-accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
   outline: none;
 }
 
-.form-select {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2366c0f4' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
-
-.form-select option {
-  background-color: var(--steam-bg-surface);
-  color: var(--steam-text-main);
-}
-
-/* Checkboxes y Radios personalizados */
-.form-check-input {
-  background-color: var(--steam-bg-input);
-  border: 1px solid var(--steam-border);
-  width: 1.15em;
-  height: 1.15em;
-  cursor: pointer;
-}
-
-.form-check-input:checked {
-  background-color: var(--steam-accent-blue);
-  border-color: var(--steam-accent-blue);
-}
-
-.form-check-input:focus {
-  border-color: var(--steam-accent-blue);
-  box-shadow: 0 0 0 2px rgba(102, 192, 244, 0.25);
-}
-
-.form-check-label {
-  color: var(--steam-text-secondary);
-  cursor: pointer;
-  user-select: none;
-}
-
-/* Estados de Error Accesibles (WAI-ARIA) */
+/* Estado inválido accesible con animación shake */
 .form-control[aria-invalid="true"],
 .form-select[aria-invalid="true"],
 .form-check-input[aria-invalid="true"] {
-  border-color: var(--steam-danger-hover);
-  background-color: rgba(150, 41, 41, 0.12);
+  border-color: var(--gv-danger);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.18);
+  animation: shake 0.36s var(--gv-ease-out);
 }
 
 .field-error {
-  color: var(--steam-danger-text);
-  font-size: 0.8rem;
-  min-height: 1.2rem;
-  margin-top: 0.3rem;
-  font-weight: 500;
+  font-size: 0.78rem;
+  color: #fb7185;
+  margin-top: 0.35rem;
+  min-height: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: opacity 0.2s ease;
 }
 
-/* Panel Reactivo de Requisitos de Contraseña */
-.steam-password-rules {
-  background-color: rgba(16, 24, 34, 0.75);
-  border: 1px solid var(--steam-border);
-  border-radius: 3px;
-  padding: 0.75rem 1rem;
+.field-error:empty {
+  display: none;
+}
+
+/* Radio Cards (Selector de Formato Físico vs Digital) */
+.gv-radio-card-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+.gv-radio-card {
+  position: relative;
+}
+
+.gv-radio-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.gv-radio-card-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  background: var(--gv-bg-input);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  cursor: pointer;
+  transition: all 0.2s var(--gv-ease-out);
+}
+
+.gv-radio-card-label:hover {
+  border-color: var(--gv-border-hover);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.gv-radio-card input[type="radio"]:checked + .gv-radio-card-label {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--gv-accent-primary);
+  box-shadow: 0 0 0 1px var(--gv-accent-primary), var(--gv-accent-glow);
+}
+
+.gv-radio-card input[type="radio"]:focus-visible + .gv-radio-card-label {
+  outline: 2px solid var(--gv-accent-secondary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   PANEL REACTIVO DE REQUISITOS DE CONTRASEÑA
+   ========================================================================== */
+
+.gv-pwd-requirements {
+  background: rgba(9, 13, 22, 0.6);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  padding: 0.75rem 0.9rem;
   margin-top: 0.5rem;
 }
 
-.steam-password-rules-title {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--steam-text-muted);
-  margin-bottom: 0.4rem;
-  display: block;
-}
-
-.steam-rule-list {
+.gv-req-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 0.35rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.4rem 0.75rem;
 }
 
-.steam-rule-item {
-  font-size: 0.8rem;
-  color: var(--steam-text-muted);
+.gv-req-item {
+  font-size: 0.775rem;
+  color: var(--gv-text-muted);
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  transition: color var(--steam-transition);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.steam-rule-indicator {
-  width: 8px;
-  height: 8px;
+.gv-req-dot {
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background-color: var(--steam-border);
-  display: inline-block;
-  transition: background-color var(--steam-transition), box-shadow var(--steam-transition);
+  background-color: var(--gv-text-muted);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-/* Clase para activar por JS cuando se cumple un requisito */
-.steam-rule-item.is-valid {
-  color: var(--steam-green-text);
+/* Clases de estado para activar desde JS */
+.gv-req-item.is-valid {
+  color: var(--gv-status-completed-text);
 }
 
-.steam-rule-item.is-valid .steam-rule-indicator {
-  background-color: var(--steam-green-text);
-  box-shadow: 0 0 6px var(--steam-green-text);
+.gv-req-item.is-valid .gv-req-dot {
+  background-color: var(--gv-success);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  transform: scale(1.15);
 }
 
-/* ==========================================================================
-   BOTONES ESTILO STEAM
-   ========================================================================== */
-
-.btn-steam-primary {
-  background: var(--steam-gradient-primary);
-  border: none;
-  border-radius: 2px;
-  color: var(--steam-text-main);
-  font-weight: 600;
-  font-size: 0.88rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.65rem 1.4rem;
-  transition: filter var(--steam-transition), transform var(--steam-transition), box-shadow var(--steam-transition);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+.gv-req-item.is-invalid {
+  color: var(--gv-status-dropped-text);
 }
 
-.btn-steam-primary:hover,
-.btn-steam-primary:focus-visible {
-  background: var(--steam-gradient-primary-hover);
-  color: var(--steam-text-main);
-  box-shadow: 0 0 14px rgba(6, 191, 255, 0.45);
-}
-
-.btn-steam-positive {
-  background: linear-gradient(90deg, var(--steam-green-base) 0%, var(--steam-green-hover) 100%);
-  border: 1px solid #8ed629;
-  border-radius: 2px;
-  color: var(--steam-text-main);
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.55rem 1.2rem;
-  transition: filter var(--steam-transition), box-shadow var(--steam-transition);
-}
-
-.btn-steam-positive:hover,
-.btn-steam-positive:focus-visible {
-  filter: brightness(1.12);
-  color: var(--steam-text-main);
-  box-shadow: 0 0 12px rgba(111, 167, 32, 0.45);
-}
-
-.btn-steam-secondary {
-  background-color: rgba(42, 71, 94, 0.65);
-  border: 1px solid var(--steam-border);
-  border-radius: 2px;
-  color: var(--steam-text-secondary);
-  font-weight: 600;
-  font-size: 0.84rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.5rem 1rem;
-  transition: background-color var(--steam-transition), color var(--steam-transition), border-color var(--steam-transition);
-}
-
-.btn-steam-secondary:hover,
-.btn-steam-secondary:focus-visible {
-  background-color: var(--steam-bg-elevated);
-  border-color: var(--steam-accent-blue);
-  color: var(--steam-text-main);
-}
-
-.btn-steam-danger {
-  background-color: rgba(150, 41, 41, 0.35);
-  border: 1px solid var(--steam-danger-hover);
-  border-radius: 2px;
-  color: var(--steam-danger-text);
-  font-weight: 600;
-  font-size: 0.84rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.5rem 1rem;
-  transition: background-color var(--steam-transition), color var(--steam-transition);
-}
-
-.btn-steam-danger:hover,
-.btn-steam-danger:focus-visible {
-  background-color: var(--steam-danger-hover);
-  color: var(--steam-text-main);
-}
-
-.btn-steam-sm {
-  padding: 0.3rem 0.65rem;
-  font-size: 0.76rem;
+.gv-req-item.is-invalid .gv-req-dot {
+  background-color: var(--gv-danger);
 }
 
 /* ==========================================================================
-   BARRA DE HERRAMIENTAS Y TABLA DE BIBLIOTECA STEAM
+   BOTONES Y ESTADOS DE CARGA
    ========================================================================== */
 
-.steam-toolbar {
-  background-color: rgba(27, 40, 56, 0.9);
-  border: 1px solid var(--steam-border);
-  border-radius: 3px;
-  padding: 0.85rem 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.steam-search-wrapper {
-  position: relative;
-}
-
-.steam-search-icon {
-  position: absolute;
-  left: 0.85rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  fill: var(--steam-text-muted);
-  pointer-events: none;
-}
-
-.steam-search-input {
-  padding-left: 2.5rem;
-}
-
-.steam-table-container {
-  background-color: var(--steam-bg-surface);
-  border: 1px solid var(--steam-border);
-  border-radius: 3px;
-  box-shadow: var(--steam-shadow-card);
-  overflow: hidden;
-}
-
-.steam-table {
-  width: 100%;
-  margin-bottom: 0;
-  border-collapse: collapse;
-  color: var(--steam-text-secondary);
-}
-
-.steam-table thead th {
-  background-color: #131c27;
-  color: var(--steam-text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  padding: 0.85rem 1rem;
-  border-bottom: 2px solid var(--steam-border);
-}
-
-.steam-table tbody tr {
-  background-color: var(--steam-bg-surface);
-  border-bottom: 1px solid rgba(50, 68, 84, 0.55);
-  transition: background-color var(--steam-transition);
-}
-
-.steam-table tbody tr:hover {
-  background-color: rgba(42, 71, 94, 0.55);
-}
-
-.steam-table td {
-  padding: 0.85rem 1rem;
-  vertical-align: middle;
-}
-
-.steam-game-title {
-  color: var(--steam-text-main);
-  font-weight: 600;
-  font-size: 0.96rem;
-  display: block;
-}
-
-.steam-game-sku {
-  color: var(--steam-text-muted);
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 0.76rem;
-}
-
-/* ==========================================================================
-   INSIGNIAS (BADGES) CÁPSULA PLANA DE STEAM
-   ========================================================================== */
-
-.steam-badge {
+.btn-gv-primary {
+  background: var(--gv-accent-gradient);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--gv-radius-sm);
   display: inline-flex;
   align-items: center;
-  padding: 0.22rem 0.65rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-radius: 2px;
-  border: 1px solid transparent;
-  white-space: nowrap;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.2s var(--gv-ease-out), box-shadow 0.2s var(--gv-ease-out), opacity 0.2s ease;
 }
 
-/* Estados de progreso */
-.steam-badge--jugando {
-  background-color: rgba(111, 167, 32, 0.2);
-  color: var(--steam-green-text);
-  border-color: rgba(164, 208, 7, 0.45);
+.btn-gv-primary:hover:not(:disabled) {
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
 }
 
-.steam-badge--completado {
-  background-color: rgba(102, 192, 244, 0.16);
-  color: var(--steam-accent-blue);
-  border-color: rgba(102, 192, 244, 0.45);
+.btn-gv-primary:disabled,
+.btn-gv-primary.is-loading {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.steam-badge--pendiente {
-  background-color: rgba(143, 152, 160, 0.18);
-  color: var(--steam-text-secondary);
-  border-color: rgba(143, 152, 160, 0.4);
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spinLoader 0.75s linear infinite;
+  display: none;
 }
 
-.steam-badge--abandonado {
-  background-color: rgba(201, 74, 74, 0.18);
-  color: var(--steam-danger-text);
-  border-color: rgba(201, 74, 74, 0.45);
+.btn-gv-primary.is-loading .btn-spinner,
+.btn-gv-primary:disabled .btn-spinner-auto {
+  display: inline-block;
 }
 
-/* Badges de plataforma y rol */
-.steam-badge--plataforma {
-  background-color: var(--steam-bg-elevated);
-  color: var(--steam-text-main);
-  border-color: var(--steam-border);
+.btn-gv-ghost {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--gv-border-subtle);
+  color: var(--gv-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--gv-radius-sm);
+  transition: all 0.2s ease;
 }
 
-.steam-badge--rol-admin {
-  background-color: rgba(6, 191, 255, 0.18);
-  color: var(--steam-accent-blue);
-  border-color: var(--steam-accent-blue);
+.btn-gv-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--gv-text-primary);
+  border-color: var(--gv-border-hover);
 }
 
-.steam-badge--rol-usuario {
-  background-color: rgba(143, 152, 160, 0.15);
-  color: var(--steam-text-secondary);
-  border-color: var(--steam-border);
+.btn-gv-danger {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fb7185;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--gv-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-gv-danger:hover:not(:disabled) {
+  background: var(--gv-danger);
+  color: #ffffff;
 }
 
 /* ==========================================================================
-   MODAL NATIVO (<dialog>) Y NOTIFICACIONES GLOBALES (TOAST)
+   BADGES SEMÁNTICOS (PROGRESO, FORMATO, ROLES)
    ========================================================================== */
 
-.steam-dialog {
-  background: linear-gradient(180deg, var(--steam-bg-surface) 0%, #141d29 100%);
-  color: var(--steam-text-secondary);
-  border: 1px solid var(--steam-accent-blue);
-  border-radius: 4px;
-  box-shadow: var(--steam-shadow-lg);
+.gv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.gv-badge-pendiente {
+  background: var(--gv-status-pending-bg);
+  color: var(--gv-status-pending-text);
+  border-color: var(--gv-status-pending-border);
+}
+
+.gv-badge-jugando {
+  background: var(--gv-status-playing-bg);
+  color: var(--gv-status-playing-text);
+  border-color: var(--gv-status-playing-border);
+}
+
+.gv-badge-completado {
+  background: var(--gv-status-completed-bg);
+  color: var(--gv-status-completed-text);
+  border-color: var(--gv-status-completed-border);
+}
+
+.gv-badge-abandonado {
+  background: var(--gv-status-dropped-bg);
+  color: var(--gv-status-dropped-text);
+  border-color: var(--gv-status-dropped-border);
+}
+
+.gv-badge-meta {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--gv-text-secondary);
+  border-color: var(--gv-border-subtle);
+}
+
+.gv-badge-admin {
+  background: rgba(139, 92, 246, 0.16);
+  color: #c4b5fd;
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+/* ==========================================================================
+   BLOQUES CONDICIONALES Y FILAS DINÁMICAS DE DLC
+   ========================================================================== */
+
+.gv-conditional-block {
+  background: rgba(9, 13, 22, 0.45);
+  border: 1px dashed rgba(99, 102, 241, 0.35);
+  border-radius: var(--gv-radius-md);
+  padding: 1.25rem;
+  animation: fadeInUp 0.32s var(--gv-ease-out) both;
+}
+
+.gv-conditional-block[hidden] {
+  display: none !important;
+}
+
+.gv-dlc-row {
+  background: rgba(9, 13, 22, 0.55);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  padding: 0.85rem;
+  animation: fadeInUp 0.3s var(--gv-ease-out) both;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.gv-dlc-row:hover {
+  border-color: var(--gv-border-hover);
+}
+
+/* ==========================================================================
+   MODAL NATIVO <dialog> Y ::backdrop
+   ========================================================================== */
+
+.gv-dialog {
+  background: var(--gv-bg-surface-solid);
+  color: var(--gv-text-primary);
+  border: 1px solid var(--gv-border-hover);
+  border-radius: var(--gv-radius-lg);
   padding: 0;
-  max-width: 460px;
+  max-width: 440px;
   width: calc(100% - 2rem);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
 }
 
-.steam-dialog::backdrop {
-  background-color: rgba(10, 14, 20, 0.82);
-  backdrop-filter: blur(3px);
+.gv-dialog[open] {
+  animation: dialogIn 0.28s var(--gv-ease-out) forwards;
 }
 
-.steam-dialog-header {
-  background-color: var(--steam-bg-header);
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--steam-border);
+.gv-dialog::backdrop {
+  background: rgba(4, 7, 13, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: backdropFade 0.25s ease forwards;
 }
 
-.steam-dialog-body {
-  padding: 1.5rem;
+/* ==========================================================================
+   TABLAS MODERNAS Y PAGINACIÓN
+   ========================================================================== */
+
+.gv-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--gv-text-primary);
+  --bs-table-border-color: var(--gv-border-subtle);
+  margin-bottom: 0;
 }
 
-.steam-dialog-footer {
-  padding: 1rem 1.5rem;
-  background-color: rgba(16, 24, 34, 0.5);
-  border-top: 1px solid var(--steam-border);
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+.gv-table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gv-text-secondary);
+  font-weight: 600;
+  border-bottom-width: 1px;
+  padding: 0.85rem 1rem;
 }
 
-/* Región global de notificaciones (role="status") */
-.steam-toast-region {
+.gv-table tbody td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.gv-table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.gv-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.gv-pagination .page-link {
+  background-color: var(--gv-bg-surface);
+  border-color: var(--gv-border-subtle);
+  color: var(--gv-text-secondary);
+  font-size: 0.85rem;
+  padding: 0.45rem 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.gv-pagination .page-link:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--gv-text-primary);
+  border-color: var(--gv-border-hover);
+}
+
+.gv-pagination .page-item.active .page-link {
+  background: var(--gv-accent-gradient);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   NOTIFICACIONES GLOBALES (EVENTO 'aviso')
+   ========================================================================== */
+
+.gv-toast-region {
   position: fixed;
-  top: 4.5rem;
-  right: 1.25rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
   z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   max-width: 380px;
-  width: 100%;
+  width: calc(100% - 3rem);
   pointer-events: none;
 }
 
-.steam-toast-region:not(:empty) {
+.gv-toast-item {
   pointer-events: auto;
-}
-
-.steam-notification {
-  background-color: var(--steam-bg-surface);
-  border-left: 4px solid var(--steam-accent-blue);
-  border-top: 1px solid var(--steam-border);
-  border-right: 1px solid var(--steam-border);
-  border-bottom: 1px solid var(--steam-border);
-  color: var(--steam-text-main);
-  padding: 0.9rem 1.15rem;
-  border-radius: 3px;
-  box-shadow: var(--steam-shadow-lg);
-  margin-bottom: 0.6rem;
-}
-
-/* Filas dinámicas de DLCs */
-.steam-dlc-row {
-  background-color: rgba(16, 24, 34, 0.6);
-  border: 1px solid var(--steam-border);
-  border-radius: 3px;
-  padding: 0.85rem;
-  margin-bottom: 0.75rem;
-}
-
-/* Pie de página */
-.steam-footer {
-  background-color: var(--steam-bg-header);
-  border-top: 1px solid var(--steam-border);
-  color: var(--steam-text-muted);
-  font-size: 0.8rem;
-  padding: 1.25rem 0;
-  margin-top: auto;
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--gv-border-hover);
+  border-left: 3px solid var(--gv-accent-primary);
+  border-radius: var(--gv-radius-sm);
+  padding: 0.85rem 1rem;
+  color: var(--gv-text-primary);
+  font-size: 0.85rem;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+  animation: fadeInUp 0.3s var(--gv-ease-out) both;
 }

@@ -27,40 +27,43 @@ export function iniciarCabecera(documento = document, opciones = {}) {
   } = opciones;
 
   const sesion = obtenerSesion(almacen);
+  const esAdmin = Boolean(sesion && sesion.rol === 'administrador');
 
   // 1. Mostrar nombre de usuario activo
-  const nombreElemento = documento.querySelector('#usuario-activo-nombre');
+  const nombreElemento = documento.querySelector('#sesion-usuario, #usuario-activo-nombre');
   if (nombreElemento) {
     nombreElemento.textContent = sesion ? sesion.usuario : 'Invitado';
   }
 
   // 2. Mostrar insignia de rol (Usuario vs Administrador)
-  const rolElemento = documento.querySelector('#usuario-activo-rol');
+  const rolElemento = documento.querySelector('#sesion-rol, #usuario-activo-rol');
   if (rolElemento) {
     if (sesion) {
-      const esAdmin = sesion.rol === 'administrador';
       rolElemento.textContent = esAdmin ? 'Administrador' : 'Usuario';
+      rolElemento.classList.toggle('gv-badge-admin', esAdmin);
+      rolElemento.classList.toggle('gv-badge-meta', !esAdmin);
       rolElemento.classList.toggle('steam-badge--rol-admin', esAdmin);
       rolElemento.classList.toggle('steam-badge--rol-usuario', !esAdmin);
     } else {
       rolElemento.textContent = 'Sin sesión';
-      rolElemento.classList.remove('steam-badge--rol-admin');
-      rolElemento.classList.add('steam-badge--rol-usuario');
+      rolElemento.classList.remove('gv-badge-admin', 'steam-badge--rol-admin');
+      rolElemento.classList.add('gv-badge-meta', 'steam-badge--rol-usuario');
     }
   }
 
-  // 3. Control de visibilidad del enlace de Administración (solo administradores)
-  const navItemAdmin = documento.querySelector('#nav-item-admin');
-  const enlaceAdmin = documento.querySelector('#enlace-admin');
-  const esAdmin = Boolean(sesion && sesion.rol === 'administrador');
+  // 3. Panel de sesión (si existe, se muestra u oculta según haya sesión activa)
+  const panelSesion = documento.querySelector('#panel-sesion');
+  if (panelSesion) {
+    panelSesion.hidden = !sesion;
+  }
 
-  if (navItemAdmin) {
-    navItemAdmin.hidden = !esAdmin;
-  } else if (enlaceAdmin) {
+  // 4. Control de visibilidad del enlace de Administración (solo administradores)
+  const enlaceAdmin = documento.querySelector('#nav-link-admin, #enlace-admin, #nav-item-admin');
+  if (enlaceAdmin) {
     enlaceAdmin.hidden = !esAdmin;
   }
 
-  // 4. Manejador para el botón de cerrar sesión
+  // 5. Manejador para el botón de cerrar sesión
   const btnCerrarSesion = documento.querySelector('#btn-cerrar-sesion');
   if (btnCerrarSesion) {
     btnCerrarSesion.addEventListener('click', () => {
