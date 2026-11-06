@@ -107,28 +107,25 @@
 
   </main>
 
-  <!-- Template de tarjeta de videojuego Apple Card -->
+  <!-- Template de tarjeta de videojuego — Tipografía Hero + Consola de fondo -->
   <template id="tpl-juego">
     <div class="col">
-      <article class="gv-card-game h-100 p-4 d-flex flex-column justify-content-between">
-        <div>
-          <!-- Fila superior: Plataforma, Formato y Estado de progreso -->
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-            <div class="d-flex flex-wrap align-items-center gap-1">
-              <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
-              <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
-            </div>
-            <span class="gv-badge gv-badge-jugando js-juego-estado">Jugando</span>
+      <article class="gv-card-game h-100">
+        <!-- Zona Hero: Título protagonista + consola decorativa -->
+        <div class="gv-card-hero">
+          <img src="img/consolas/playstation-5.svg" alt="" class="gv-card-console-bg js-juego-consola-img" aria-hidden="true">
+          <div class="gv-card-hero-badges">
+            <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
+            <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
+            <span class="gv-badge gv-badge-jugando js-juego-estado" style="margin-left:auto">Jugando</span>
           </div>
+          <h3 class="gv-card-hero-title js-juego-titulo">Título del videojuego</h3>
+          <span class="gv-card-hero-sku">SKU: <span class="js-juego-sku">GAME-RPG-0001</span></span>
+        </div>
 
-          <!-- Título y código SKU -->
-          <h3 class="h5 fw-bold mb-1 js-juego-titulo text-light">Título del videojuego</h3>
-          <p class="font-mono small text-secondary mb-3">
-            SKU: <span class="text-light js-juego-sku">GAME-RPG-0001</span>
-          </p>
-
-          <!-- Metadatos: Horas y Ubicación/Tienda -->
-          <dl class="row small mb-0 g-2 pt-3 border-top border-secondary border-opacity-25">
+        <!-- Zona Datos: Metadatos y acciones -->
+        <div class="gv-card-info-side">
+          <dl class="row small mb-0 g-2">
             <div class="col-6">
               <dt class="text-secondary fw-normal">Tiempo jugado</dt>
               <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">0</span> h</dd>
@@ -138,12 +135,10 @@
               <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-A-01</dd>
             </div>
           </dl>
-        </div>
-
-        <!-- Acciones: Editar y Eliminar -->
-        <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top border-secondary border-opacity-25">
-          <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-          <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
+          <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
+            <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
+            <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
+          </div>
         </div>
       </article>
     </div>

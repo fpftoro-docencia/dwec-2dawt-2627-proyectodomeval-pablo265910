@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <!-- Sombra base -->
+  <ellipse cx="100" cy="225" rx="65" ry="10" fill="#000000" opacity="0.6"/>
+
+  <!-- Patas de la torre de PC -->
+  <rect x="52" y="214" width="12" height="6" rx="2" fill="#27272a"/>
+  <rect x="136" y="214" width="12" height="6" rx="2" fill="#27272a"/>
+
+  <!-- Chasis principal de la Torre Gaming -->
+  <rect x="46" y="32" width="108" height="184" rx="8" fill="#121215" stroke="#27272a" stroke-width="1.2"/>
+
+  <!-- Panel frontal con entrada de aire mesh y LED sutil -->
+  <rect x="132" y="32" width="22" height="184" rx="6" fill="#18181d" stroke="#27272a" stroke-width="1"/>
+  <line x1="143" y1="45" x2="143" y2="200" stroke="#2997ff" stroke-width="2" opacity="0.8" filter="drop-shadow(0 0 4px #2997ff)"/>
+  <circle cx="143" cy="40" r="2" fill="#ffffff"/>
+
+  <!-- Panel lateral de Cristal Templado (Glass Window) -->
+  <rect x="52" y="38" width="76" height="172" rx="4" fill="#090a0f" stroke="#1f222e" stroke-width="1"/>
+  <!-- Reflejo diagonal de cristal templado -->
+  <path d="M 54 40 L 115 40 L 65 190 L 54 190 Z" fill="#ffffff" opacity="0.04"/>
+
+  <!-- Interior: Tarjeta gráfica con iluminación RGB -->
+  <rect x="56" y="112" width="68" height="22" rx="3" fill="#18181f" stroke="#3f3f46" stroke-width="0.8"/>
+  <line x1="58" y1="123" x2="122" y2="123" stroke="#2997ff" stroke-width="2.5" opacity="0.9" filter="drop-shadow(0 0 5px #2997ff)"/>
+
+  <!-- Ventilador de CPU / Refrigeración líquida -->
+  <circle cx="90" cy="74" r="15" fill="#141419" stroke="#bf5af2" stroke-width="2.5" opacity="0.9" filter="drop-shadow(0 0 6px #bf5af2)"/>
+  <circle cx="90" cy="74" r="5" fill="#27272a"/>
+
+  <!-- Módulos de memoria RAM iluminados -->
+  <rect x="110" y="60" width="3" height="18" rx="1" fill="#30d158" opacity="0.8" filter="drop-shadow(0 0 3px #30d158)"/>
+  <rect x="115" y="60" width="3" height="18" rx="1" fill="#30d158" opacity="0.8" filter="drop-shadow(0 0 3px #30d158)"/>
+
+  <!-- Ventiladores frontales visibles -->
+  <circle cx="126" cy="70" r="4" fill="#2997ff" opacity="0.4"/>
+  <circle cx="126" cy="110" r="4" fill="#2997ff" opacity="0.4"/>
+  <circle cx="126" cy="150" r="4" fill="#2997ff" opacity="0.4"/>
+</svg>
