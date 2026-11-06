@@ -1,84 +1,103 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iniciar sesión - GameVault</title>
+  <title>Iniciar Sesión — GameVault</title>
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-  <!-- Contenedor global de notificaciones accesible -->
-  <div id="notificaciones-globales" class="steam-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <header class="steam-topbar py-2">
-    <div class="container d-flex align-items-center justify-content-between">
-      <a href="index.html" class="steam-brand" aria-label="GameVault Inicio">
-        <svg class="steam-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2a10 10 0 0 0-9.95 9.04l5.37 2.22a2.82 2.82 0 0 1 2.28-.48l2.44-3.54v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.48 2.48c0 .19-.03.38-.09.56a2.84 2.84 0 0 1-5.46-.34L3.09 14.1A10 10 0 1 0 12 2zm3.92 5.44a2.52 2.52 0 1 0 0 5.04 2.52 2.52 0 0 0 0-5.04zm-6.48 7.5a1.89 1.89 0 1 0 0 3.78 1.89 1.89 0 0 0 0-3.78z"/>
-        </svg>
-        <span>GAMEVAULT</span>
+  <!-- Cabecera común -->
+  <header class="gv-header">
+    <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <a href="index.html" class="gv-brand">
+        <span class="gv-brand-icon" aria-hidden="true">GV</span>
+        <span>GameVault</span>
       </a>
+
+      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-1">
+        <a href="index.html" class="gv-nav-link" aria-current="page">Iniciar sesión</a>
+        <a href="registro.html" class="gv-nav-link">Crear cuenta</a>
+      </nav>
+
+      <!-- Indicador de sesión (oculto en páginas públicas sin sesión activa) -->
+      <div id="panel-sesion" class="d-flex align-items-center gap-2" hidden>
+        <div class="gv-session-pill">
+          <span id="sesion-usuario" class="fw-medium">Invitado</span>
+          <span id="sesion-rol" class="gv-badge gv-badge-meta">Sin sesión</span>
+        </div>
+        <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
+      </div>
     </div>
   </header>
 
-  <main class="steam-auth-wrapper">
-    <section class="steam-panel steam-auth-card" aria-labelledby="titulo-login">
-      <div class="mb-4">
-        <h1 id="titulo-login" class="h4 text-uppercase mb-1">Iniciar sesión</h1>
-        <p class="text-secondary small mb-0">Accede a tu biblioteca y gestor de backlog de GameVault</p>
+  <!-- Contenido principal -->
+  <main class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <section class="gv-surface p-4 p-sm-5 w-100 animate-fade-up" style="max-width: 440px;" aria-labelledby="titulo-login">
+      
+      <div class="text-center mb-4">
+        <div class="gv-brand-icon mx-auto mb-3" style="width: 2.75rem; height: 2.75rem; font-size: 1.1rem;" aria-hidden="true">GV</div>
+        <h1 id="titulo-login" class="h4 fw-bold mb-1">Bienvenido a GameVault</h1>
+        <p class="text-secondary small mb-0">Accede a tu biblioteca y gestor de backlog</p>
       </div>
 
-      <form id="form-login" action="listado.html" method="post" novalidate>
+      <form id="form-login" action="#" method="post" novalidate>
+        <!-- Nombre de usuario -->
         <div class="mb-3">
-          <label for="username" class="form-label">Nombre de usuario</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            class="form-control"
-            autocomplete="username"
-            required
-            aria-invalid="false"
-            aria-describedby="error-username"
-          >
-          <div id="error-username" class="field-error"></div>
+          <label for="login-usuario" class="form-label">Nombre de usuario</label>
+          <input 
+            type="text" 
+            id="login-usuario" 
+            name="usuario" 
+            class="form-control" 
+            placeholder="ej. pablo_dev" 
+            autocomplete="username" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="error-login-usuario">
+          <div id="error-login-usuario" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
+        <!-- Contraseña -->
         <div class="mb-4">
-          <label for="password" class="form-label">Contraseña</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            class="form-control"
-            autocomplete="current-password"
-            required
-            aria-invalid="false"
-            aria-describedby="error-password"
-          >
-          <div id="error-password" class="field-error"></div>
+          <label for="login-password" class="form-label">Contraseña</label>
+          <input 
+            type="password" 
+            id="login-password" 
+            name="password" 
+            class="form-control" 
+            placeholder="••••••••" 
+            autocomplete="current-password" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="error-login-password">
+          <div id="error-login-password" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
-        <div class="d-grid mb-4">
-          <button type="submit" id="btn-login" class="btn-steam-primary">
-            Iniciar sesión
-          </button>
-        </div>
+        <!-- Error general de autenticación -->
+        <div id="error-login-general" class="field-error mb-3" role="alert" aria-live="assertive"></div>
 
-        <div class="text-center pt-3 border-top border-secondary border-opacity-25">
-          <a href="registro.html" class="small fw-semibold">
-            ¿No tienes una cuenta de GameVault? Crea una gratis
-          </a>
-        </div>
+        <!-- Botón de envío preparado para estado de carga y bloqueo de doble envío -->
+        <button type="submit" id="btn-submit-login" class="btn-gv-primary w-100">
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span class="btn-text">Entrar en mi biblioteca</span>
+        </button>
       </form>
+
+      <hr class="my-4 border-secondary border-opacity-25">
+
+      <p class="text-center text-secondary small mb-0">
+        ¿Todavía no tienes cuenta? 
+        <a href="registro.html" class="text-decoration-none fw-medium" style="color: #818cf8;">Regístrate aquí</a>
+      </p>
     </section>
   </main>
 
-  <footer class="steam-footer">
-    <div class="container text-center">
-      <span>&copy; 2026 GameVault Library Manager. Interfaz inspirada en Steam Desktop Client.</span>
-    </div>
-  </footer>
+  <!-- Contenedor global de notificaciones para eventos personalizados 'aviso' -->
+  <div id="region-avisos" class="gv-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
 </body>
 </html>

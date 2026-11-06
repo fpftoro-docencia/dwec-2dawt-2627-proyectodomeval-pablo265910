@@ -1,166 +1,172 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crear tu cuenta - GameVault</title>
+  <title>Crear Cuenta — GameVault</title>
   <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-  <!-- Contenedor global de notificaciones accesible -->
-  <div id="notificaciones-globales" class="steam-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <header class="steam-topbar py-2">
-    <div class="container d-flex align-items-center justify-content-between">
-      <a href="index.html" class="steam-brand" aria-label="GameVault Inicio">
-        <svg class="steam-brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2a10 10 0 0 0-9.95 9.04l5.37 2.22a2.82 2.82 0 0 1 2.28-.48l2.44-3.54v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.48 2.48c0 .19-.03.38-.09.56a2.84 2.84 0 0 1-5.46-.34L3.09 14.1A10 10 0 1 0 12 2zm3.92 5.44a2.52 2.52 0 1 0 0 5.04 2.52 2.52 0 0 0 0-5.04zm-6.48 7.5a1.89 1.89 0 1 0 0 3.78 1.89 1.89 0 0 0 0-3.78z"/>
-        </svg>
-        <span>GAMEVAULT</span>
+  <!-- Cabecera común -->
+  <header class="gv-header">
+    <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <a href="index.html" class="gv-brand">
+        <span class="gv-brand-icon" aria-hidden="true">GV</span>
+        <span>GameVault</span>
       </a>
-      <a href="index.html" class="btn-steam-secondary btn-steam-sm">Iniciar sesión</a>
+
+      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-1">
+        <a href="index.html" class="gv-nav-link">Iniciar sesión</a>
+        <a href="registro.html" class="gv-nav-link" aria-current="page">Crear cuenta</a>
+      </nav>
+
+      <div id="panel-sesion" class="d-flex align-items-center gap-2" hidden>
+        <div class="gv-session-pill">
+          <span id="sesion-usuario" class="fw-medium">Invitado</span>
+          <span id="sesion-rol" class="gv-badge gv-badge-meta">Sin sesión</span>
+        </div>
+        <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
+      </div>
     </div>
   </header>
 
-  <main class="steam-auth-wrapper">
-    <section class="steam-panel steam-auth-card steam-auth-card--wide" aria-labelledby="titulo-registro">
+  <!-- Contenido principal -->
+  <main class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
+    <section class="gv-surface p-4 p-sm-5 w-100 animate-fade-up" style="max-width: 520px;" aria-labelledby="titulo-registro">
+      
       <div class="mb-4">
-        <h1 id="titulo-registro" class="h4 text-uppercase mb-1">Crear tu cuenta</h1>
-        <p class="text-secondary small mb-0">Regístrate gratis para catalogar tu colección física y digital</p>
+        <h1 id="titulo-registro" class="h4 fw-bold mb-1">Crear cuenta en GameVault</h1>
+        <p class="text-secondary small mb-0">Configura tu perfil para organizar tu colección física y digital.</p>
       </div>
 
-      <form id="form-registro" action="index.html" method="post" novalidate>
-        <!-- Nombre de usuario -->
+      <form id="form-registro" action="#" method="post" novalidate>
+        <!-- Nombre de usuario (3-15 caracteres alfanuméricos/guiones) -->
         <div class="mb-3">
-          <label for="username" class="form-label">Nombre de usuario</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            class="form-control"
-            placeholder="Ej. Gordon_Freeman98"
-            minlength="3"
-            maxlength="15"
-            pattern="^[a-zA-Z0-9_\-]{3,15}$"
-            autocomplete="username"
-            required
-            aria-invalid="false"
-            aria-describedby="error-username"
-          >
-          <div id="error-username" class="field-error"></div>
+          <label for="reg-usuario" class="form-label">Nombre de usuario</label>
+          <input 
+            type="text" 
+            id="reg-usuario" 
+            name="usuario" 
+            class="form-control" 
+            placeholder="ej. nega-player99" 
+            minlength="3" 
+            maxlength="15" 
+            pattern="^[a-zA-Z0-9\-]{3,15}$" 
+            autocomplete="username" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="ayuda-reg-usuario error-reg-usuario">
+          <div id="ayuda-reg-usuario" class="form-text text-secondary small">De 3 a 15 caracteres alfanuméricos o guiones.</div>
+          <div id="error-reg-usuario" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
         <!-- Correo electrónico -->
         <div class="mb-3">
-          <label for="email" class="form-label">Correo electrónico</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            class="form-control"
-            placeholder="usuario@ejemplo.com"
-            autocomplete="email"
-            required
-            aria-invalid="false"
-            aria-describedby="error-email"
-          >
-          <div id="error-email" class="field-error"></div>
+          <label for="reg-email" class="form-label">Correo electrónico</label>
+          <input 
+            type="email" 
+            id="reg-email" 
+            name="email" 
+            class="form-control" 
+            placeholder="tu@correo.com" 
+            autocomplete="email" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="error-reg-email">
+          <div id="error-reg-email" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
-        <!-- Contraseña + Panel reactivo de requisitos -->
+        <!-- Contraseña + Panel reactivo de requisitos visuales -->
         <div class="mb-3">
-          <label for="password" class="form-label">Contraseña</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            class="form-control"
-            minlength="8"
-            autocomplete="new-password"
-            required
-            aria-invalid="false"
-            aria-describedby="requisitos-password error-password"
-          >
-          <div id="requisitos-password" class="steam-password-rules" aria-live="polite">
-            <span class="steam-password-rules-title">Requisitos de seguridad:</span>
-            <ul class="steam-rule-list">
-              <li id="req-length" class="steam-rule-item" data-req="length">
-                <span class="steam-rule-indicator" aria-hidden="true"></span>
+          <label for="reg-password" class="form-label">Contraseña</label>
+          <input 
+            type="password" 
+            id="reg-password" 
+            name="password" 
+            class="form-control" 
+            placeholder="Mínimo 8 caracteres" 
+            autocomplete="new-password" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="panel-requisitos-pwd error-reg-password">
+          
+          <div id="panel-requisitos-pwd" class="gv-pwd-requirements" aria-label="Requisitos de seguridad de la contraseña">
+            <ul class="gv-req-list">
+              <li id="req-longitud" class="gv-req-item" data-req="length">
+                <span class="gv-req-dot" aria-hidden="true"></span>
                 <span>Mínimo 8 caracteres</span>
               </li>
-              <li id="req-lower" class="steam-rule-item" data-req="lowercase">
-                <span class="steam-rule-indicator" aria-hidden="true"></span>
-                <span>Al menos 1 minúscula</span>
+              <li id="req-minuscula" class="gv-req-item" data-req="lower">
+                <span class="gv-req-dot" aria-hidden="true"></span>
+                <span>Al menos una minúscula</span>
               </li>
-              <li id="req-upper" class="steam-rule-item" data-req="uppercase">
-                <span class="steam-rule-indicator" aria-hidden="true"></span>
-                <span>Al menos 1 mayúscula</span>
+              <li id="req-mayuscula" class="gv-req-item" data-req="upper">
+                <span class="gv-req-dot" aria-hidden="true"></span>
+                <span>Al menos una mayúscula</span>
               </li>
-              <li id="req-number" class="steam-rule-item" data-req="number">
-                <span class="steam-rule-indicator" aria-hidden="true"></span>
-                <span>Al menos 1 número</span>
+              <li id="req-numero" class="gv-req-item" data-req="number">
+                <span class="gv-req-dot" aria-hidden="true"></span>
+                <span>Al menos un número</span>
               </li>
             </ul>
           </div>
-          <div id="error-password" class="field-error"></div>
+          <div id="error-reg-password" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
         <!-- Repetir contraseña -->
         <div class="mb-3">
-          <label for="confirm-password" class="form-label">Repetir contraseña</label>
-          <input
-            type="password"
-            id="confirm-password"
-            name="confirmPassword"
-            class="form-control"
-            minlength="8"
-            autocomplete="new-password"
-            required
-            aria-invalid="false"
-            aria-describedby="error-confirm-password"
-          >
-          <div id="error-confirm-password" class="field-error"></div>
+          <label for="reg-password-confirm" class="form-label">Repetir contraseña</label>
+          <input 
+            type="password" 
+            id="reg-password-confirm" 
+            name="passwordConfirm" 
+            class="form-control" 
+            placeholder="Repite tu contraseña" 
+            autocomplete="new-password" 
+            required 
+            aria-invalid="false" 
+            aria-describedby="error-reg-password-confirm">
+          <div id="error-reg-password-confirm" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
         <!-- Aceptación de condiciones -->
         <div class="mb-4">
           <div class="form-check">
-            <input
-              type="checkbox"
-              id="terminos"
-              name="terminos"
-              class="form-check-input"
-              required
-              aria-invalid="false"
-              aria-describedby="error-terminos"
-            >
-            <label for="terminos" class="form-check-label small">
-              Acepto el Acuerdo de Suscriptor a GameVault y la Política de Privacidad.
+            <input 
+              type="checkbox" 
+              id="reg-condiciones" 
+              name="condiciones" 
+              class="form-check-input" 
+              required 
+              aria-invalid="false" 
+              aria-describedby="error-reg-condiciones">
+            <label for="reg-condiciones" class="form-check-label small text-secondary">
+              Acepto las condiciones de uso y la política de privacidad de GameVault.
             </label>
           </div>
-          <div id="error-terminos" class="field-error"></div>
+          <div id="error-reg-condiciones" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
-        <div class="d-grid mb-3">
-          <button type="submit" id="btn-registro" class="btn-steam-primary">
-            Crear cuenta
-          </button>
-        </div>
-
-        <div class="text-center pt-3 border-top border-secondary border-opacity-25">
-          <a href="index.html" class="small fw-semibold">
-            ¿Ya tienes una cuenta en GameVault? Inicia sesión aquí
-          </a>
-        </div>
+        <button type="submit" id="btn-submit-registro" class="btn-gv-primary w-100">
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span class="btn-text">Completar registro</span>
+        </button>
       </form>
+
+      <hr class="my-4 border-secondary border-opacity-25">
+
+      <p class="text-center text-secondary small mb-0">
+        ¿Ya tienes una cuenta? 
+        <a href="index.html" class="text-decoration-none fw-medium" style="color: #818cf8;">Inicia sesión</a>
+      </p>
     </section>
   </main>
 
-  <footer class="steam-footer">
-    <div class="container text-center">
-      <span>&copy; 2026 GameVault Library Manager. Interfaz inspirada en Steam Desktop Client.</span>
-    </div>
-  </footer>
+  <!-- Contenedor global de notificaciones -->
+  <div id="region-avisos" class="gv-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+
 </body>
 </html>
