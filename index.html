@@ -10,15 +10,15 @@
 </head>
 <body>
 
-  <!-- Cabecera común -->
+  <!-- Cabecera Frosted Glass estilo Apple -->
   <header class="gv-header">
     <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <a href="index.html" class="gv-brand">
+      <a href="index.html" class="gv-brand" aria-label="GameVault Inicio">
         <span class="gv-brand-icon" aria-hidden="true">GV</span>
         <span>GameVault</span>
       </a>
 
-      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-1">
+      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
         <a href="index.html" class="gv-nav-link" aria-current="page">Iniciar sesión</a>
         <a href="registro.html" class="gv-nav-link">Crear cuenta</a>
       </nav>
@@ -36,12 +36,13 @@
 
   <!-- Contenido principal -->
   <main class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
-    <section class="gv-surface p-4 p-sm-5 w-100 animate-fade-up" style="max-width: 440px;" aria-labelledby="titulo-login">
+    <section class="gv-surface p-4 p-sm-5 w-100 animate-fade-up" style="max-width: 460px;" aria-labelledby="titulo-login">
       
       <div class="text-center mb-4">
-        <div class="gv-brand-icon mx-auto mb-3" style="width: 2.75rem; height: 2.75rem; font-size: 1.1rem;" aria-hidden="true">GV</div>
-        <h1 id="titulo-login" class="h4 fw-bold mb-1">Bienvenido a GameVault</h1>
-        <p class="text-secondary small mb-0">Accede a tu biblioteca y gestor de backlog</p>
+        <div class="gv-brand-icon mx-auto mb-3" style="width: 3rem; height: 3rem; font-size: 1.15rem; border-radius: 14px;" aria-hidden="true">GV</div>
+        <span class="apple-eyebrow">Bóveda Personal</span>
+        <h1 id="titulo-login" class="apple-headline h3 mb-2">Bienvenido a GameVault</h1>
+        <p class="text-secondary small mb-0">Accede a tu biblioteca de videojuegos y gestor de backlog</p>
       </div>
 
       <form id="form-login" action="#" method="post" novalidate>
@@ -81,7 +82,7 @@
         <div id="error-login-general" class="field-error mb-3" role="alert" aria-live="assertive"></div>
 
         <!-- Botón de envío preparado para estado de carga y bloqueo de doble envío -->
-        <button type="submit" id="btn-submit-login" class="btn-gv-primary w-100">
+        <button type="submit" id="btn-submit-login" class="btn-gv-primary w-100 py-2">
           <span class="btn-spinner" aria-hidden="true"></span>
           <span class="btn-text">Entrar en mi biblioteca</span>
         </button>
@@ -91,7 +92,7 @@
 
       <p class="text-center text-secondary small mb-0">
         ¿Todavía no tienes cuenta? 
-        <a href="registro.html" class="text-decoration-none fw-medium" style="color: #818cf8;">Regístrate aquí</a>
+        <a href="registro.html" class="text-decoration-none fw-medium" style="color: var(--apple-blue);">Regístrate aquí</a>
       </p>
     </section>
   </main>

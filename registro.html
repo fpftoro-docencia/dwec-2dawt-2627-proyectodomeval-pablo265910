@@ -10,15 +10,15 @@
 </head>
 <body>
 
-  <!-- Cabecera común -->
+  <!-- Cabecera Frosted Glass estilo Apple -->
   <header class="gv-header">
     <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <a href="index.html" class="gv-brand">
+      <a href="index.html" class="gv-brand" aria-label="GameVault Inicio">
         <span class="gv-brand-icon" aria-hidden="true">GV</span>
         <span>GameVault</span>
       </a>
 
-      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-1">
+      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
         <a href="index.html" class="gv-nav-link">Iniciar sesión</a>
         <a href="registro.html" class="gv-nav-link" aria-current="page">Crear cuenta</a>
       </nav>
@@ -35,11 +35,12 @@
 
   <!-- Contenido principal -->
   <main class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
-    <section class="gv-surface p-4 p-sm-5 w-100 animate-fade-up" style="max-width: 520px;" aria-labelledby="titulo-registro">
+    <section class="gv-surface p-4 p-sm-5 w-100 animate-fade-up" style="max-width: 540px;" aria-labelledby="titulo-registro">
       
       <div class="mb-4">
-        <h1 id="titulo-registro" class="h4 fw-bold mb-1">Crear cuenta en GameVault</h1>
-        <p class="text-secondary small mb-0">Configura tu perfil para organizar tu colección física y digital.</p>
+        <span class="apple-eyebrow">Registro de Usuario</span>
+        <h1 id="titulo-registro" class="apple-headline h3 mb-2">Crear cuenta en GameVault</h1>
+        <p class="text-secondary small mb-0">Configura tu perfil para organizar tu colección física y digital con precisión.</p>
       </div>
 
       <form id="form-registro" action="#" method="post" novalidate>
@@ -79,7 +80,7 @@
           <div id="error-reg-email" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
-        <!-- Contraseña + Panel reactivo de requisitos visuales -->
+        <!-- Contraseña + Panel reactivo de requisitos visuales estilo Apple Keychain -->
         <div class="mb-3">
           <label for="reg-password" class="form-label">Contraseña</label>
           <input 
@@ -150,7 +151,8 @@
           <div id="error-reg-condiciones" class="field-error" role="alert" aria-live="polite"></div>
         </div>
 
-        <button type="submit" id="btn-submit-registro" class="btn-gv-primary w-100">
+        <!-- Botón de registro -->
+        <button type="submit" id="btn-submit-registro" class="btn-gv-primary w-100 py-2">
           <span class="btn-spinner" aria-hidden="true"></span>
           <span class="btn-text">Completar registro</span>
         </button>
@@ -159,8 +161,8 @@
       <hr class="my-4 border-secondary border-opacity-25">
 
       <p class="text-center text-secondary small mb-0">
-        ¿Ya tienes una cuenta? 
-        <a href="index.html" class="text-decoration-none fw-medium" style="color: #818cf8;">Inicia sesión</a>
+        ¿Ya tienes cuenta en GameVault? 
+        <a href="index.html" class="text-decoration-none fw-medium" style="color: var(--apple-blue);">Inicia sesión</a>
       </p>
     </section>
   </main>

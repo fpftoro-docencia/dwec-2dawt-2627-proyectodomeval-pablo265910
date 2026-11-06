@@ -10,15 +10,15 @@
 </head>
 <body>
 
-  <!-- Cabecera común -->
+  <!-- Cabecera Frosted Glass estilo Apple -->
   <header class="gv-header">
     <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <a href="listado.html" class="gv-brand">
+      <a href="listado.html" class="gv-brand" aria-label="GameVault Catálogo">
         <span class="gv-brand-icon" aria-hidden="true">GV</span>
         <span>GameVault</span>
       </a>
 
-      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-1">
+      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
         <a href="listado.html" class="gv-nav-link">Catálogo</a>
         <a href="ficha.html" class="gv-nav-link">Nueva ficha</a>
         <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link" aria-current="page">Usuarios</a>
@@ -37,15 +37,16 @@
   <!-- Contenido principal -->
   <main class="container py-4 py-md-5 flex-grow-1">
     
-    <!-- Cabecera de sección con buscador -->
-    <section class="gv-surface p-3 p-md-4 mb-4 animate-fade-up" aria-labelledby="titulo-gestion-usuarios">
-      <div class="row g-3 align-items-center justify-content-between">
-        <div class="col-12 col-md-6">
-          <h1 id="titulo-gestion-usuarios" class="h5 fw-bold mb-1">Administración de Usuarios y Permisos</h1>
-          <p class="text-secondary small mb-0">Gestiona las cuentas registradas y alterna sus privilegios de acceso.</p>
+    <!-- Cabecera de sección Apple Bento con buscador -->
+    <section class="gv-surface p-4 p-md-5 mb-4 animate-fade-up" aria-labelledby="titulo-gestion-usuarios">
+      <div class="row g-4 align-items-center justify-content-between">
+        <div class="col-12 col-md-7">
+          <span class="apple-eyebrow">Panel de Control</span>
+          <h1 id="titulo-gestion-usuarios" class="apple-headline h3 fw-bold mb-2">Administración de Usuarios y Permisos</h1>
+          <p class="text-secondary small mb-0">Gestiona las cuentas registradas y alterna sus privilegios de acceso al sistema con seguridad.</p>
         </div>
 
-        <div class="col-12 col-md-6 col-lg-4">
+        <div class="col-12 col-md-5">
           <label for="buscador-usuarios" class="visually-hidden">Buscar usuario por nombre o correo electrónico</label>
           <input 
             type="search" 
@@ -61,7 +62,7 @@
       </div>
     </section>
 
-    <!-- Tabla estilizada moderna de usuarios -->
+    <!-- Tabla estilizada macOS Apple Style de usuarios -->
     <section class="gv-surface overflow-hidden animate-fade-up delay-1" aria-label="Listado de usuarios registrados">
       <div class="table-responsive">
         <table class="table gv-table">
@@ -85,8 +86,8 @@
       </div>
     </section>
 
-    <!-- Navegación de paginación -->
-    <nav aria-label="Paginación de usuarios" class="mt-4 d-flex justify-content-center animate-fade-up delay-2">
+    <!-- Navegación de paginación Apple Pills -->
+    <nav aria-label="Paginación de usuarios" class="mt-5 d-flex justify-content-center animate-fade-up delay-2">
       <ul id="paginacion-usuarios" class="pagination gv-pagination mb-0">
         <li class="page-item disabled">
           <button type="button" class="page-link" data-page="prev" aria-label="Página anterior" disabled>Anterior</button>
@@ -105,7 +106,7 @@
   <!-- Template para filas de usuario -->
   <template id="tpl-usuario">
     <tr class="js-fila-usuario">
-      <td class="fw-semibold font-mono js-usuario-nombre">nombre_usuario</td>
+      <td class="fw-semibold font-mono text-light js-usuario-nombre">nombre_usuario</td>
       <td class="text-secondary js-usuario-email">usuario@ejemplo.com</td>
       <td>
         <span class="gv-badge gv-badge-meta js-usuario-rol-badge">Usuario</span>
