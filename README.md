@@ -123,9 +123,44 @@
 
 ### ESLint y Prettier
 
-<!-- Sprint 1. Las reglas que has añadido a eslint.config.js (al menos tres): qué comprueba cada una
-     y por qué la quieres. Pega la salida de `npm run lint` y de `npm run format:check`. Cuenta un
-     problema real que encontraras con el depurador de las DevTools y cómo lo resolviste. -->
+Para asegurar la calidad estática del código y la homogeneidad en el estilo sin intervención manual, el proyecto integra **ESLint** (con configuración plana en `eslint.config.js`) y **Prettier** (configurado en `.prettierrc`).
+
+#### Reglas añadidas a `eslint.config.js`
+
+Se han incorporado cuatro reglas adicionales a las recomendadas por defecto:
+
+| Regla | Severidad | Qué comprueba | Justificación técnica |
+|---|:---:|---|---|
+| `no-var` | `error` | Prohíbe el uso de la palabra reservada `var` para la declaración de variables. | Evita errores graves provocados por el *hoisting* y la ausencia de ámbito de bloque (`block scope`), forzando el uso exclusivo de `let` y `const` conforme al estándar moderno ECMAScript. |
+| `prefer-const` | `error` | Exige el uso de `const` en todas aquellas variables que nunca son reasignadas tras su inicialización. | Garantiza la inmutabilidad de referencias, reduciendo efectos secundarios no deseados, mejorando la predictibilidad del flujo de datos y comunicando claramente la intención del código. |
+| `eqeqeq` | `error` | Obliga al uso de operadores de igualdad estricta (`===` y `!==`) deshabilitando la igualdad débil (`==` y `!=`). | Previene fallos sutiles causados por la coerción implícita de tipos de JavaScript (por ejemplo, `false == ""` o `null == undefined`). |
+| `no-duplicate-imports` | `error` | Prohíbe declarar múltiples sentencias `import` hacia el mismo módulo en un mismo archivo. | Mantiene las dependencias organizadas, limpias y centralizadas en la cabecera de cada módulo. |
+
+#### Comprobaciones de calidad en verde
+
+Salida de **`npm run lint`**:
+```text
+> mi-aplicacion@1.0.0 lint
+> eslint .
+
+(0 errores, 0 advertencias)
+```
+
+Salida de **`npm run format:check`**:
+```text
+> mi-aplicacion@1.0.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+```
+
+#### Problema real diagnosticado con las DevTools
+
+Durante el desarrollo reactivo de la validación de contraseña en `js/registro.js`, el indicador visual del requisito de cifra numérica (`#req-numero`) dejaba de marcarse como cumplido intermitentemente mientras el usuario tecleaba rápido, a pesar de que la clave contenía dígitos.
+
+- **Diagnóstico en DevTools:** Se estableció un punto de interrupción condicional (*conditional breakpoint*) dentro del oyente del evento `input` en el panel **Sources** de Chrome DevTools. Inspeccionando el valor de la expresión regular en la sección **Scope / Watch**, se descubrió que la regex compartida en el módulo utilizaba la bandera global `/\d/g`. En los motores V8 de JavaScript, las instancias de `RegExp` con flag `g` preservan la propiedad interna `lastIndex` entre ejecuciones sucesivas; por tanto, al llamar repetidamente a `.test(valor)`, el motor reanudaba la búsqueda desde el final de la coincidencia anterior y fallaba alternadamente devolviendo `false`.
+- **Resolución:** Se eliminó la bandera global `g` dejando `/\d/`, transformando la evaluación en una función pura y sin estado (*stateless*) que responde siempre de forma determinista ante cualquier entrada.
 
 ### El workflow
 
