@@ -22,7 +22,9 @@ describe('componente cabecera.js', () => {
 
     expect(nombre.textContent).toBe('jugador_normal');
     expect(rol.textContent).toBe('Usuario');
-    expect(rol.classList.contains('gv-badge-meta') || rol.classList.contains('steam-badge--rol-usuario')).toBe(true);
+    expect(
+      rol.classList.contains('gv-badge-meta') || rol.classList.contains('steam-badge--rol-usuario'),
+    ).toBe(true);
     expect(enlaceAdmin.hidden).toBe(true);
   });
 
@@ -36,7 +38,9 @@ describe('componente cabecera.js', () => {
 
     expect(nombre.textContent).toBe('admin_master');
     expect(rol.textContent).toBe('Administrador');
-    expect(rol.classList.contains('gv-badge-admin') || rol.classList.contains('steam-badge--rol-admin')).toBe(true);
+    expect(
+      rol.classList.contains('gv-badge-admin') || rol.classList.contains('steam-badge--rol-admin'),
+    ).toBe(true);
     expect(enlaceAdmin.hidden).toBe(false);
   });
 
