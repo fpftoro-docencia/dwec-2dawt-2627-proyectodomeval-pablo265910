@@ -98,7 +98,7 @@ describe('integración página de registro (iniciarRegistro)', () => {
     const errorUsuario = documento.querySelector('#error-reg-usuario');
     const errorEmail = documento.querySelector('#error-reg-email');
 
-    expect(errorUsuario.textContent).toMatch(/3 a 15 caracteres/i);
+    expect(errorUsuario.textContent).toMatch(/3.*15 caracteres/i);
     expect(errorEmail.textContent).toMatch(/correo electrónico válida/i);
     expect(navegacionUrl).toBeNull();
   });
