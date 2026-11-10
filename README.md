@@ -189,16 +189,24 @@ Durante el desarrollo reactivo de la validación de contraseña en `js/registro.
 
 ### El workflow
 
-<!-- Sprints 1 y 2. Qué hace ci.yml: cuándo se ejecuta, la tabla de sus trabajos y por qué están en
-     ese orden, qué artefactos sube y para qué sirven, y qué hace concurrency. -->
+El flujo de integración continua está automatizado mediante GitHub Actions en [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-| Trabajo | Espera a | Pasos | Artefacto |
-|---------|----------|-------|-----------|
-| `Calidad` | — | | — |
-| `Tests` | | | |
-| `E2E` | | | |
+- **Cuándo se ejecuta:** En cada evento `push` hacia `main` y en cada `pull_request` dirigida a `main`.
+- **Permisos de seguridad:** `permissions: contents: read` (principio de mínimo privilegio, el workflow únicamente requiere lectura del repositorio).
+- **Entorno de ejecución:** Máquinas virtuales `ubuntu-latest` con Node.js 24 y caché nativa de dependencias de npm.
 
-**Ejecución en verde con sus artefactos:** <!-- enlace -->
+#### Trabajos de Integración Continua (Paso 1: Sprint 1)
+
+| Trabajo | Espera a | Pasos que ejecuta | Artefacto |
+|---------|----------|-------------------|-----------|
+| `Calidad` | — *(Primer trabajo)* | 1. Descargar el código (`actions/checkout@v7`)<br>2. Instalar Node.js 24 con caché de npm (`actions/setup-node@v7`)<br>3. Instalar dependencias limpias (`npm ci`)<br>4. Comprobar calidad estática (`npm run lint`)<br>5. Comprobar formato (`npm run format:check`) | — |
+| `Tests` | `Calidad` (`needs: calidad`) | 1. Descargar el código (`actions/checkout@v7`)<br>2. Instalar Node.js 24 con caché de npm (`actions/setup-node@v7`)<br>3. Instalar dependencias limpias (`npm ci`)<br>4. Ejecutar pruebas automatizadas (`npm test`) | *(En Sprint 2: `coverage/`)* |
+| `E2E` | *(Sprint 2)* | *(Se incorporará en el Sprint 2 tras configurar Playwright)* | *(En Sprint 2: `playwright-report/`)* |
+
+**Justificación técnica del orden de ejecución:**
+El trabajo de `Calidad` se sitúa en primer lugar porque el análisis estático de código (ESLint) y la comprobación de formato (Prettier) se ejecutan en pocos segundos y detectan inmediatamente variables no utilizadas, referencias no inicializadas o inconsistencias de estilo. Si la calidad estática falla, el flujo se detiene de inmediato mediante *fail-fast*, evitando consumir minutos de cómputo innecesarios en la ejecución de la suite de pruebas unitarias (`Tests`).
+
+**Ejecución en verde:** <!-- Se registrará el enlace a la ejecución en verde tras abrir la Pull Request y pasar los checks -->
 
 ## Despliegue continuo
 
@@ -263,6 +271,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `rutas-privadas` | [S1-09] Control de acceso y protección de rutas privadas | [#16](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/16) |
 | `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/17) |
 | `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
+| `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | Pendiente |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
