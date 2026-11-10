@@ -20,9 +20,15 @@ import { obtenerSesion, cerrarSesion } from './sesion.js';
  */
 export function iniciarCabecera(documento = document, opciones = {}) {
   const {
-    almacen = window.sessionStorage,
+    almacen = typeof window !== 'undefined' ? window.sessionStorage : null,
     alCerrarSesion = () => {
-      window.location.href = 'index.html';
+      if (typeof window !== 'undefined' && window.location) {
+        if (typeof window.location.replace === 'function') {
+          window.location.replace('index.html');
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
     },
   } = opciones;
 
