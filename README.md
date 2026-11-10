@@ -206,7 +206,7 @@ El flujo de integración continua está automatizado mediante GitHub Actions en 
 **Justificación técnica del orden de ejecución:**
 El trabajo de `Calidad` se sitúa en primer lugar porque el análisis estático de código (ESLint) y la comprobación de formato (Prettier) se ejecutan en pocos segundos y detectan inmediatamente variables no utilizadas, referencias no inicializadas o inconsistencias de estilo. Si la calidad estática falla, el flujo se detiene de inmediato mediante *fail-fast*, evitando consumir minutos de cómputo innecesarios en la ejecución de la suite de pruebas unitarias (`Tests`).
 
-**Ejecución en verde:** <!-- Se registrará el enlace a la ejecución en verde tras abrir la Pull Request y pasar los checks -->
+**Ejecución en verde:** [Ejecución #42892582735 (Calidad y Tests)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/42892582735) en la Pull Request [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19).
 
 ## Despliegue continuo
 
