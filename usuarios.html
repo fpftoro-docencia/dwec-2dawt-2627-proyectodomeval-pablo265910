@@ -128,10 +128,14 @@
   <div id="region-avisos" class="gv-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <script type="module">
+    import { protegerPaginaAdmin } from './js/rutas.js';
     import { iniciarCabecera } from './js/cabecera.js';
     import { iniciarAvisos } from './js/avisos.js';
-    iniciarCabecera();
-    iniciarAvisos();
+
+    if (protegerPaginaAdmin()) {
+      iniciarCabecera();
+      iniciarAvisos();
+    }
   </script>
 </body>
 </html>
