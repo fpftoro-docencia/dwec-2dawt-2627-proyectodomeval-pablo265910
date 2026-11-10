@@ -61,9 +61,34 @@
 
 ## Cómo ejecutarlo
 
-<!-- Cómo abrir el proyecto en el Dev Container y ver la web, y cómo pasar los tests, la cobertura,
-     las pruebas de extremo a extremo, ESLint y Prettier, generar la documentación y preparar la web
-     publicable (`npm run build`). -->
+Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
+
+1. **Instalación de dependencias:**
+   ```bash
+   npm install
+   ```
+
+2. **Visualizar la aplicación web:**
+   Abrir cualquiera de las páginas (`index.html`, `registro.html`, `listado.html`, `ficha.html`, `usuarios.html`) con la extensión **Live Server** de VS Code o sirviendo el directorio raíz con cualquier servidor estático local.
+
+3. **Ejecutar tests unitarios y de integración:**
+   ```bash
+   npm test
+   ```
+   Ejecuta la suite completa de Vitest (127 pruebas en verde en 10 suites de prueba).
+
+4. **Comprobar cobertura de código:**
+   ```bash
+   npm run coverage
+   ```
+   Genera el reporte de cobertura mediante V8, superando ampliamente el 90% requerido en funciones lógicas puras (100% en validadores y hashing criptográfico).
+
+5. **Verificar calidad estática y formato:**
+   ```bash
+   npm run lint          # Comprueba las reglas estrictas de ESLint
+   npm run format:check  # Verifica el formato con Prettier
+   npm run format        # Aplica el formateo automático con Prettier
+   ```
 
 ## Almacenamiento y sesión
 
@@ -237,6 +262,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `pagina-login` | [S1-08] Página de inicio de sesión (index.html) | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/15) |
 | `rutas-privadas` | [S1-09] Control de acceso y protección de rutas privadas | [#16](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/16) |
 | `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/17) |
+| `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
