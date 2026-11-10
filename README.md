@@ -272,7 +272,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/17) |
 | `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
-| `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | Pendiente |
+| `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
