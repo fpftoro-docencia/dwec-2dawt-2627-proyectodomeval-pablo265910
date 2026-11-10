@@ -236,7 +236,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `pagina-registro` | [S1-07] Página y formulario de registro (registro.html) | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/14) |
 | `pagina-login` | [S1-08] Página de inicio de sesión (index.html) | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/15) |
 | `rutas-privadas` | [S1-09] Control de acceso y protección de rutas privadas | [#16](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/16) |
-| `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | Pendiente |
+| `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/17) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
