@@ -195,6 +195,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `estructura-html-base` | [S1-02] Estructura HTML base de las 5 páginas y enlace a Bootstrap | [#2](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/2) |
 | `cabecera-sesion` | [S1-03] Cabecera común, menú de navegación y sesión de usuario | [#7](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/7) |
 | `nueva-estetica-minimalista` | Actualización de diseño Dark Minimalism, plantillas HTML y recursos gráficos | [#8](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/8) |
+| `avisos-custom-event` | [S1-04] Sistema de eventos de avisos personalizados ('aviso') | [#11](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/11) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
