@@ -1,141 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" data-bs-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Usuarios — GameVault Admin</title>
-  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Usuarios — GameVault Admin</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/png" href="img/logo.png" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <!-- Cabecera Frosted Glass estilo Apple -->
+    <header class="gv-header">
+      <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <a href="listado.html" class="gv-brand" aria-label="GameVault Catálogo">
+          <span class="gv-brand-icon" aria-hidden="true">GV</span>
+          <span>GameVault</span>
+        </a>
 
-  <!-- Cabecera Frosted Glass estilo Apple -->
-  <header class="gv-header">
-    <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <a href="listado.html" class="gv-brand" aria-label="GameVault Catálogo">
-        <span class="gv-brand-icon" aria-hidden="true">GV</span>
-        <span>GameVault</span>
-      </a>
+        <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
+          <a href="listado.html" class="gv-nav-link">Catálogo</a>
+          <a href="ficha.html" class="gv-nav-link">Nueva ficha</a>
+          <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link" aria-current="page"
+            >Usuarios</a
+          >
+        </nav>
 
-      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
-        <a href="listado.html" class="gv-nav-link">Catálogo</a>
-        <a href="ficha.html" class="gv-nav-link">Nueva ficha</a>
-        <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link" aria-current="page">Usuarios</a>
+        <div id="panel-sesion" class="d-flex align-items-center gap-2">
+          <div class="gv-session-pill" aria-label="Usuario en sesión">
+            <span id="sesion-usuario" class="fw-medium">admin_vault</span>
+            <span id="sesion-rol" class="gv-badge gv-badge-admin">Administrador</span>
+          </div>
+          <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container py-4 py-md-5 flex-grow-1">
+      <!-- Cabecera de sección Apple Bento con buscador -->
+      <section
+        class="gv-surface p-4 p-md-5 mb-4 animate-fade-up"
+        aria-labelledby="titulo-gestion-usuarios"
+      >
+        <div class="row g-4 align-items-center justify-content-between">
+          <div class="col-12 col-md-7">
+            <span class="apple-eyebrow">Panel de Control</span>
+            <h1 id="titulo-gestion-usuarios" class="apple-headline h3 fw-bold mb-2">
+              Administración de Usuarios y Permisos
+            </h1>
+            <p class="text-secondary small mb-0">
+              Gestiona las cuentas registradas y alterna sus privilegios de acceso al sistema con
+              seguridad.
+            </p>
+          </div>
+
+          <div class="col-12 col-md-5">
+            <label for="buscador-usuarios" class="visually-hidden"
+              >Buscar usuario por nombre o correo electrónico</label
+            >
+            <input
+              type="search"
+              id="buscador-usuarios"
+              name="qUsuario"
+              class="form-control"
+              placeholder="Filtrar por usuario o email..."
+              autocomplete="off"
+              aria-invalid="false"
+              aria-describedby="error-buscador-usuarios"
+            />
+            <div
+              id="error-buscador-usuarios"
+              class="field-error"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabla estilizada macOS Apple Style de usuarios -->
+      <section
+        class="gv-surface overflow-hidden animate-fade-up delay-1"
+        aria-label="Listado de usuarios registrados"
+      >
+        <div class="table-responsive">
+          <table class="table gv-table">
+            <thead>
+              <tr>
+                <th scope="col">Nombre de usuario</th>
+                <th scope="col">Correo electrónico</th>
+                <th scope="col">Rol actual</th>
+                <th scope="col" class="text-end">Acción de privilegios</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-usuarios-body">
+              <!-- Las filas se inyectan dinámicamente mediante #tpl-usuario -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estado vacío de búsqueda de usuarios -->
+        <div id="estado-vacio-usuarios" class="p-5 text-center" hidden>
+          <p class="text-secondary small mb-0">
+            No se encontraron usuarios que coincidan con el criterio de búsqueda.
+          </p>
+        </div>
+      </section>
+
+      <!-- Navegación de paginación Apple Pills -->
+      <nav
+        aria-label="Paginación de usuarios"
+        class="mt-5 d-flex justify-content-center animate-fade-up delay-2"
+      >
+        <ul id="paginacion-usuarios" class="pagination gv-pagination mb-0">
+          <li class="page-item disabled">
+            <button
+              type="button"
+              class="page-link"
+              data-page="prev"
+              aria-label="Página anterior"
+              disabled
+            >
+              Anterior
+            </button>
+          </li>
+          <li class="page-item active">
+            <button type="button" class="page-link" data-page="1" aria-current="page">1</button>
+          </li>
+          <li class="page-item">
+            <button type="button" class="page-link" data-page="next" aria-label="Página siguiente">
+              Siguiente
+            </button>
+          </li>
+        </ul>
       </nav>
+    </main>
 
-      <div id="panel-sesion" class="d-flex align-items-center gap-2">
-        <div class="gv-session-pill" aria-label="Usuario en sesión">
-          <span id="sesion-usuario" class="fw-medium">admin_vault</span>
-          <span id="sesion-rol" class="gv-badge gv-badge-admin">Administrador</span>
-        </div>
-        <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
-      </div>
-    </div>
-  </header>
+    <!-- Template para filas de usuario -->
+    <template id="tpl-usuario">
+      <tr class="js-fila-usuario">
+        <td class="fw-semibold font-mono text-light js-usuario-nombre">nombre_usuario</td>
+        <td class="text-secondary js-usuario-email">usuario@ejemplo.com</td>
+        <td>
+          <span class="gv-badge gv-badge-meta js-usuario-rol-badge">Usuario</span>
+        </td>
+        <td class="text-end">
+          <button
+            type="button"
+            class="btn-gv-ghost js-btn-alternar-rol"
+            role="switch"
+            aria-checked="false"
+            aria-label="Alternar rol entre Usuario y Administrador"
+          >
+            Cambiar a Administrador
+          </button>
+        </td>
+      </tr>
+    </template>
 
-  <!-- Contenido principal -->
-  <main class="container py-4 py-md-5 flex-grow-1">
-    
-    <!-- Cabecera de sección Apple Bento con buscador -->
-    <section class="gv-surface p-4 p-md-5 mb-4 animate-fade-up" aria-labelledby="titulo-gestion-usuarios">
-      <div class="row g-4 align-items-center justify-content-between">
-        <div class="col-12 col-md-7">
-          <span class="apple-eyebrow">Panel de Control</span>
-          <h1 id="titulo-gestion-usuarios" class="apple-headline h3 fw-bold mb-2">Administración de Usuarios y Permisos</h1>
-          <p class="text-secondary small mb-0">Gestiona las cuentas registradas y alterna sus privilegios de acceso al sistema con seguridad.</p>
-        </div>
+    <!-- Contenedor global de notificaciones -->
+    <div
+      id="region-avisos"
+      class="gv-toast-region"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
 
-        <div class="col-12 col-md-5">
-          <label for="buscador-usuarios" class="visually-hidden">Buscar usuario por nombre o correo electrónico</label>
-          <input 
-            type="search" 
-            id="buscador-usuarios" 
-            name="qUsuario" 
-            class="form-control" 
-            placeholder="Filtrar por usuario o email..." 
-            autocomplete="off" 
-            aria-invalid="false" 
-            aria-describedby="error-buscador-usuarios">
-          <div id="error-buscador-usuarios" class="field-error" role="alert" aria-live="polite"></div>
-        </div>
-      </div>
-    </section>
+    <script type="module">
+      import { protegerPaginaAdmin } from './js/rutas.js';
+      import { iniciarCabecera } from './js/cabecera.js';
+      import { iniciarAvisos } from './js/avisos.js';
 
-    <!-- Tabla estilizada macOS Apple Style de usuarios -->
-    <section class="gv-surface overflow-hidden animate-fade-up delay-1" aria-label="Listado de usuarios registrados">
-      <div class="table-responsive">
-        <table class="table gv-table">
-          <thead>
-            <tr>
-              <th scope="col">Nombre de usuario</th>
-              <th scope="col">Correo electrónico</th>
-              <th scope="col">Rol actual</th>
-              <th scope="col" class="text-end">Acción de privilegios</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-usuarios-body">
-            <!-- Las filas se inyectan dinámicamente mediante #tpl-usuario -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Estado vacío de búsqueda de usuarios -->
-      <div id="estado-vacio-usuarios" class="p-5 text-center" hidden>
-        <p class="text-secondary small mb-0">No se encontraron usuarios que coincidan con el criterio de búsqueda.</p>
-      </div>
-    </section>
-
-    <!-- Navegación de paginación Apple Pills -->
-    <nav aria-label="Paginación de usuarios" class="mt-5 d-flex justify-content-center animate-fade-up delay-2">
-      <ul id="paginacion-usuarios" class="pagination gv-pagination mb-0">
-        <li class="page-item disabled">
-          <button type="button" class="page-link" data-page="prev" aria-label="Página anterior" disabled>Anterior</button>
-        </li>
-        <li class="page-item active">
-          <button type="button" class="page-link" data-page="1" aria-current="page">1</button>
-        </li>
-        <li class="page-item">
-          <button type="button" class="page-link" data-page="next" aria-label="Página siguiente">Siguiente</button>
-        </li>
-      </ul>
-    </nav>
-
-  </main>
-
-  <!-- Template para filas de usuario -->
-  <template id="tpl-usuario">
-    <tr class="js-fila-usuario">
-      <td class="fw-semibold font-mono text-light js-usuario-nombre">nombre_usuario</td>
-      <td class="text-secondary js-usuario-email">usuario@ejemplo.com</td>
-      <td>
-        <span class="gv-badge gv-badge-meta js-usuario-rol-badge">Usuario</span>
-      </td>
-      <td class="text-end">
-        <button 
-          type="button" 
-          class="btn-gv-ghost js-btn-alternar-rol" 
-          role="switch" 
-          aria-checked="false" 
-          aria-label="Alternar rol entre Usuario y Administrador">
-          Cambiar a Administrador
-        </button>
-      </td>
-    </tr>
-  </template>
-
-  <!-- Contenedor global de notificaciones -->
-  <div id="region-avisos" class="gv-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
-
-  <script type="module">
-    import { protegerPaginaAdmin } from './js/rutas.js';
-    import { iniciarCabecera } from './js/cabecera.js';
-    import { iniciarAvisos } from './js/avisos.js';
-
-    if (protegerPaginaAdmin()) {
-      iniciarCabecera();
-      iniciarAvisos();
-    }
-  </script>
-</body>
+      if (protegerPaginaAdmin()) {
+        iniciarCabecera();
+        iniciarAvisos();
+      }
+    </script>
+  </body>
 </html>

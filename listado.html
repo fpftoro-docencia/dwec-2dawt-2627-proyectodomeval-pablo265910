@@ -1,175 +1,251 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" data-bs-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Catálogo y Backlog — GameVault</title>
-  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <link rel="stylesheet" href="css/estilos.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi Catálogo y Backlog — GameVault</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/png" href="img/logo.png" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <!-- Cabecera Frosted Glass estilo Apple -->
+    <header class="gv-header">
+      <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <a href="listado.html" class="gv-brand" aria-label="GameVault Catálogo">
+          <span class="gv-brand-icon" aria-hidden="true">GV</span>
+          <span>GameVault</span>
+        </a>
 
-  <!-- Cabecera Frosted Glass estilo Apple -->
-  <header class="gv-header">
-    <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <a href="listado.html" class="gv-brand" aria-label="GameVault Catálogo">
-        <span class="gv-brand-icon" aria-hidden="true">GV</span>
-        <span>GameVault</span>
-      </a>
+        <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
+          <a href="listado.html" class="gv-nav-link" aria-current="page">Catálogo</a>
+          <a href="ficha.html" class="gv-nav-link">Nueva ficha</a>
+          <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link">Usuarios</a>
+        </nav>
 
-      <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
-        <a href="listado.html" class="gv-nav-link" aria-current="page">Catálogo</a>
-        <a href="ficha.html" class="gv-nav-link">Nueva ficha</a>
-        <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link">Usuarios</a>
+        <div id="panel-sesion" class="d-flex align-items-center gap-2">
+          <div class="gv-session-pill" aria-label="Usuario en sesión">
+            <span id="sesion-usuario" class="fw-medium">pablo_dev</span>
+            <span id="sesion-rol" class="gv-badge gv-badge-meta">Usuario</span>
+          </div>
+          <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container py-4 py-md-5 flex-grow-1">
+      <!-- Hero / Barra de herramientas superior Apple Bento -->
+      <section
+        class="gv-surface p-4 p-md-5 mb-5 animate-fade-up"
+        aria-label="Herramientas de filtrado y acciones del catálogo"
+      >
+        <div class="row g-4 align-items-center justify-content-between">
+          <div class="col-12 col-lg-6">
+            <span class="apple-eyebrow">Bóveda de Colección</span>
+            <h1 class="apple-headline h3 mb-2">Mi Catálogo y Backlog</h1>
+            <p class="text-secondary small mb-3">
+              Busca, filtra y supervisa tus títulos completados, pendientes y en progreso.
+            </p>
+
+            <div class="position-relative">
+              <label for="buscador-catalogo" class="visually-hidden"
+                >Buscar videojuego por título, SKU o plataforma</label
+              >
+              <input
+                type="search"
+                id="buscador-catalogo"
+                name="q"
+                class="form-control ps-4"
+                placeholder="Buscar por título, plataforma o SKU..."
+                autocomplete="off"
+                aria-invalid="false"
+                aria-describedby="contador-resultados error-buscador-catalogo"
+              />
+              <div
+                id="error-buscador-catalogo"
+                class="field-error"
+                role="alert"
+                aria-live="polite"
+              ></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-5 d-flex flex-column align-items-lg-end gap-3">
+            <p id="contador-resultados" class="text-secondary small mb-0" aria-live="polite">
+              Mostrando <strong class="text-light font-mono">0</strong> videojuegos
+            </p>
+            <a href="ficha.html" class="btn-gv-primary text-decoration-none">
+              + Añadir videojuego
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Estado vacío estilo Apple (Empty State) -->
+      <section
+        id="estado-vacio-catalogo"
+        class="gv-surface p-5 text-center my-4 animate-fade-up delay-1"
+        aria-labelledby="titulo-vacio"
+      >
+        <div
+          class="mx-auto mb-3 d-inline-flex align-items-center justify-content-center rounded-circle"
+          style="
+            width: 4rem;
+            height: 4rem;
+            background: rgba(41, 151, 255, 0.12);
+            color: var(--apple-blue);
+            font-size: 1.5rem;
+          "
+          aria-hidden="true"
+        >
+          &#127918;
+        </div>
+        <h2 id="titulo-vacio" class="apple-headline h4 fw-semibold mb-2">
+          Tu bóveda de videojuegos está vacía
+        </h2>
+        <p class="text-secondary small mx-auto mb-4" style="max-width: 440px">
+          Aún no hay títulos que coincidan con tu búsqueda o todavía no has registrado ningún juego
+          en tu colección personal.
+        </p>
+        <a href="ficha.html" class="btn-gv-primary text-decoration-none"
+          >Registrar primer videojuego</a
+        >
+      </section>
+
+      <!-- Grid Bento donde se inyectan las tarjetas de videojuegos -->
+      <section aria-label="Listado de videojuegos">
+        <div id="grid-catalogo" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4"></div>
+      </section>
+
+      <!-- Controles de paginación accesibles Apple Pills -->
+      <nav
+        aria-label="Paginación del catálogo"
+        class="mt-5 d-flex justify-content-center animate-fade-up delay-2"
+      >
+        <ul id="paginacion-catalogo" class="pagination gv-pagination mb-0">
+          <li class="page-item disabled">
+            <button
+              type="button"
+              class="page-link"
+              data-page="prev"
+              aria-label="Página anterior"
+              disabled
+            >
+              Anterior
+            </button>
+          </li>
+          <li class="page-item active">
+            <button type="button" class="page-link" data-page="1" aria-current="page">1</button>
+          </li>
+          <li class="page-item">
+            <button type="button" class="page-link" data-page="next" aria-label="Página siguiente">
+              Siguiente
+            </button>
+          </li>
+        </ul>
       </nav>
+    </main>
 
-      <div id="panel-sesion" class="d-flex align-items-center gap-2">
-        <div class="gv-session-pill" aria-label="Usuario en sesión">
-          <span id="sesion-usuario" class="fw-medium">pablo_dev</span>
-          <span id="sesion-rol" class="gv-badge gv-badge-meta">Usuario</span>
-        </div>
-        <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Contenido principal -->
-  <main class="container py-4 py-md-5 flex-grow-1">
-    
-    <!-- Hero / Barra de herramientas superior Apple Bento -->
-    <section class="gv-surface p-4 p-md-5 mb-5 animate-fade-up" aria-label="Herramientas de filtrado y acciones del catálogo">
-      <div class="row g-4 align-items-center justify-content-between">
-        
-        <div class="col-12 col-lg-6">
-          <span class="apple-eyebrow">Bóveda de Colección</span>
-          <h1 class="apple-headline h3 mb-2">Mi Catálogo y Backlog</h1>
-          <p class="text-secondary small mb-3">Busca, filtra y supervisa tus títulos completados, pendientes y en progreso.</p>
-          
-          <div class="position-relative">
-            <label for="buscador-catalogo" class="visually-hidden">Buscar videojuego por título, SKU o plataforma</label>
-            <input 
-              type="search" 
-              id="buscador-catalogo" 
-              name="q" 
-              class="form-control ps-4" 
-              placeholder="Buscar por título, plataforma o SKU..." 
-              autocomplete="off" 
-              aria-invalid="false" 
-              aria-describedby="contador-resultados error-buscador-catalogo">
-            <div id="error-buscador-catalogo" class="field-error" role="alert" aria-live="polite"></div>
-          </div>
-        </div>
-
-        <div class="col-12 col-lg-5 d-flex flex-column align-items-lg-end gap-3">
-          <p id="contador-resultados" class="text-secondary small mb-0" aria-live="polite">
-            Mostrando <strong class="text-light font-mono">0</strong> videojuegos
-          </p>
-          <a href="ficha.html" class="btn-gv-primary text-decoration-none">
-            + Añadir videojuego
-          </a>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- Estado vacío estilo Apple (Empty State) -->
-    <section id="estado-vacio-catalogo" class="gv-surface p-5 text-center my-4 animate-fade-up delay-1" aria-labelledby="titulo-vacio">
-      <div class="mx-auto mb-3 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 4rem; height: 4rem; background: rgba(41, 151, 255, 0.12); color: var(--apple-blue); font-size: 1.5rem;" aria-hidden="true">
-        &#127918;
-      </div>
-      <h2 id="titulo-vacio" class="apple-headline h4 fw-semibold mb-2">Tu bóveda de videojuegos está vacía</h2>
-      <p class="text-secondary small mx-auto mb-4" style="max-width: 440px;">
-        Aún no hay títulos que coincidan con tu búsqueda o todavía no has registrado ningún juego en tu colección personal.
-      </p>
-      <a href="ficha.html" class="btn-gv-primary text-decoration-none">Registrar primer videojuego</a>
-    </section>
-
-    <!-- Grid Bento donde se inyectan las tarjetas de videojuegos -->
-    <section aria-label="Listado de videojuegos">
-      <div id="grid-catalogo" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4"></div>
-    </section>
-
-    <!-- Controles de paginación accesibles Apple Pills -->
-    <nav aria-label="Paginación del catálogo" class="mt-5 d-flex justify-content-center animate-fade-up delay-2">
-      <ul id="paginacion-catalogo" class="pagination gv-pagination mb-0">
-        <li class="page-item disabled">
-          <button type="button" class="page-link" data-page="prev" aria-label="Página anterior" disabled>Anterior</button>
-        </li>
-        <li class="page-item active">
-          <button type="button" class="page-link" data-page="1" aria-current="page">1</button>
-        </li>
-        <li class="page-item">
-          <button type="button" class="page-link" data-page="next" aria-label="Página siguiente">Siguiente</button>
-        </li>
-      </ul>
-    </nav>
-
-  </main>
-
-  <!-- Template de tarjeta de videojuego — Tipografía Hero + Consola de fondo -->
-  <template id="tpl-juego">
-    <div class="col">
-      <article class="gv-card-game h-100">
-        <!-- Zona Hero: Título protagonista + consola decorativa -->
-        <div class="gv-card-hero">
-          <img src="img/consolas/playstation-5.svg" alt="" class="gv-card-console-bg js-juego-consola-img" aria-hidden="true">
-          <div class="gv-card-hero-badges">
-            <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
-            <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
-            <span class="gv-badge gv-badge-jugando js-juego-estado" style="margin-left:auto">Jugando</span>
-          </div>
-          <h3 class="gv-card-hero-title js-juego-titulo">Título del videojuego</h3>
-          <span class="gv-card-hero-sku">SKU: <span class="js-juego-sku">GAME-RPG-0001</span></span>
-        </div>
-
-        <!-- Zona Datos: Metadatos y acciones -->
-        <div class="gv-card-info-side">
-          <dl class="row small mb-0 g-2">
-            <div class="col-6">
-              <dt class="text-secondary fw-normal">Tiempo jugado</dt>
-              <dd class="fw-semibold mb-0 font-mono text-light"><span class="js-juego-horas">0</span> h</dd>
+    <!-- Template de tarjeta de videojuego — Tipografía Hero + Consola de fondo -->
+    <template id="tpl-juego">
+      <div class="col">
+        <article class="gv-card-game h-100">
+          <!-- Zona Hero: Título protagonista + consola decorativa -->
+          <div class="gv-card-hero">
+            <img
+              src="img/consolas/playstation-5.svg"
+              alt=""
+              class="gv-card-console-bg js-juego-consola-img"
+              aria-hidden="true"
+            />
+            <div class="gv-card-hero-badges">
+              <span class="gv-badge gv-badge-meta js-juego-plataforma">PC</span>
+              <span class="gv-badge gv-badge-meta js-juego-formato">Físico</span>
+              <span class="gv-badge gv-badge-jugando js-juego-estado" style="margin-left: auto"
+                >Jugando</span
+              >
             </div>
-            <div class="col-6">
-              <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación / Tienda</dt>
-              <dd class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor">EST-A-01</dd>
-            </div>
-          </dl>
-          <div class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25">
-            <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar">Editar</a>
-            <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
+            <h3 class="gv-card-hero-title js-juego-titulo">Título del videojuego</h3>
+            <span class="gv-card-hero-sku"
+              >SKU: <span class="js-juego-sku">GAME-RPG-0001</span></span
+            >
           </div>
-        </div>
-      </article>
-    </div>
-  </template>
 
-  <!-- Modal nativo <dialog> para confirmar eliminación (Apple Sheet Style) -->
-  <dialog id="modal-borrar" class="gv-dialog" aria-labelledby="modal-borrar-titulo" aria-describedby="modal-borrar-desc">
-    <div class="p-4 p-sm-5">
-      <h2 id="modal-borrar-titulo" class="apple-headline h5 fw-bold mb-2">Confirmar eliminación</h2>
-      <p id="modal-borrar-desc" class="text-secondary small mb-4">
-        ¿Estás seguro de que deseas eliminar <strong id="modal-juego-nombre" class="text-light">este videojuego</strong> de tu biblioteca? Esta acción no se puede deshacer.
-      </p>
-      <div class="d-flex justify-content-end gap-2">
-        <button type="button" id="btn-cancelar-borrado" class="btn-gv-ghost">Cancelar</button>
-        <button type="button" id="btn-confirmar-borrado" class="btn-gv-danger">Sí, eliminar juego</button>
+          <!-- Zona Datos: Metadatos y acciones -->
+          <div class="gv-card-info-side">
+            <dl class="row small mb-0 g-2">
+              <div class="col-6">
+                <dt class="text-secondary fw-normal">Tiempo jugado</dt>
+                <dd class="fw-semibold mb-0 font-mono text-light">
+                  <span class="js-juego-horas">0</span> h
+                </dd>
+              </div>
+              <div class="col-6">
+                <dt class="text-secondary fw-normal js-juego-detalle-label">Ubicación / Tienda</dt>
+                <dd
+                  class="fw-semibold mb-0 font-mono text-truncate text-light js-juego-detalle-valor"
+                >
+                  EST-A-01
+                </dd>
+              </div>
+            </dl>
+            <div
+              class="d-flex align-items-center justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-25"
+            >
+              <a href="ficha.html" class="btn-gv-ghost text-decoration-none js-btn-editar"
+                >Editar</a
+              >
+              <button type="button" class="btn-gv-danger js-btn-eliminar">Eliminar</button>
+            </div>
+          </div>
+        </article>
       </div>
-    </div>
-  </dialog>
+    </template>
 
-  <!-- Contenedor global de notificaciones -->
-  <div id="region-avisos" class="gv-toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+    <!-- Modal nativo <dialog> para confirmar eliminación (Apple Sheet Style) -->
+    <dialog
+      id="modal-borrar"
+      class="gv-dialog"
+      aria-labelledby="modal-borrar-titulo"
+      aria-describedby="modal-borrar-desc"
+    >
+      <div class="p-4 p-sm-5">
+        <h2 id="modal-borrar-titulo" class="apple-headline h5 fw-bold mb-2">
+          Confirmar eliminación
+        </h2>
+        <p id="modal-borrar-desc" class="text-secondary small mb-4">
+          ¿Estás seguro de que deseas eliminar
+          <strong id="modal-juego-nombre" class="text-light">este videojuego</strong> de tu
+          biblioteca? Esta acción no se puede deshacer.
+        </p>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" id="btn-cancelar-borrado" class="btn-gv-ghost">Cancelar</button>
+          <button type="button" id="btn-confirmar-borrado" class="btn-gv-danger">
+            Sí, eliminar juego
+          </button>
+        </div>
+      </div>
+    </dialog>
 
-  <script type="module">
-    import { protegerPaginaPrivada } from './js/rutas.js';
-    import { iniciarCabecera } from './js/cabecera.js';
-    import { iniciarAvisos } from './js/avisos.js';
+    <!-- Contenedor global de notificaciones -->
+    <div
+      id="region-avisos"
+      class="gv-toast-region"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
 
-    if (protegerPaginaPrivada()) {
-      iniciarCabecera();
-      iniciarAvisos();
-    }
-  </script>
-</body>
+    <script type="module">
+      import { protegerPaginaPrivada } from './js/rutas.js';
+      import { iniciarCabecera } from './js/cabecera.js';
+      import { iniciarAvisos } from './js/avisos.js';
+
+      if (protegerPaginaPrivada()) {
+        iniciarCabecera();
+        iniciarAvisos();
+      }
+    </script>
+  </body>
 </html>
