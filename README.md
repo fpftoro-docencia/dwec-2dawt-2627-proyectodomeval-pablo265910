@@ -175,6 +175,22 @@ La paginación de colecciones se implementa como una función pura matemática d
   ```
 - **Reutilización:** Este módulo sirve de forma transversal para paginar las tarjetas del catálogo en `listado.html` y las filas de la tabla de administración en `usuarios.html`.
 
+### Componente Visual de Paginación y Gestión de URL (`js/paginacion.js`)
+
+El componente visual de paginación implementa la interfaz accesible de navegación y su sincronización bidireccional con la dirección del navegador web:
+
+- **Controles generados íntegramente por código:** Crea dinámicamente el botón «Anterior», los botones numéricos correlativos y el botón «Siguiente» dentro de la lista de paginación (`#paginacion-catalogo` en `listado.html` y `#paginacion-usuarios` en `usuarios.html`).
+- **Estados accesibles y semántica:**
+  - El botón «Anterior» se desactiva (`disabled` en el botón y clase `.disabled` en el `<li>`) cuando la página activa es la primera (`pagina <= 1`).
+  - El botón «Siguiente» se desactiva (`disabled` y clase `.disabled`) cuando la página activa es la última (`pagina >= totalPaginas`).
+  - La página actual se resalta con la clase `.active` y se marca semánticamente para lectores de pantalla mediante el atributo `aria-current="page"`.
+- **Sincronización con la URL (`?pagina=X`):**
+  - Al cambiar de página, se actualiza la dirección en el historial del cliente sin recargar la página mediante `URLSearchParams` y `history.replaceState`.
+  - Al recargar la página o acceder mediante un enlace directo (`?pagina=2`), `obtenerPaginaUrl` extrae y convalida el parámetro para situar al usuario en dicha página.
+  - Al volver a la página 1 o al realizar una nueva búsqueda, se elimina el parámetro `pagina` para mantener la URL limpia.
+- **Delegación de eventos:** Un único oyente `click` registrado en el contenedor `<ul>` intercepta cualquier pulsación en fase de burbuja mediante `e.target.closest('button[data-pagina], button[data-page]')`. Esto asegura que los controles respondan de inmediato tras ser re-renderizados sin necesidad de reconectar oyentes individuales.
+
+
 
 
 ## Eventos
