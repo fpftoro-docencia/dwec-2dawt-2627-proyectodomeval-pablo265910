@@ -92,12 +92,25 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
 
 ## Almacenamiento y sesión
 
-<!-- 1. Tabla con cada clave que usas: dónde está (localStorage o sessionStorage), qué guarda y un
-        ejemplo de su contenido.
-     2. Por qué cada dato va donde va.
-     3. Cómo guardas el rol y cómo proteges las páginas por sesión y por rol.
-     4. Por qué este inicio de sesión NO es seguro: qué podría hacer alguien con las DevTools y cómo
-        se hace en una aplicación real. -->
+La aplicación persiste su estado íntegramente en el navegador web del cliente mediante las APIs estándar `sessionStorage` y `localStorage`, garantizando un funcionamiento desacoplado y sin backend.
+
+### Claves utilizadas
+
+| Clave | Almacenamiento | Qué guarda | Ejemplo de contenido |
+|---|:---:|---|---|
+| `gamevault_sesion` | `sessionStorage` | Usuario autenticado actualmente y su rol en la aplicación. | `{"usuario": "pablo_dev", "rol": "administrador"}` |
+| `gamevault_aviso_pendiente` | `sessionStorage` | Mensaje y tipo de aviso que debe mostrarse tras una redirección entre páginas. | `{"mensaje": "Te has registrado con éxito", "tipo": "success"}` |
+| `gamevault_usuarios` | `localStorage` | Colección completa de usuarios registrados en el navegador con contraseñas en hash SHA-256. | `[{"nombre": "admin", "usuario": "admin", "correo": "admin@gamevault.com", "clave": "8c69...", "rol": "administrador"}]` |
+| `gamevault_juegos_<usuario>` | `localStorage` | Catálogo personal de videojuegos del usuario indicado (aislamiento multiusuario). | `[{"id": "gv_1731425000_abc12", "titulo": "Elden Ring", "plataforma": "PC", "formato": "digital", "horasJugadas": 120, "estadoProgreso": "completado"}]` |
+
+### Criterio de distribución de datos
+- **`sessionStorage` para la sesión y avisos diferidos:** Se utiliza para los datos volátiles que deben caducar automáticamente en cuanto el usuario cierra la pestaña o ventana del navegador, evitando que sesiones previas queden activas involuntariamente.
+- **`localStorage` para usuarios y catálogos de videojuegos:** Se utiliza para la información persistente que debe conservarse entre diferentes visitas. Cada usuario registrado dispone de su propia clave (`gamevault_juegos_<usuario>`), asegurando que ningún usuario pueda ver o modificar el catálogo de otro en el mismo equipo.
+
+### Seguridad del inicio de sesión y limitaciones en cliente
+Este inicio de sesión es una **simulación educativa**:
+- **Riesgo:** Al no existir un servidor seguro, cualquier persona con acceso físico al equipo o a las herramientas de desarrollo del navegador (DevTools) puede inspeccionar y alterar `localStorage` o `sessionStorage`, modificando su rol a `administrador` o alterando los registros.
+- **Cómo se hace en una aplicación real:** En un entorno de producción, la autenticación se delega a un servidor seguro mediante cookies `HttpOnly` y `Secure`, o mediante tokens criptográficos firmados (JWT), y la autorización de cada operación (alta, consulta o borrado) se verifica en backend consultando una base de datos protegida.
 
 ## Funcionalidad y formularios
 
@@ -273,6 +286,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
 | `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
+| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | Pendiente |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
