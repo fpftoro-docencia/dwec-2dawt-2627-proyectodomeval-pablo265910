@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="es" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Ficha de Videojuego — GameVault</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/png" href="img/logo.png" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <!-- Cabecera Frosted Glass estilo Apple -->
+    <header class="gv-header">
+      <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <a href="listado.html" class="gv-brand" aria-label="GameVault Catálogo">
+          <span class="gv-brand-icon" aria-hidden="true">GV</span>
+          <span>GameVault</span>
+        </a>
+
+        <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
+          <a href="listado.html" class="gv-nav-link">Catálogo</a>
+          <a href="ficha.html" class="gv-nav-link" aria-current="page">Nueva ficha</a>
+          <a href="usuarios.html" id="nav-link-admin" class="gv-nav-link">Usuarios</a>
+        </nav>
+
+        <div id="panel-sesion" class="d-flex align-items-center gap-2">
+          <div class="gv-session-pill" aria-label="Usuario en sesión">
+            <span id="sesion-usuario" class="fw-medium">pablo_dev</span>
+            <span id="sesion-rol" class="gv-badge gv-badge-meta">Usuario</span>
+          </div>
+          <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container py-4 py-md-5 flex-grow-1" style="max-width: 860px">
+      <div
+        class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 animate-fade-up"
+      >
+        <div>
+          <span class="apple-eyebrow">Gestión de Catálogo</span>
+          <h1 id="titulo-pagina-ficha" class="apple-headline h3 mb-1">
+            Alta y Edición de Videojuego
+          </h1>
+          <p class="text-secondary small mb-0">
+            Completa los metadatos técnicos, formato de edición y expansiones asociadas.
+          </p>
+        </div>
+        <a href="listado.html" class="btn-gv-ghost text-decoration-none"
+          >&larr; Volver al catálogo</a
+        >
+      </div>
+
+      <form
+        id="form-ficha"
+        class="gv-surface p-4 p-md-5 animate-fade-up delay-1"
+        action="#"
+        method="post"
+        novalidate
+      >
+        <!-- Identificador único para modo edición -->
+        <input type="hidden" id="ficha-id" name="id" value="" />
+
+        <!-- SECCIÓN 1: Información Principal -->
+        <fieldset class="mb-5">
+          <legend
+            class="h6 fw-semibold text-uppercase text-secondary small mb-4 pb-2 border-bottom border-secondary border-opacity-25"
+          >
+            1. Información general
+          </legend>
+
+          <div class="row g-3">
+            <!-- Fila 1: Título y Plataforma -->
+            <div class="col-12 col-md-8">
+              <label for="ficha-titulo" class="form-label">Título del videojuego *</label>
+              <input
+                type="text"
+                id="ficha-titulo"
+                name="titulo"
+                class="form-control"
+                placeholder="ej. Elden Ring"
+                minlength="2"
+                maxlength="100"
+                required
+                data-validar="titulo"
+                aria-invalid="false"
+                aria-describedby="error-ficha-titulo"
+              />
+              <div
+                id="error-ficha-titulo"
+                class="field-error"
+                role="alert"
+                aria-live="polite"
+              ></div>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label for="ficha-plataforma" class="form-label">Plataforma *</label>
+              <select
+                id="ficha-plataforma"
+                name="plataforma"
+                class="form-select"
+                required
+                data-validar="plataforma"
+                aria-invalid="false"
+                aria-describedby="error-ficha-plataforma"
+              >
+                <option value="">Selecciona plataforma...</option>
+                <option value="PC">PC</option>
+                <option value="PlayStation 5">PlayStation 5</option>
+                <option value="Xbox Series X">Xbox Series X</option>
+                <option value="Nintendo Switch">Nintendo Switch</option>
+                <option value="Retro">Retro</option>
+              </select>
+              <div
+                id="error-ficha-plataforma"
+                class="field-error"
+                role="alert"
+                aria-live="polite"
+              ></div>
+            </div>
+
+            <!-- Fila 2: SKU, Fecha, Horas y Estado de progreso alineados -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="ficha-sku" class="form-label text-nowrap">Código SKU</label>
+              <input
+                type="text"
+                id="ficha-sku"
+                name="sku"
+                class="form-control font-mono"
+                placeholder="GAME-RPG-0042"
+                data-validar="sku"
+                aria-invalid="false"
+                aria-describedby="error-ficha-sku"
+              />
+              <div id="error-ficha-sku" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="ficha-fecha" class="form-label text-nowrap">Fecha de adquisición *</label>
+              <input
+                type="date"
+                id="ficha-fecha"
+                name="fechaAdquisicion"
+                class="form-control"
+                required
+                data-validar="fecha"
+                aria-invalid="false"
+                aria-describedby="error-ficha-fecha"
+              />
+              <div id="error-ficha-fecha" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-2">
+              <label for="ficha-horas" class="form-label text-nowrap">Horas jugadas *</label>
+              <input
+                type="number"
+                id="ficha-horas"
+                name="horasJugadas"
+                class="form-control font-mono"
+                min="0"
+                step="1"
+                value="0"
+                required
+                data-validar="horas"
+                aria-invalid="false"
+                aria-describedby="error-ficha-horas"
+              />
+              <div id="error-ficha-horas" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-4">
+              <label for="ficha-estado" class="form-label text-nowrap">Estado de progreso *</label>
+              <select
+                id="ficha-estado"
+                name="estado"
+                class="form-select"
+                required
+                data-validar="estado"
+                aria-invalid="false"
+                aria-describedby="error-ficha-estado"
+              >
+                <option value="pendiente">Pendiente</option>
+                <option value="jugando">Jugando</option>
+                <option value="completado">Completado</option>
+                <option value="abandonado">Abandonado</option>
+              </select>
+              <div
+                id="error-ficha-estado"
+                class="field-error"
+                role="alert"
+                aria-live="polite"
+              ></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- SECCIÓN 2: Selector de Formato Apple Segmented Cards -->
+        <fieldset class="mb-5" aria-describedby="error-ficha-formato">
+          <legend
+            class="h6 fw-semibold text-uppercase text-secondary small mb-4 pb-2 border-bottom border-secondary border-opacity-25"
+          >
+            2. Formato de la edición *
+          </legend>
+
+          <div class="gv-radio-card-group">
+            <div class="gv-radio-card">
+              <input
+                type="radio"
+                id="formato-fisico"
+                name="formato"
+                value="fisico"
+                required
+                data-validar="formato"
+                aria-invalid="false"
+                aria-describedby="error-ficha-formato"
+              />
+              <label for="formato-fisico" class="gv-radio-card-label">
+                <span class="fw-semibold text-light">Edición Física</span>
+                <span class="small text-secondary"
+                  >Disco o cartucho con código EAN-13 y ubicación física en estantería.</span
+                >
+              </label>
+            </div>
+
+            <div class="gv-radio-card">
+              <input
+                type="radio"
+                id="formato-digital"
+                name="formato"
+                value="digital"
+                required
+                data-validar="formato"
+                aria-invalid="false"
+                aria-describedby="error-ficha-formato"
+              />
+              <label for="formato-digital" class="gv-radio-card-label">
+                <span class="fw-semibold text-light">Edición Digital</span>
+                <span class="small text-secondary"
+                  >Licencia descargable vinculada a una tienda o lanzador digital.</span
+                >
+              </label>
+            </div>
+          </div>
+
+          <div
+            id="error-ficha-formato"
+            class="field-error mt-2"
+            role="alert"
+            aria-live="polite"
+          ></div>
+        </fieldset>
+
+        <!-- BLOQUE CONDICIONAL A: Físico -->
+        <fieldset id="bloque-fisico" class="gv-conditional-block mb-4" hidden disabled>
+          <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Física</legend>
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label for="ficha-ean" class="form-label">Código de barras EAN-13</label>
+              <input
+                type="text"
+                id="ficha-ean"
+                name="ean13"
+                class="form-control font-mono"
+                placeholder="4020628663124"
+                maxlength="13"
+                inputmode="numeric"
+                data-validar="ean13"
+                aria-invalid="false"
+                aria-describedby="error-ficha-ean"
+                disabled
+              />
+              <div id="error-ficha-ean" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label for="ficha-ubicacion" class="form-label">Ubicación en estantería</label>
+              <input
+                type="text"
+                id="ficha-ubicacion"
+                name="ubicacion"
+                class="form-control font-mono"
+                placeholder="EST-A-03"
+                data-validar="estanteria"
+                aria-invalid="false"
+                aria-describedby="error-ficha-ubicacion"
+                disabled
+              />
+              <div
+                id="error-ficha-ubicacion"
+                class="field-error"
+                role="alert"
+                aria-live="polite"
+              ></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- BLOQUE CONDICIONAL B: Digital -->
+        <fieldset id="bloque-digital" class="gv-conditional-block mb-4" hidden disabled>
+          <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Digital</legend>
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="ficha-tienda" class="form-label">Tienda digital</label>
+              <select
+                id="ficha-tienda"
+                name="tiendaDigital"
+                class="form-select"
+                data-validar="tienda"
+                aria-invalid="false"
+                aria-describedby="error-ficha-tienda"
+                disabled
+              >
+                <option value="">Selecciona una tienda...</option>
+                <option value="Steam">Steam</option>
+                <option value="PlayStation Store">PlayStation Store</option>
+                <option value="Nintendo eShop">Nintendo eShop</option>
+                <option value="Epic Games Store">Epic Games Store</option>
+                <option value="Xbox Store">Xbox Store</option>
+              </select>
+              <div
+                id="error-ficha-tienda"
+                class="field-error"
+                role="alert"
+                aria-live="polite"
+              ></div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- SECCIÓN 3: Expansiones / DLCs -->
+        <fieldset class="mb-5">
+          <div
+            class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25"
+          >
+            <div>
+              <legend class="h6 fw-semibold text-uppercase text-secondary small mb-1">
+                3. DLCs y Expansiones
+              </legend>
+              <p class="text-secondary small mb-0">
+                Puedes añadir hasta un máximo de 3 expansiones asociadas a este título.
+              </p>
+            </div>
+            <button type="button" id="btn-anadir-dlc" class="btn-gv-ghost">+ Añadir DLC</button>
+          </div>
+
+          <div id="lista-dlcs" class="d-flex flex-column gap-3" aria-live="polite"></div>
+          <div id="error-ficha-dlcs" class="field-error" role="alert" aria-live="polite"></div>
+        </fieldset>
+
+        <hr class="my-4 border-secondary border-opacity-25" />
+
+        <!-- Acciones de envío -->
+        <div class="d-flex flex-wrap justify-content-end gap-3">
+          <a href="listado.html" id="btn-cancelar-ficha" class="btn-gv-ghost text-decoration-none"
+            >Cancelar</a
+          >
+          <button type="submit" id="btn-guardar-ficha" class="btn-gv-primary">
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span class="btn-text">Guardar videojuego</span>
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Template de fila dinámica de DLC -->
+    <template id="tpl-dlc">
+      <div class="gv-dlc-row js-fila-dlc">
+        <div class="row g-3 align-items-start">
+          <div class="col-12 col-md-6">
+            <label for="dlc-nombre-0" class="form-label js-label-dlc-nombre">Nombre del DLC</label>
+            <input
+              type="text"
+              id="dlc-nombre-0"
+              name="dlcNombre[]"
+              class="form-control js-input-dlc-nombre"
+              placeholder="ej. Shadow of the Erdtree"
+              required
+              data-validar="titulo"
+              aria-invalid="false"
+              aria-describedby="error-dlc-nombre-0"
+            />
+            <div
+              id="error-dlc-nombre-0"
+              class="field-error js-error-dlc-nombre"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <div class="col-12 col-sm-8 col-md-4">
+            <label for="dlc-estado-0" class="form-label js-label-dlc-estado">Estado del DLC</label>
+            <select
+              id="dlc-estado-0"
+              name="dlcEstado[]"
+              class="form-select js-select-dlc-estado"
+              required
+              data-validar="estado"
+              aria-invalid="false"
+              aria-describedby="error-dlc-estado-0"
+            >
+              <option value="pendiente">Pendiente</option>
+              <option value="jugando">Jugando</option>
+              <option value="completado">Completado</option>
+            </select>
+            <div
+              id="error-dlc-estado-0"
+              class="field-error js-error-dlc-estado"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <div class="col-12 col-sm-4 col-md-2 d-flex align-items-end pt-md-4">
+            <button
+              type="button"
+              class="btn-gv-danger w-100 js-btn-quitar-dlc"
+              aria-label="Eliminar fila de DLC"
+            >
+              Quitar
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Contenedor global de notificaciones -->
+    <div
+      id="region-avisos"
+      class="gv-toast-region"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <script type="module">
+      import { protegerPaginaPrivada } from './js/rutas.js';
+      import { iniciarCabecera } from './js/cabecera.js';
+      import { iniciarAvisos } from './js/avisos.js';
+      import { iniciarFicha } from './js/ficha.js';
+
+      if (protegerPaginaPrivada()) {
+        iniciarCabecera();
+        iniciarAvisos();
+        iniciarFicha();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1147 @@
+/* ==========================================================================
+   GAMEVAULT — APPLE PRO DESIGN SYSTEM & STYLESHEET
+   Inspiración: Apple Web Design (apple.com / Pro Hardware / Bento Glass)
+   Paleta: Obsidian Pitch Black, Frosted Translucent Glass, Apple Dynamic Colors
+   Base: Bootstrap 5.3 CSS (data-bs-theme="dark")
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700;800&family=SF+Pro+Text:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ==========================================
+     PALETA DE COLORES APPLE OBSIDIAN
+     ========================================== */
+  --gv-bg-main: #000000;
+  --gv-bg-subtle: #08080a;
+  --gv-bg-surface: rgba(22, 22, 26, 0.72);
+  --gv-bg-surface-elevated: rgba(30, 30, 36, 0.8);
+  --gv-bg-surface-solid: #16161a;
+  --gv-bg-input: rgba(255, 255, 255, 0.05);
+  --gv-bg-input-focus: rgba(255, 255, 255, 0.09);
+
+  /* Bordes y reflexiones hairline */
+  --gv-border-subtle: rgba(255, 255, 255, 0.09);
+  --gv-border-hover: rgba(255, 255, 255, 0.22);
+  --gv-border-focus: #2997ff;
+  --gv-border-accent: rgba(41, 151, 255, 0.65);
+
+  /* Acentos de color característicos de Apple */
+  --apple-blue: #2997ff;
+  --apple-blue-pressed: #0071e3;
+  --apple-indigo: #5e5ce6;
+  --apple-green: #30d158;
+  --apple-orange: #ff9f0a;
+  --apple-red: #ff453a;
+  --apple-purple: #bf5af2;
+  --apple-cyan: #64d2ff;
+
+  /* Aliases para compatibilidad con código existente */
+  --gv-accent-primary: var(--apple-blue);
+  --gv-accent-secondary: var(--apple-indigo);
+  --gv-accent-gradient: linear-gradient(180deg, #2997ff 0%, #0071e3 100%);
+  --gv-accent-glow: 0 0 24px rgba(41, 151, 255, 0.35);
+
+  /* Tipografía y matices de blanco / titanio */
+  --gv-text-primary: #f5f5f7;
+  --gv-text-secondary: #a1a1a6;
+  --gv-text-muted: #86868b;
+  --gv-text-gradient: linear-gradient(180deg, #ffffff 15%, #a1a1a6 100%);
+
+  /* Estados semánticos (Apple Pills) */
+  --gv-status-pending-bg: rgba(100, 210, 255, 0.12);
+  --gv-status-pending-text: #70d7ff;
+  --gv-status-pending-border: rgba(100, 210, 255, 0.28);
+
+  --gv-status-playing-bg: rgba(255, 159, 10, 0.14);
+  --gv-status-playing-text: #ffb340;
+  --gv-status-playing-border: rgba(255, 159, 10, 0.32);
+
+  --gv-status-completed-bg: rgba(48, 209, 88, 0.14);
+  --gv-status-completed-text: #4cd97b;
+  --gv-status-completed-border: rgba(48, 209, 88, 0.32);
+
+  --gv-status-dropped-bg: rgba(255, 69, 58, 0.14);
+  --gv-status-dropped-text: #ff6961;
+  --gv-status-dropped-border: rgba(255, 69, 58, 0.32);
+
+  --gv-danger: var(--apple-red);
+  --gv-success: var(--apple-green);
+  --gv-warning: var(--apple-orange);
+
+  /* Fuentes Apple / SF Pro */
+  --gv-font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'Inter',
+    system-ui, sans-serif;
+  --gv-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Física de animaciones Apple (resorte suave sin rebote tosco) */
+  --gv-ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+  --gv-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --gv-radius-pill: 980px;
+  --gv-radius-sm: 10px;
+  --gv-radius-md: 16px;
+  --gv-radius-lg: 22px;
+  --gv-radius-xl: 28px;
+}
+
+/* ==========================================================================
+   RESET Y BASE GLOBAL (APPLE EXPERIENCE)
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--gv-bg-main);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(41, 151, 255, 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 85% 100%, rgba(94, 92, 230, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 10% 80%, rgba(48, 209, 88, 0.03) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: var(--gv-text-primary);
+  font-family: var(--gv-font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.012em;
+}
+
+::selection {
+  background: rgba(41, 151, 255, 0.35);
+  color: #ffffff;
+}
+
+/* Scrollbar ultra-fino estilo macOS / Apple */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--gv-radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.font-mono {
+  font-family: var(--gv-font-mono);
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   TIPOGRAFÍA APPLE Y EFECTOS METÁLICOS
+   ========================================================================== */
+
+.apple-headline {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #ffffff 15%, #a1a1a6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.apple-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--apple-blue);
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+.apple-subhead {
+  color: var(--gv-text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
+  max-width: 620px;
+}
+
+/* ==========================================================================
+   ANIMACIONES SUAVES APPLE
+   ========================================================================== */
+
+@keyframes appleFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes appleGlowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(41, 151, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(41, 151, 255, 0.4);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes spinLoader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes backdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: appleFadeInUp 0.6s var(--gv-ease-apple) both;
+}
+
+.delay-1 {
+  animation-delay: 0.08s;
+}
+.delay-2 {
+  animation-delay: 0.16s;
+}
+.delay-3 {
+  animation-delay: 0.24s;
+}
+.delay-4 {
+  animation-delay: 0.32s;
+}
+
+/* ==========================================================================
+   CABECERA Y NAVEGACIÓN GLOBAL (APPLE FROSTED NAVBAR)
+   ========================================================================== */
+
+.gv-header {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--gv-border-subtle);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.gv-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.03em;
+  color: var(--gv-text-primary);
+  text-decoration: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s var(--gv-ease-apple);
+}
+
+.gv-brand:hover {
+  color: #ffffff;
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.gv-brand-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--gv-radius-sm);
+  background: var(--gv-accent-gradient);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: -0.04em;
+  box-shadow: 0 4px 14px rgba(41, 151, 255, 0.4);
+}
+
+.gv-nav-link {
+  color: var(--gv-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--gv-radius-pill);
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.gv-nav-link:hover {
+  color: var(--gv-text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gv-nav-link[aria-current='page'] {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  font-weight: 600;
+}
+
+.gv-session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-pill);
+  font-size: 0.8125rem;
+  backdrop-filter: blur(10px);
+}
+
+/* ==========================================================================
+   BENTO SURFACES & CARDS (GLASSMORPHISM APPLE PRO)
+   ========================================================================== */
+
+.gv-surface {
+  background: var(--gv-bg-surface);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-lg);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Sutil halo superior característico de hardware Apple */
+.gv-surface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.gv-card-game {
+  background: var(--gv-bg-surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-xl);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.4s var(--gv-ease-apple),
+    border-color 0.4s var(--gv-ease-apple),
+    box-shadow 0.4s var(--gv-ease-apple);
+  animation: appleFadeInUp 0.55s var(--gv-ease-apple) both;
+}
+
+/* Resplandor ambiental difuso (color de la plataforma) */
+.gv-card-game::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 100px;
+  background: var(--card-accent, var(--apple-blue));
+  opacity: 0;
+  border-radius: 50%;
+  filter: blur(50px);
+  pointer-events: none;
+  transition: opacity 0.4s var(--gv-ease-apple);
+  z-index: 0;
+}
+
+.gv-card-game:hover::after {
+  opacity: 0.22;
+}
+
+.gv-card-game:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: color-mix(in srgb, var(--card-accent, var(--apple-blue)) 40%, transparent);
+  box-shadow:
+    0 28px 50px -14px rgba(0, 0, 0, 0.85),
+    0 0 30px color-mix(in srgb, var(--card-accent, var(--apple-blue)) 20%, transparent);
+}
+
+/* Colores por plataforma — asignar con data-platform en el article */
+.gv-card-game[data-platform='ps5'] {
+  --card-accent: #006fcd;
+}
+.gv-card-game[data-platform='xbox'] {
+  --card-accent: #107c10;
+}
+.gv-card-game[data-platform='switch'] {
+  --card-accent: #e60012;
+}
+.gv-card-game[data-platform='pc'] {
+  --card-accent: #2997ff;
+}
+.gv-card-game[data-platform='retro'] {
+  --card-accent: #bf5af2;
+}
+
+/* ——— ZONA HERO: Título grande + consola de fondo ——— */
+.gv-card-hero {
+  position: relative;
+  padding: 2.5rem 1.75rem 1.75rem;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  z-index: 1;
+  overflow: hidden;
+  /* Gradiente que va del color de plataforma al fondo */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card-accent, var(--apple-blue)) 12%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+/* Barra superior de acento de color */
+.gv-card-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-accent, var(--apple-blue));
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
+}
+
+.gv-card-game:hover .gv-card-hero::before {
+  opacity: 1;
+}
+
+/* SVG de consola como fondo decorativo */
+.gv-card-hero .gv-card-console-bg {
+  position: absolute;
+  right: -10px;
+  bottom: -15px;
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  opacity: 0.06;
+  pointer-events: none;
+  transition:
+    opacity 0.5s var(--gv-ease-apple),
+    transform 0.5s var(--gv-ease-apple);
+  filter: grayscale(100%) brightness(2);
+}
+
+.gv-card-game:hover .gv-card-console-bg {
+  opacity: 0.12;
+  transform: scale(1.08) rotate(-3deg);
+}
+
+/* Badges superiores (plataforma, formato, estado) */
+.gv-card-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Título del juego — PROTAGONISTA VISUAL */
+.gv-card-hero-title {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+  word-break: break-word;
+  /* Gradiente metálico sutil */
+  background: linear-gradient(180deg, #ffffff 30%, #c8c8cc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* SKU debajo del título */
+.gv-card-hero-sku {
+  font-family: var(--gv-font-mono);
+  font-size: 0.72rem;
+  color: var(--gv-text-muted);
+  letter-spacing: 0.04em;
+  margin-top: 0.45rem;
+}
+
+/* ——— ZONA DATOS: Metadatos + acciones ——— */
+.gv-card-info-side {
+  flex: 1;
+  padding: 1rem 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  z-index: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* LEGACY — mantener para compatibilidad */
+.gv-card-console-side,
+.gv-card-console-showcase {
+  display: none;
+}
+
+/* ==========================================================================
+   BOTONES CAPSULE (APPLE PILL BUTTONS)
+   ========================================================================== */
+
+.btn-gv-primary {
+  background: var(--gv-accent-gradient);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--gv-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 113, 227, 0.38);
+  transition:
+    transform 0.2s var(--gv-ease-apple),
+    box-shadow 0.2s var(--gv-ease-apple),
+    filter 0.2s ease,
+    opacity 0.2s ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-gv-primary:hover:not(:disabled) {
+  color: #ffffff;
+  filter: brightness(1.1);
+  transform: translateY(-1px) scale(1.015);
+  box-shadow: 0 6px 24px rgba(41, 151, 255, 0.5);
+}
+
+.btn-gv-primary:active:not(:disabled) {
+  transform: scale(0.985);
+  filter: brightness(0.95);
+}
+
+.btn-gv-primary:disabled,
+.btn-gv-primary.is-loading {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spinLoader 0.75s linear infinite;
+  display: none;
+}
+
+.btn-gv-primary.is-loading .btn-spinner,
+.btn-gv-primary:disabled .btn-spinner-auto {
+  display: inline-block;
+}
+
+.btn-gv-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--gv-border-subtle);
+  color: var(--gv-text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--gv-radius-pill);
+  backdrop-filter: blur(10px);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s var(--gv-ease-apple);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-gv-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--gv-border-hover);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-gv-ghost:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.btn-gv-danger {
+  background: rgba(255, 69, 58, 0.12);
+  border: 1px solid rgba(255, 69, 58, 0.3);
+  color: #ff6961;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--gv-radius-pill);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s var(--gv-ease-apple);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-gv-danger:hover:not(:disabled) {
+  background: var(--apple-red);
+  border-color: var(--apple-red);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(255, 69, 58, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-gv-danger:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+/* ==========================================================================
+   FORMULARIOS Y CONTROLES ACCESIBLES (APPLE SETTINGS / IOS)
+   ========================================================================== */
+
+.form-label {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: #d1d1d6;
+  margin-bottom: 0.45rem;
+  letter-spacing: -0.01em;
+}
+
+.form-control {
+  background-color: var(--gv-bg-input);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  color: var(--gv-text-primary);
+  color-scheme: dark;
+  font-size: 0.925rem;
+  padding: 0.65rem 0.95rem;
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 0.25s var(--gv-ease-apple),
+    box-shadow 0.25s var(--gv-ease-apple),
+    background-color 0.25s var(--gv-ease-apple);
+}
+
+.form-select {
+  background-color: #14151a;
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  color: var(--gv-text-primary);
+  color-scheme: dark;
+  font-size: 0.925rem;
+  padding: 0.65rem 2.25rem 0.65rem 0.95rem;
+  transition:
+    border-color 0.25s var(--gv-ease-apple),
+    box-shadow 0.25s var(--gv-ease-apple),
+    background-color 0.25s var(--gv-ease-apple);
+}
+
+.form-control::placeholder {
+  color: var(--gv-text-muted);
+}
+
+.form-control:focus-visible,
+.form-control:focus {
+  background-color: var(--gv-bg-input-focus);
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.32);
+  color: #ffffff;
+  outline: none;
+}
+
+.form-select:focus-visible,
+.form-select:focus {
+  background-color: #1a1c23;
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.32);
+  color: #ffffff;
+  outline: none;
+}
+
+/* Opciones del menú desplegable select en modo oscuro */
+.form-select option,
+select option {
+  background-color: #16181f;
+  color: #f5f5f7;
+  padding: 0.5rem 0.75rem;
+}
+
+.form-select option:checked,
+select option:checked {
+  background-color: var(--apple-blue);
+  color: #ffffff;
+}
+
+.form-select option:disabled,
+select option:disabled {
+  color: var(--gv-text-muted);
+}
+
+.form-select optgroup,
+select optgroup {
+  background-color: #16181f;
+  color: var(--gv-text-muted);
+}
+
+/* Estado de error / invalidación accesible */
+.form-control[aria-invalid='true'],
+.form-select[aria-invalid='true'],
+.form-check-input[aria-invalid='true'] {
+  border-color: var(--apple-red);
+  box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.22);
+  animation: shake 0.36s var(--gv-ease-apple);
+}
+
+.field-error {
+  font-size: 0.785rem;
+  color: #ff6961;
+  margin-top: 0.4rem;
+  min-height: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: opacity 0.2s ease;
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.form-check-input {
+  background-color: var(--gv-bg-input);
+  border-color: var(--gv-border-hover);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.form-check-input:checked {
+  background-color: var(--apple-blue);
+  border-color: var(--apple-blue);
+}
+
+.form-check-input:focus {
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.32);
+}
+
+/* ==========================================================================
+   SELECTOR DE FORMATO APPLE SEGMENTED RADIO CARDS
+   ========================================================================== */
+
+.gv-radio-card-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 576px) {
+  .gv-radio-card-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gv-radio-card {
+  position: relative;
+}
+
+.gv-radio-card input[type='radio'] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.gv-radio-card-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-md);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.25s var(--gv-ease-apple),
+    background-color 0.25s var(--gv-ease-apple),
+    transform 0.25s var(--gv-ease-apple),
+    box-shadow 0.25s var(--gv-ease-apple);
+}
+
+.gv-radio-card-label:hover {
+  border-color: var(--gv-border-hover);
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateY(-2px);
+}
+
+.gv-radio-card input[type='radio']:checked + .gv-radio-card-label {
+  background: rgba(41, 151, 255, 0.12);
+  border-color: var(--apple-blue);
+  box-shadow:
+    0 0 0 1px var(--apple-blue),
+    0 8px 24px rgba(41, 151, 255, 0.22);
+}
+
+.gv-radio-card input[type='radio']:focus-visible + .gv-radio-card-label {
+  outline: 2px solid var(--apple-blue);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   PANEL DE REQUISITOS DE CONTRASEÑA (APPLE KEYCHAIN STYLE)
+   ========================================================================== */
+
+.gv-pwd-requirements {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  padding: 0.85rem 1rem;
+  margin-top: 0.6rem;
+}
+
+.gv-req-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.45rem 0.85rem;
+}
+
+.gv-req-item {
+  font-size: 0.775rem;
+  color: var(--gv-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.gv-req-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background-color: var(--gv-text-muted);
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.gv-req-item.is-valid {
+  color: #4cd97b;
+}
+
+.gv-req-item.is-valid .gv-req-dot {
+  background-color: var(--apple-green);
+  box-shadow: 0 0 8px rgba(48, 209, 88, 0.7);
+  transform: scale(1.2);
+}
+
+.gv-req-item.is-invalid {
+  color: #ff6961;
+}
+
+.gv-req-item.is-invalid .gv-req-dot {
+  background-color: var(--apple-red);
+}
+
+/* ==========================================================================
+   BADGES SEMÁNTICOS (APPLE CAPSULE PILLS)
+   ========================================================================== */
+
+.gv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--gv-radius-pill);
+  border: 1px solid transparent;
+  backdrop-filter: blur(8px);
+  letter-spacing: 0.01em;
+}
+
+.gv-badge-pendiente {
+  background: var(--gv-status-pending-bg);
+  color: var(--gv-status-pending-text);
+  border-color: var(--gv-status-pending-border);
+}
+
+.gv-badge-jugando {
+  background: var(--gv-status-playing-bg);
+  color: var(--gv-status-playing-text);
+  border-color: var(--gv-status-playing-border);
+}
+
+.gv-badge-completado {
+  background: var(--gv-status-completed-bg);
+  color: var(--gv-status-completed-text);
+  border-color: var(--gv-status-completed-border);
+}
+
+.gv-badge-abandonado {
+  background: var(--gv-status-dropped-bg);
+  color: var(--gv-status-dropped-text);
+  border-color: var(--gv-status-dropped-border);
+}
+
+.gv-badge-meta,
+.steam-badge--rol-usuario {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gv-text-secondary);
+  border-color: var(--gv-border-subtle);
+}
+
+.gv-badge-admin,
+.steam-badge--rol-admin {
+  background: rgba(191, 90, 242, 0.16);
+  color: #d084f7;
+  border-color: rgba(191, 90, 242, 0.35);
+  box-shadow: 0 0 12px rgba(191, 90, 242, 0.2);
+}
+
+/* ==========================================================================
+   BLOQUES CONDICIONALES Y FILAS DINÁMICAS DE DLC
+   ========================================================================== */
+
+.gv-conditional-block {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px dashed rgba(41, 151, 255, 0.35);
+  border-radius: var(--gv-radius-md);
+  padding: 1.35rem;
+  animation: appleFadeInUp 0.35s var(--gv-ease-apple) both;
+}
+
+.gv-conditional-block[hidden] {
+  display: none !important;
+}
+
+.gv-dlc-row {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  padding: 1rem;
+  animation: appleFadeInUp 0.3s var(--gv-ease-apple) both;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.gv-dlc-row:hover {
+  border-color: var(--gv-border-hover);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   MODAL NATIVO <dialog> Y ::backdrop
+   ========================================================================== */
+
+.gv-dialog {
+  background: var(--gv-bg-surface-solid);
+  color: var(--gv-text-primary);
+  border: 1px solid var(--gv-border-hover);
+  border-radius: var(--gv-radius-xl);
+  padding: 0;
+  max-width: 440px;
+  width: calc(100% - 2rem);
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.9);
+}
+
+.gv-dialog[open] {
+  animation: dialogIn 0.3s var(--gv-ease-apple) forwards;
+}
+
+.gv-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: backdropFade 0.25s ease forwards;
+}
+
+/* ==========================================================================
+   TABLAS MODERNAS Y PAGINACIÓN (APPLE MACOS STYLE)
+   ========================================================================== */
+
+.gv-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--gv-text-primary);
+  --bs-table-border-color: var(--gv-border-subtle);
+  margin-bottom: 0;
+}
+
+.gv-table thead th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gv-text-secondary);
+  font-weight: 600;
+  border-bottom-width: 1px;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.gv-table tbody td {
+  padding: 1rem 1.25rem;
+  vertical-align: middle;
+  font-size: 0.885rem;
+  border-bottom-width: 1px;
+}
+
+.gv-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.gv-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+.gv-pagination .page-link {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--gv-border-subtle);
+  color: var(--gv-text-secondary);
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--gv-radius-pill) !important;
+  margin: 0 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.gv-pagination .page-link:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: var(--gv-border-hover);
+}
+
+.gv-pagination .page-item.active .page-link {
+  background: var(--gv-accent-gradient);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 113, 227, 0.4);
+}
+
+/* ==========================================================================
+   NOTIFICACIONES GLOBALES (APPLE DYNAMIC ISLAND / PILL BANNER)
+   ========================================================================== */
+
+.gv-toast-region {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 400px;
+  width: calc(100% - 4rem);
+  pointer-events: none;
+}
+
+@media (max-width: 576px) {
+  .gv-toast-region {
+    bottom: 1.25rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
+.gv-toast-item {
+  pointer-events: auto;
+  background: rgba(28, 28, 30, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--gv-radius-md);
+  padding: 0.95rem 1.25rem;
+  color: var(--gv-text-primary);
+  font-size: 0.875rem;
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.75),
+    0 0 20px rgba(41, 151, 255, 0.2);
+  animation: appleFadeInUp 0.35s var(--gv-ease-apple) both;
+}
