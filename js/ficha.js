@@ -2,11 +2,17 @@
  * Controlador del formulario de alta y edición de videojuegos (ficha.html).
  *
  * Gestiona los campos base de la entidad Videojuego, la inyección dinámica de la fecha
- * máxima (max = hoy), la extracción y normalización de datos con FormData y la
+ * máxima (max = hoy), la extracción y normalización de datos con FormData, el flujo
+ * completo de alta y edición según parámetros de URL, persistencia desacoplada y la
  * inicialización accesible de la vista.
  *
  * @module ficha
  */
+
+import { conectarValidacionTiempoReal } from './validacion.js';
+import { obtenerJuegoPorId, crearJuego, actualizarJuego } from './juegos.js';
+import { obtenerSesion } from './sesion.js';
+import { guardarAviso, lanzarAviso } from './avisos.js';
 
 /**
  * Inyecta dinámicamente el atributo max en el campo de fecha para impedir fechas futuras.
@@ -203,8 +209,6 @@ export function alternarSeccionFormato(formulario, formato) {
     });
   }
 }
-
-import { conectarValidacionTiempoReal } from './validacion.js';
 
 export const MAX_DLCS = 3;
 export const MIN_DLCS = 0;
@@ -467,12 +471,33 @@ export function rellenarFormulario(formulario, datos = {}) {
 
 /**
  * Inicializa la página ficha.html.
- * Inyecta la fecha máxima en el selector de fecha, conecta el conmutador condicional de formato
- * y vincula el gestor dinámico de DLCs clonado desde <template id="tpl-dlc">.
  *
- * @param {Document} [documento=document] Objeto de documento inyectable.
- * @param {Object} [opciones={}] Opciones configurables (fechaReferencia, formatoInicial, dlcsIniciales, etc.).
- * @returns {Function} Función de limpieza para desconectar los oyentes.
+ * Controla el flujo integral de alta y edición de la entidad Videojuego:
+ * - Detecta el modo (Alta o Edición) a partir del parámetro de URL `?id=...` o `opciones.id`.
+ * - En modo edición: carga el juego del catálogo del usuario. Si no existe, almacena
+ *   un aviso diferido de error y redirige inmediatamente a `listado.html`.
+ * - En modo alta: ajusta los títulos y botones para la creación de un nuevo registro.
+ * - Inyecta dinámicamente la fecha máxima permitida (max = hoy) en el selector de fecha.
+ * - Conecta la reactividad accesible para la sección condicional de formato (físico / digital).
+ * - Vincula la gestión dinámica del grupo de DLCs con límites (0 a 3).
+ * - Conecta el motor genérico de validación en tiempo real y captura el envío (`submit`).
+ * - Al guardar con datos válidos: persiste el videojuego normalizado (crear o actualizar),
+ *   almacena el aviso diferido de éxito en `sessionStorage` y redirige a `listado.html`.
+ *
+ * @param {Document} [documento=typeof document !== 'undefined' ? document : null] Objeto Document del DOM.
+ * @param {Object} [opciones={}] Opciones configurables e inyección de dependencias.
+ * @param {Storage} [opciones.almacenLocal] Almacén de persistencia para videojuegos (localStorage).
+ * @param {Storage} [opciones.almacenSesion] Almacén de persistencia para sesión y avisos (sessionStorage).
+ * @param {Window | { location: { search: string, href?: string } }} [opciones.ventana] Objeto de ventana o mock para navegación.
+ * @param {Function} [opciones.navegar] Callback de navegación para redirección (por defecto window.location.href).
+ * @param {string} [opciones.usuario] Usuario propietario (por defecto extraído de la sesión activa).
+ * @param {string | null} [opciones.id] ID de videojuego explícito para modo edición o anulación.
+ * @param {Date | string} [opciones.fechaReferencia] Fecha de referencia para fecha máxima.
+ * @param {'fisico' | 'digital'} [opciones.formatoInicial] Formato inicial en modo alta.
+ * @param {Array<Object>} [opciones.dlcsIniciales] Lista inicial de DLCs en modo alta.
+ * @param {Object} [opciones.validacion] Opciones adicionales pasadas a conectarValidacionTiempoReal.
+ * @param {Function} [opciones.alGuardar] Callback opcional invocado al guardar con éxito ({ modo, juego }).
+ * @returns {Function} Función de limpieza para desconectar todos los oyentes de eventos.
  */
 export function iniciarFicha(
   documento = typeof document !== 'undefined' ? document : null,
@@ -480,49 +505,168 @@ export function iniciarFicha(
 ) {
   if (!documento) return () => {};
 
+  const almacenLocal =
+    opciones.almacenLocal ?? (typeof window !== 'undefined' ? window.localStorage : null);
+  const almacenSesion =
+    opciones.almacenSesion ?? (typeof window !== 'undefined' ? window.sessionStorage : null);
+  const ventana = opciones.ventana ?? (typeof window !== 'undefined' ? window : null);
+  const navegar =
+    opciones.navegar ??
+    ((url) => {
+      if (ventana && ventana.location) {
+        ventana.location.href = url;
+      }
+    });
+
+  const usuario =
+    opciones.usuario || (almacenSesion ? obtenerSesion(almacenSesion)?.usuario : '') || '';
+
+  const formulario = documento.querySelector('#form-ficha') || documento.querySelector('form');
   const inputFecha = documento.querySelector('#ficha-fecha');
   if (inputFecha) {
     inyectarFechaMaxima(inputFecha, opciones.fechaReferencia || new Date());
   }
 
-  const formulario = documento.querySelector('#form-ficha') || documento.querySelector('form');
+  // Detección de parámetro id para Modo Edición
+  let idJuego = opciones.id !== undefined ? opciones.id : null;
+  if (idJuego === null && ventana && ventana.location && ventana.location.search) {
+    try {
+      const urlParams = new URLSearchParams(ventana.location.search);
+      const paramId = urlParams.get('id');
+      if (paramId && paramId.trim()) {
+        idJuego = paramId.trim();
+      }
+    } catch {
+      idJuego = null;
+    }
+  }
+
+  const modoEdicion = Boolean(idJuego);
+  let juegoEnEdicion = null;
+
+  if (modoEdicion) {
+    juegoEnEdicion = obtenerJuegoPorId(idJuego, usuario, almacenLocal);
+    if (!juegoEnEdicion) {
+      guardarAviso(
+        'El videojuego solicitado no existe o no pertenece a tu catálogo',
+        'danger',
+        almacenSesion,
+      );
+      navegar('listado.html');
+      return () => {};
+    }
+
+    const tituloPagina = documento.querySelector('#titulo-pagina-ficha');
+    if (tituloPagina) {
+      tituloPagina.textContent = 'Edición de Videojuego';
+    }
+    const btnGuardar = documento.querySelector('#btn-guardar-ficha');
+    if (btnGuardar) {
+      const btnTexto = btnGuardar.querySelector('.btn-text');
+      if (btnTexto) {
+        btnTexto.textContent = 'Guardar cambios';
+      }
+    }
+  } else {
+    const tituloPagina = documento.querySelector('#titulo-pagina-ficha');
+    if (tituloPagina) {
+      tituloPagina.textContent = 'Alta de Videojuego';
+    }
+    const btnGuardar = documento.querySelector('#btn-guardar-ficha');
+    if (btnGuardar) {
+      const btnTexto = btnGuardar.querySelector('.btn-text');
+      if (btnTexto) {
+        btnTexto.textContent = 'Guardar videojuego';
+      }
+    }
+  }
+
   let desconectarFormato = () => {};
   let desconectarValidacion = () => {};
+  let desconectarDlcs = () => {};
+
+  const contenedorDlcs = documento.querySelector('#lista-dlcs');
+  const templateDlc = documento.querySelector('#tpl-dlc');
+  const btnAnadirDlc = documento.querySelector('#btn-anadir-dlc');
+
+  if (contenedorDlcs && templateDlc && btnAnadirDlc) {
+    desconectarDlcs = conectarDlcs(contenedorDlcs, templateDlc, btnAnadirDlc);
+  }
 
   if (formulario) {
-    desconectarValidacion = conectarValidacionTiempoReal(formulario, opciones.validacion);
+    if (modoEdicion && juegoEnEdicion) {
+      rellenarFormulario(formulario, juegoEnEdicion);
+    } else {
+      const radioMarcado = formulario.querySelector('input[name="formato"]:checked');
+      const formatoInicial = opciones.formatoInicial || (radioMarcado ? radioMarcado.value : null);
+      alternarSeccionFormato(formulario, formatoInicial);
 
-    const radioMarcado = formulario.querySelector('input[name="formato"]:checked');
-    const formatoInicial = opciones.formatoInicial || (radioMarcado ? radioMarcado.value : null);
-    alternarSeccionFormato(formulario, formatoInicial);
+      if (Array.isArray(opciones.dlcsIniciales) && contenedorDlcs && templateDlc && btnAnadirDlc) {
+        contenedorDlcs.innerHTML = '';
+        opciones.dlcsIniciales.slice(0, MAX_DLCS).forEach((dlc) => {
+          anadirFilaDlc(contenedorDlcs, templateDlc, dlc, btnAnadirDlc);
+        });
+        sincronizarBotonAnadirDlc(contenedorDlcs, btnAnadirDlc);
+      }
+    }
 
     const manejadorCambioFormato = (evento) => {
       if (evento.target && evento.target.name === 'formato') {
         alternarSeccionFormato(formulario, evento.target.value);
       }
     };
-
     formulario.addEventListener('change', manejadorCambioFormato);
     desconectarFormato = () => {
       formulario.removeEventListener('change', manejadorCambioFormato);
     };
-  }
 
-  const contenedorDlcs = documento.querySelector('#lista-dlcs');
-  const templateDlc = documento.querySelector('#tpl-dlc');
-  const btnAnadirDlc = documento.querySelector('#btn-anadir-dlc');
-  let desconectarDlcs = () => {};
+    const alEnviarValido = (evento) => {
+      if (evento && typeof evento.preventDefault === 'function') {
+        evento.preventDefault();
+      }
 
-  if (contenedorDlcs && templateDlc && btnAnadirDlc) {
-    desconectarDlcs = conectarDlcs(contenedorDlcs, templateDlc, btnAnadirDlc);
+      const datos = leerDatosFormulario(formulario);
 
-    if (Array.isArray(opciones.dlcsIniciales)) {
-      contenedorDlcs.innerHTML = '';
-      opciones.dlcsIniciales.slice(0, MAX_DLCS).forEach((dlc) => {
-        anadirFilaDlc(contenedorDlcs, templateDlc, dlc, btnAnadirDlc);
-      });
-      sincronizarBotonAnadirDlc(contenedorDlcs, btnAnadirDlc);
-    }
+      if (!usuario) {
+        lanzarAviso(
+          formulario,
+          'No se puede guardar el videojuego sin una sesión de usuario activa.',
+          'danger',
+        );
+        return;
+      }
+
+      try {
+        if (modoEdicion) {
+          const idActualizar = datos.id || idJuego;
+          const actualizado = actualizarJuego(idActualizar, datos, usuario, almacenLocal);
+          if (!actualizado) {
+            lanzarAviso(formulario, 'Error al actualizar el videojuego.', 'danger');
+            return;
+          }
+          guardarAviso('Videojuego actualizado con éxito', 'success', almacenSesion);
+          if (typeof opciones.alGuardar === 'function') {
+            opciones.alGuardar({ modo: 'edicion', juego: actualizado });
+          }
+          navegar('listado.html');
+        } else {
+          const nuevo = crearJuego(datos, usuario, almacenLocal);
+          guardarAviso('Videojuego añadido con éxito a tu catálogo', 'success', almacenSesion);
+          if (typeof opciones.alGuardar === 'function') {
+            opciones.alGuardar({ modo: 'alta', juego: nuevo });
+          }
+          navegar('listado.html');
+        }
+      } catch (err) {
+        lanzarAviso(formulario, err?.message || 'Error al guardar el videojuego.', 'danger');
+      }
+    };
+
+    desconectarValidacion = conectarValidacionTiempoReal(formulario, {
+      ...opciones.validacion,
+      fechaReferencia: opciones.fechaReferencia,
+      alEnviarValido,
+    });
   }
 
   return function desconectar() {

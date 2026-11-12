@@ -1,4 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { AlmacenFalso } from '../AlmacenFalso.js';
+import { crearJuego, obtenerJuegos } from '../../js/juegos.js';
+import { CLAVE_AVISO_SESION } from '../../js/avisos.js';
 import {
   MAX_DLCS,
   MIN_DLCS,
@@ -25,47 +28,72 @@ describe('módulo ficha.js (campos base, condicionales, DLCs y fecha dinámica)'
     document.body.innerHTML = '';
     resetearContadorDlc();
 
+    const titulo = document.createElement('h1');
+    titulo.id = 'titulo-pagina-ficha';
+    titulo.textContent = 'Alta y Edición de Videojuego';
+    document.body.appendChild(titulo);
+
     formulario = document.createElement('form');
     formulario.id = 'form-ficha';
     formulario.innerHTML = `
       <input type="hidden" id="ficha-id" name="id" value="" />
-      <input type="text" id="ficha-titulo" name="titulo" value="" />
-      <select id="ficha-plataforma" name="plataforma">
+      <input type="text" id="ficha-titulo" name="titulo" value="" required data-validar="titulo" aria-describedby="error-ficha-titulo" />
+      <div id="error-ficha-titulo" class="field-error"></div>
+
+      <select id="ficha-plataforma" name="plataforma" required data-validar="plataforma" aria-describedby="error-ficha-plataforma">
         <option value="">Selecciona...</option>
         <option value="PC">PC</option>
         <option value="PlayStation 5">PlayStation 5</option>
         <option value="Nintendo Switch">Nintendo Switch</option>
       </select>
-      <input type="text" id="ficha-sku" name="sku" value="" />
-      <input type="date" id="ficha-fecha" name="fechaAdquisicion" value="" />
-      <input type="number" id="ficha-horas" name="horasJugadas" value="0" />
-      <select id="ficha-estado" name="estado">
+      <div id="error-ficha-plataforma" class="field-error"></div>
+
+      <input type="text" id="ficha-sku" name="sku" value="" data-validar="sku" aria-describedby="error-ficha-sku" />
+      <div id="error-ficha-sku" class="field-error"></div>
+
+      <input type="date" id="ficha-fecha" name="fechaAdquisicion" value="" required data-validar="fecha" aria-describedby="error-ficha-fecha" />
+      <div id="error-ficha-fecha" class="field-error"></div>
+
+      <input type="number" id="ficha-horas" name="horasJugadas" value="0" required data-validar="horas" aria-describedby="error-ficha-horas" />
+      <div id="error-ficha-horas" class="field-error"></div>
+
+      <select id="ficha-estado" name="estado" required data-validar="estado" aria-describedby="error-ficha-estado">
         <option value="pendiente">Pendiente</option>
         <option value="jugando">Jugando</option>
         <option value="completado">Completado</option>
       </select>
+      <div id="error-ficha-estado" class="field-error"></div>
+
       <div class="gv-radio-card-group">
-        <input type="radio" id="formato-fisico" name="formato" value="fisico" />
-        <input type="radio" id="formato-digital" name="formato" value="digital" checked />
+        <input type="radio" id="formato-fisico" name="formato" value="fisico" required data-validar="formato" aria-describedby="error-ficha-formato" />
+        <input type="radio" id="formato-digital" name="formato" value="digital" checked required data-validar="formato" aria-describedby="error-ficha-formato" />
       </div>
+      <div id="error-ficha-formato" class="field-error"></div>
+
       <fieldset id="bloque-fisico" hidden disabled>
-        <input type="text" id="ficha-ean" name="ean13" value="" aria-describedby="error-ficha-ean" disabled />
+        <input type="text" id="ficha-ean" name="ean13" value="" data-validar="ean13" aria-describedby="error-ficha-ean" disabled />
         <div id="error-ficha-ean" class="field-error"></div>
-        <input type="text" id="ficha-ubicacion" name="ubicacion" value="" aria-describedby="error-ficha-ubicacion" disabled />
+        <input type="text" id="ficha-ubicacion" name="ubicacion" value="" data-validar="estanteria" aria-describedby="error-ficha-ubicacion" disabled />
         <div id="error-ficha-ubicacion" class="field-error"></div>
       </fieldset>
+
       <fieldset id="bloque-digital" hidden disabled>
-        <select id="ficha-tienda" name="tiendaDigital" aria-describedby="error-ficha-tienda" disabled>
+        <select id="ficha-tienda" name="tiendaDigital" data-validar="tienda" aria-describedby="error-ficha-tienda" disabled>
           <option value="">Selecciona...</option>
           <option value="Steam">Steam</option>
           <option value="PlayStation Store">PlayStation Store</option>
         </select>
         <div id="error-ficha-tienda" class="field-error"></div>
       </fieldset>
+
       <div id="seccion-dlcs">
         <button type="button" id="btn-anadir-dlc">+ Añadir DLC</button>
         <div id="lista-dlcs"></div>
       </div>
+
+      <button type="submit" id="btn-guardar-ficha">
+        <span class="btn-text">Guardar videojuego</span>
+      </button>
     `;
     document.body.appendChild(formulario);
 
@@ -618,6 +646,317 @@ describe('módulo ficha.js (campos base, condicionales, DLCs y fecha dinámica)'
     it('no falla si el documento es nulo o no contiene #ficha-fecha', () => {
       expect(() => iniciarFicha(null)).not.toThrow();
       expect(() => iniciarFicha(document.createElement('div'))).not.toThrow();
+    });
+  });
+
+  describe('flujo completo de alta y edición con persistencia y navegación', () => {
+    let almacenLocal;
+    let almacenSesion;
+    let navegar;
+    const usuarioPrueba = 'pablo_dev';
+
+    beforeEach(() => {
+      almacenLocal = new AlmacenFalso();
+      almacenSesion = new AlmacenFalso();
+      navegar = vi.fn();
+    });
+
+    describe('Modo Alta (sin id)', () => {
+      it('ajusta los textos de cabecera y botón a modo alta', () => {
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: null,
+        });
+
+        expect(document.querySelector('#titulo-pagina-ficha').textContent).toBe(
+          'Alta de Videojuego',
+        );
+        expect(document.querySelector('#btn-guardar-ficha .btn-text').textContent).toBe(
+          'Guardar videojuego',
+        );
+      });
+
+      it('al enviar datos válidos, crea el juego en localStorage, guarda aviso de éxito y redirige a listado.html', () => {
+        const alGuardar = vi.fn();
+        const fechaAyer = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+        formulario.querySelector('#ficha-titulo').value = 'Hollow Knight';
+        formulario.querySelector('#ficha-plataforma').value = 'PC';
+        formulario.querySelector('#ficha-sku').value = 'GAME-ACT-0001';
+        formulario.querySelector('#ficha-fecha').value = fechaAyer;
+        formulario.querySelector('#ficha-horas').value = '45';
+        formulario.querySelector('#ficha-estado').value = 'completado';
+
+        const radioDigital = formulario.querySelector('#formato-digital');
+        radioDigital.checked = true;
+
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: null,
+          alGuardar,
+        });
+
+        const selectTienda = formulario.querySelector('#ficha-tienda');
+        selectTienda.value = 'Steam';
+
+        formulario.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+        const juegosGuardados = obtenerJuegos(usuarioPrueba, almacenLocal);
+        expect(juegosGuardados).toHaveLength(1);
+        expect(juegosGuardados[0].titulo).toBe('Hollow Knight');
+        expect(juegosGuardados[0].plataforma).toBe('PC');
+        expect(juegosGuardados[0].formato).toBe('digital');
+        expect(juegosGuardados[0].tiendaDigital).toBe('Steam');
+        expect(juegosGuardados[0].horasJugadas).toBe(45);
+        expect(juegosGuardados[0].estadoProgreso).toBe('completado');
+
+        const avisoGuardado = JSON.parse(almacenSesion.getItem(CLAVE_AVISO_SESION));
+        expect(avisoGuardado.tipo).toBe('success');
+        expect(avisoGuardado.mensaje).toContain('éxito');
+
+        expect(navegar).toHaveBeenCalledWith('listado.html');
+        expect(alGuardar).toHaveBeenCalledWith(
+          expect.objectContaining({ modo: 'alta', juego: expect.any(Object) }),
+        );
+      });
+
+      it('al enviar datos inválidos (título vacío), detiene el envío, no persiste y enfoca el error', () => {
+        formulario.querySelector('#ficha-titulo').value = '';
+        formulario.querySelector('#ficha-plataforma').value = 'PC';
+        formulario.querySelector('#ficha-fecha').value = '2026-01-01';
+
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: null,
+        });
+
+        const inputTitulo = formulario.querySelector('#ficha-titulo');
+        const spyFocus = vi.spyOn(inputTitulo, 'focus');
+
+        const eventoSubmit = new Event('submit', { bubbles: true, cancelable: true });
+        formulario.dispatchEvent(eventoSubmit);
+
+        expect(eventoSubmit.defaultPrevented).toBe(true);
+        expect(obtenerJuegos(usuarioPrueba, almacenLocal)).toHaveLength(0);
+        expect(navegar).not.toHaveBeenCalled();
+        expect(inputTitulo.getAttribute('aria-invalid')).toBe('true');
+        expect(spyFocus).toHaveBeenCalled();
+      });
+    });
+
+    describe('Modo Edición (con id)', () => {
+      let juegoExistente;
+
+      beforeEach(() => {
+        juegoExistente = crearJuego(
+          {
+            titulo: 'Elden Ring',
+            plataforma: 'PlayStation 5',
+            formato: 'fisico',
+            fechaAdquisicion: '2026-02-25',
+            horasJugadas: 120,
+            estadoProgreso: 'jugando',
+            sku: 'GAME-RPG-0042',
+            codigoBarras: '4020628663124',
+            ubicacionEstanteria: 'EST-A-01',
+            tiendaDigital: null,
+            dlcs: [{ titulo: 'Shadow of the Erdtree', estado: 'pendiente' }],
+          },
+          usuarioPrueba,
+          almacenLocal,
+        );
+      });
+
+      it('si el id existe, cambia textos, rellena el formulario y conmuta formato', () => {
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: juegoExistente.id,
+        });
+
+        expect(document.querySelector('#titulo-pagina-ficha').textContent).toBe(
+          'Edición de Videojuego',
+        );
+        expect(document.querySelector('#btn-guardar-ficha .btn-text').textContent).toBe(
+          'Guardar cambios',
+        );
+
+        expect(formulario.querySelector('#ficha-id').value).toBe(juegoExistente.id);
+        expect(formulario.querySelector('#ficha-titulo').value).toBe('Elden Ring');
+        expect(formulario.querySelector('#ficha-plataforma').value).toBe('PlayStation 5');
+        expect(formulario.querySelector('#ficha-horas').value).toBe('120');
+        expect(formulario.querySelector('#ficha-estado').value).toBe('jugando');
+        expect(formulario.querySelector('#formato-fisico').checked).toBe(true);
+        expect(formulario.querySelector('#bloque-fisico').hidden).toBe(false);
+        expect(formulario.querySelector('#ficha-ean').value).toBe('4020628663124');
+        expect(formulario.querySelector('#ficha-ubicacion').value).toBe('EST-A-01');
+
+        const filasDlc = contenedorDlcs.querySelectorAll('.js-fila-dlc');
+        expect(filasDlc).toHaveLength(1);
+        expect(filasDlc[0].querySelector('.js-input-dlc-nombre').value).toBe(
+          'Shadow of the Erdtree',
+        );
+      });
+
+      it('detecta el id automáticamente desde ventana.location.search (?id=...)', () => {
+        const ventanaMock = {
+          location: {
+            search: `?id=${juegoExistente.id}`,
+            href: '',
+          },
+        };
+
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          ventana: ventanaMock,
+        });
+
+        expect(document.querySelector('#titulo-pagina-ficha').textContent).toBe(
+          'Edición de Videojuego',
+        );
+        expect(formulario.querySelector('#ficha-titulo').value).toBe('Elden Ring');
+      });
+
+      it('al enviar modificaciones válidas, actualiza el juego existente preservando ID original y redirige', () => {
+        const alGuardar = vi.fn();
+
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: juegoExistente.id,
+          alGuardar,
+        });
+
+        formulario.querySelector('#ficha-titulo').value = 'Elden Ring Deluxe Edition';
+        formulario.querySelector('#ficha-horas').value = '150';
+        formulario.querySelector('#ficha-estado').value = 'completado';
+
+        formulario.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+        const juegos = obtenerJuegos(usuarioPrueba, almacenLocal);
+        expect(juegos).toHaveLength(1);
+        expect(juegos[0].id).toBe(juegoExistente.id);
+        expect(juegos[0].titulo).toBe('Elden Ring Deluxe Edition');
+        expect(juegos[0].horasJugadas).toBe(150);
+        expect(juegos[0].estadoProgreso).toBe('completado');
+
+        const aviso = JSON.parse(almacenSesion.getItem(CLAVE_AVISO_SESION));
+        expect(aviso.tipo).toBe('success');
+        expect(aviso.mensaje).toContain('actualizado con éxito');
+
+        expect(navegar).toHaveBeenCalledWith('listado.html');
+        expect(alGuardar).toHaveBeenCalledWith(
+          expect.objectContaining({ modo: 'edicion', juego: expect.any(Object) }),
+        );
+      });
+
+      it('permite cambiar el formato de físico a digital al editar y actualiza propiedades', () => {
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: juegoExistente.id,
+        });
+
+        const radioDigital = formulario.querySelector('#formato-digital');
+        radioDigital.checked = true;
+        radioDigital.dispatchEvent(new Event('change', { bubbles: true }));
+
+        formulario.querySelector('#ficha-tienda').value = 'PlayStation Store';
+
+        formulario.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+        const actualizado = obtenerJuegos(usuarioPrueba, almacenLocal)[0];
+        expect(actualizado.formato).toBe('digital');
+        expect(actualizado.tiendaDigital).toBe('PlayStation Store');
+        expect(actualizado.codigoBarras).toBeNull();
+        expect(actualizado.ubicacionEstanteria).toBeNull();
+      });
+
+      it('si el id no existe, guarda aviso de error en sessionStorage y redirige a listado.html inmediatamente', () => {
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: 'id_que_no_existe_9999',
+        });
+
+        const aviso = JSON.parse(almacenSesion.getItem(CLAVE_AVISO_SESION));
+        expect(aviso.tipo).toBe('danger');
+        expect(aviso.mensaje).toContain('no existe');
+        expect(navegar).toHaveBeenCalledWith('listado.html');
+      });
+
+      it('no permite editar un videojuego perteneciente a otro usuario (aislamiento multiusuario)', () => {
+        const juegoOtroUsuario = crearJuego(
+          {
+            titulo: 'Zelda Tears of the Kingdom',
+            plataforma: 'Nintendo Switch',
+            formato: 'fisico',
+            fechaAdquisicion: '2026-05-12',
+            horasJugadas: 80,
+            estadoProgreso: 'completado',
+            sku: 'GAME-ADV-0010',
+          },
+          'otro_usuario',
+          almacenLocal,
+        );
+
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: usuarioPrueba,
+          id: juegoOtroUsuario.id,
+        });
+
+        const aviso = JSON.parse(almacenSesion.getItem(CLAVE_AVISO_SESION));
+        expect(aviso.tipo).toBe('danger');
+        expect(navegar).toHaveBeenCalledWith('listado.html');
+      });
+    });
+
+    describe('Seguridad y robustez', () => {
+      it('si no hay sesión activa ni usuario, lanza aviso y no persiste', () => {
+        const fechaValida = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        formulario.querySelector('#ficha-titulo').value = 'Dark Souls';
+        formulario.querySelector('#ficha-plataforma').value = 'PC';
+        formulario.querySelector('#ficha-fecha').value = fechaValida;
+        formulario.querySelector('#formato-digital').checked = true;
+
+        iniciarFicha(document, {
+          almacenLocal,
+          almacenSesion,
+          navegar,
+          usuario: '',
+          id: null,
+        });
+
+        formulario.querySelector('#ficha-tienda').value = 'Steam';
+
+        formulario.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+        expect(navegar).not.toHaveBeenCalled();
+        expect(almacenLocal.length).toBe(0);
+      });
     });
   });
 });

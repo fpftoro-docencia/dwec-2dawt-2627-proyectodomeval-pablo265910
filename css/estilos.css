@@ -682,15 +682,29 @@ body {
   letter-spacing: -0.01em;
 }
 
-.form-control,
-.form-select {
+.form-control {
   background-color: var(--gv-bg-input);
   border: 1px solid var(--gv-border-subtle);
   border-radius: var(--gv-radius-sm);
   color: var(--gv-text-primary);
+  color-scheme: dark;
   font-size: 0.925rem;
   padding: 0.65rem 0.95rem;
   backdrop-filter: blur(8px);
+  transition:
+    border-color 0.25s var(--gv-ease-apple),
+    box-shadow 0.25s var(--gv-ease-apple),
+    background-color 0.25s var(--gv-ease-apple);
+}
+
+.form-select {
+  background-color: #14151a;
+  border: 1px solid var(--gv-border-subtle);
+  border-radius: var(--gv-radius-sm);
+  color: var(--gv-text-primary);
+  color-scheme: dark;
+  font-size: 0.925rem;
+  padding: 0.65rem 2.25rem 0.65rem 0.95rem;
   transition:
     border-color 0.25s var(--gv-ease-apple),
     box-shadow 0.25s var(--gv-ease-apple),
@@ -702,14 +716,46 @@ body {
 }
 
 .form-control:focus-visible,
-.form-select:focus-visible,
-.form-control:focus,
-.form-select:focus {
+.form-control:focus {
   background-color: var(--gv-bg-input-focus);
   border-color: var(--apple-blue);
   box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.32);
   color: #ffffff;
   outline: none;
+}
+
+.form-select:focus-visible,
+.form-select:focus {
+  background-color: #1a1c23;
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.32);
+  color: #ffffff;
+  outline: none;
+}
+
+/* Opciones del menú desplegable select en modo oscuro */
+.form-select option,
+select option {
+  background-color: #16181f;
+  color: #f5f5f7;
+  padding: 0.5rem 0.75rem;
+}
+
+.form-select option:checked,
+select option:checked {
+  background-color: var(--apple-blue);
+  color: #ffffff;
+}
+
+.form-select option:disabled,
+select option:disabled {
+  color: var(--gv-text-muted);
+}
+
+.form-select optgroup,
+select optgroup {
+  background-color: #16181f;
+  color: var(--gv-text-muted);
 }
 
 /* Estado de error / invalidación accesible */
