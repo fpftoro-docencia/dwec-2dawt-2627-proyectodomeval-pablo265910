@@ -1,15 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   inyectarFechaMaxima,
+  alternarSeccionFormato,
   leerDatosFormulario,
   rellenarFormulario,
   iniciarFicha,
 } from '../../js/ficha.js';
 
-describe('módulo ficha.js (campos base y fecha dinámica)', () => {
+describe('módulo ficha.js (campos base, condicionales y fecha dinámica)', () => {
   let formulario;
 
   beforeEach(() => {
+    document.body.innerHTML = '';
     formulario = document.createElement('form');
     formulario.id = 'form-ficha';
     formulario.innerHTML = `
@@ -29,17 +31,30 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
         <option value="jugando">Jugando</option>
         <option value="completado">Completado</option>
       </select>
-      <input type="radio" id="formato-fisico" name="formato" value="fisico" />
-      <input type="radio" id="formato-digital" name="formato" value="digital" checked />
-      <input type="text" id="ficha-ean" name="ean13" value="" />
-      <input type="text" id="ficha-ubicacion" name="ubicacion" value="" />
-      <select id="ficha-tienda" name="tiendaDigital">
-        <option value="">Selecciona...</option>
-        <option value="Steam">Steam</option>
-        <option value="PlayStation Store">PlayStation Store</option>
-      </select>
+      <div class="gv-radio-card-group">
+        <input type="radio" id="formato-fisico" name="formato" value="fisico" />
+        <input type="radio" id="formato-digital" name="formato" value="digital" checked />
+      </div>
+      <fieldset id="bloque-fisico" hidden disabled>
+        <input type="text" id="ficha-ean" name="ean13" value="" aria-describedby="error-ficha-ean" disabled />
+        <div id="error-ficha-ean" class="field-error"></div>
+        <input type="text" id="ficha-ubicacion" name="ubicacion" value="" aria-describedby="error-ficha-ubicacion" disabled />
+        <div id="error-ficha-ubicacion" class="field-error"></div>
+      </fieldset>
+      <fieldset id="bloque-digital" hidden disabled>
+        <select id="ficha-tienda" name="tiendaDigital" aria-describedby="error-ficha-tienda" disabled>
+          <option value="">Selecciona...</option>
+          <option value="Steam">Steam</option>
+          <option value="PlayStation Store">PlayStation Store</option>
+        </select>
+        <div id="error-ficha-tienda" class="field-error"></div>
+      </fieldset>
     `;
     document.body.appendChild(formulario);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
   });
 
   describe('inyectarFechaMaxima', () => {
@@ -67,6 +82,80 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
     it('no falla si el input es null o undefined', () => {
       expect(() => inyectarFechaMaxima(null)).not.toThrow();
       expect(() => inyectarFechaMaxima(undefined)).not.toThrow();
+    });
+  });
+
+  describe('alternarSeccionFormato', () => {
+    it('activa el bloque físico y desactiva el digital al seleccionar formato fisico', () => {
+      alternarSeccionFormato(formulario, 'fisico');
+
+      const bloqueFisico = formulario.querySelector('#bloque-fisico');
+      const bloqueDigital = formulario.querySelector('#bloque-digital');
+      const inputEan = formulario.querySelector('#ficha-ean');
+      const inputUbicacion = formulario.querySelector('#ficha-ubicacion');
+      const selectTienda = formulario.querySelector('#ficha-tienda');
+
+      expect(bloqueFisico.hidden).toBe(false);
+      expect(bloqueFisico.disabled).toBe(false);
+      expect(inputEan.disabled).toBe(false);
+      expect(inputUbicacion.disabled).toBe(false);
+
+      expect(bloqueDigital.hidden).toBe(true);
+      expect(bloqueDigital.disabled).toBe(true);
+      expect(selectTienda.disabled).toBe(true);
+    });
+
+    it('activa el bloque digital y desactiva el físico al seleccionar formato digital', () => {
+      alternarSeccionFormato(formulario, 'digital');
+
+      const bloqueFisico = formulario.querySelector('#bloque-fisico');
+      const bloqueDigital = formulario.querySelector('#bloque-digital');
+      const inputEan = formulario.querySelector('#ficha-ean');
+      const inputUbicacion = formulario.querySelector('#ficha-ubicacion');
+      const selectTienda = formulario.querySelector('#ficha-tienda');
+
+      expect(bloqueDigital.hidden).toBe(false);
+      expect(bloqueDigital.disabled).toBe(false);
+      expect(selectTienda.disabled).toBe(false);
+
+      expect(bloqueFisico.hidden).toBe(true);
+      expect(bloqueFisico.disabled).toBe(true);
+      expect(inputEan.disabled).toBe(true);
+      expect(inputUbicacion.disabled).toBe(true);
+    });
+
+    it('oculta y deshabilita ambos bloques si el formato es null o desconocido', () => {
+      alternarSeccionFormato(formulario, null);
+
+      const bloqueFisico = formulario.querySelector('#bloque-fisico');
+      const bloqueDigital = formulario.querySelector('#bloque-digital');
+
+      expect(bloqueFisico.hidden).toBe(true);
+      expect(bloqueFisico.disabled).toBe(true);
+      expect(bloqueDigital.hidden).toBe(true);
+      expect(bloqueDigital.disabled).toBe(true);
+    });
+
+    it('limpia clases de error, resetea aria-invalid y borra mensajes al desactivar un bloque', () => {
+      const inputEan = formulario.querySelector('#ficha-ean');
+      const cajaErrorEan = formulario.querySelector('#error-ficha-ean');
+
+      inputEan.classList.add('is-invalid');
+      inputEan.setAttribute('aria-invalid', 'true');
+      cajaErrorEan.textContent = 'Código erróneo';
+
+      // Conmutamos a digital (lo que debe deshabilitar y limpiar el bloque físico)
+      alternarSeccionFormato(formulario, 'digital');
+
+      expect(inputEan.classList.contains('is-invalid')).toBe(false);
+      expect(inputEan.getAttribute('aria-invalid')).toBe('false');
+      expect(cajaErrorEan.textContent).toBe('');
+      expect(inputEan.disabled).toBe(true);
+    });
+
+    it('no falla ante formularios nulos o sin bloques condicionales', () => {
+      expect(() => alternarSeccionFormato(null, 'fisico')).not.toThrow();
+      expect(() => alternarSeccionFormato(document.createElement('form'), 'digital')).not.toThrow();
     });
   });
 
@@ -99,6 +188,7 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
       formulario.querySelector('#ficha-titulo').value = 'Zelda';
       formulario.querySelector('#formato-fisico').checked = true;
       formulario.querySelector('#formato-digital').checked = false;
+      alternarSeccionFormato(formulario, 'fisico');
       formulario.querySelector('#ficha-ean').value = '4020628663124';
       formulario.querySelector('#ficha-ubicacion').value = 'EST-A-03';
       formulario.querySelector('#ficha-tienda').value = 'Steam'; // Aunque tenga valor, formato físico lo anula
@@ -172,7 +262,7 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
   });
 
   describe('rellenarFormulario', () => {
-    it('puebla los campos del formulario con los datos de un videojuego', () => {
+    it('puebla los campos base y condicionales para un juego físico', () => {
       const datosJuego = {
         id: 'gv_1731200000_xyz',
         titulo: 'Super Mario Odyssey',
@@ -182,6 +272,8 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
         horasJugadas: 45,
         estadoProgreso: 'completado',
         formato: 'fisico',
+        codigoBarras: '4020628663124',
+        ubicacionEstanteria: 'EST-B-04',
       };
 
       rellenarFormulario(formulario, datosJuego);
@@ -195,9 +287,26 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
       expect(formulario.querySelector('#ficha-estado').value).toBe('completado');
       expect(formulario.querySelector('#formato-fisico').checked).toBe(true);
 
-      // Ahora rellenamos con formato digital
-      rellenarFormulario(formulario, { formato: 'digital' });
+      // Bloques condicionales sincronizados
+      expect(formulario.querySelector('#bloque-fisico').hidden).toBe(false);
+      expect(formulario.querySelector('#ficha-ean').value).toBe('4020628663124');
+      expect(formulario.querySelector('#ficha-ubicacion').value).toBe('EST-B-04');
+      expect(formulario.querySelector('#bloque-digital').hidden).toBe(true);
+    });
+
+    it('puebla los campos base y condicionales para un juego digital', () => {
+      const datosDigital = {
+        titulo: 'Half-Life 2',
+        formato: 'digital',
+        tiendaDigital: 'Steam',
+      };
+
+      rellenarFormulario(formulario, datosDigital);
+
       expect(formulario.querySelector('#formato-digital').checked).toBe(true);
+      expect(formulario.querySelector('#bloque-digital').hidden).toBe(false);
+      expect(formulario.querySelector('#ficha-tienda').value).toBe('Steam');
+      expect(formulario.querySelector('#bloque-fisico').hidden).toBe(true);
     });
 
     it('no falla si datos o formulario son nulos', () => {
@@ -213,6 +322,48 @@ describe('módulo ficha.js (campos base y fecha dinámica)', () => {
 
       const inputFecha = document.querySelector('#ficha-fecha');
       expect(inputFecha.max).toBe('2026-11-12');
+    });
+
+    it('sincroniza el formato inicial según el radio marcado en el DOM', () => {
+      formulario.querySelector('#formato-digital').checked = true;
+      iniciarFicha(document);
+
+      expect(formulario.querySelector('#bloque-digital').hidden).toBe(false);
+      expect(formulario.querySelector('#bloque-fisico').hidden).toBe(true);
+    });
+
+    it('conmuta dinámicamente los bloques al cambiar de radio button (evento change)', () => {
+      const desconectar = iniciarFicha(document);
+
+      const radioFisico = formulario.querySelector('#formato-fisico');
+      radioFisico.checked = true;
+      radioFisico.dispatchEvent(new Event('change', { bubbles: true }));
+
+      expect(formulario.querySelector('#bloque-fisico').hidden).toBe(false);
+      expect(formulario.querySelector('#bloque-fisico').disabled).toBe(false);
+      expect(formulario.querySelector('#bloque-digital').hidden).toBe(true);
+
+      const radioDigital = formulario.querySelector('#formato-digital');
+      radioDigital.checked = true;
+      radioDigital.dispatchEvent(new Event('change', { bubbles: true }));
+
+      expect(formulario.querySelector('#bloque-digital').hidden).toBe(false);
+      expect(formulario.querySelector('#bloque-fisico').hidden).toBe(true);
+
+      desconectar();
+    });
+
+    it('no conmuta tras llamar a la función de desconexión devuelta', () => {
+      const desconectar = iniciarFicha(document, { formatoInicial: 'digital' });
+      desconectar();
+
+      const radioFisico = formulario.querySelector('#formato-fisico');
+      radioFisico.checked = true;
+      radioFisico.dispatchEvent(new Event('change', { bubbles: true }));
+
+      // No debe haber cambiado porque el listener fue desconectado
+      expect(formulario.querySelector('#bloque-digital').hidden).toBe(false);
+      expect(formulario.querySelector('#bloque-fisico').hidden).toBe(true);
     });
 
     it('no falla si el documento es nulo o no contiene #ficha-fecha', () => {

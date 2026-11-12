@@ -253,7 +253,7 @@
         </fieldset>
 
         <!-- BLOQUE CONDICIONAL A: Físico -->
-        <fieldset id="bloque-fisico" class="gv-conditional-block mb-4" hidden>
+        <fieldset id="bloque-fisico" class="gv-conditional-block mb-4" hidden disabled>
           <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Física</legend>
           <div class="row g-3">
             <div class="col-12 col-md-6">
@@ -269,6 +269,7 @@
                 data-validar="ean13"
                 aria-invalid="false"
                 aria-describedby="error-ficha-ean"
+                disabled
               />
               <div id="error-ficha-ean" class="field-error" role="alert" aria-live="polite"></div>
             </div>
@@ -284,6 +285,7 @@
                 data-validar="estanteria"
                 aria-invalid="false"
                 aria-describedby="error-ficha-ubicacion"
+                disabled
               />
               <div
                 id="error-ficha-ubicacion"
@@ -296,7 +298,7 @@
         </fieldset>
 
         <!-- BLOQUE CONDICIONAL B: Digital -->
-        <fieldset id="bloque-digital" class="gv-conditional-block mb-4" hidden>
+        <fieldset id="bloque-digital" class="gv-conditional-block mb-4" hidden disabled>
           <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Digital</legend>
           <div class="row g-3">
             <div class="col-12">
@@ -308,6 +310,7 @@
                 data-validar="tienda"
                 aria-invalid="false"
                 aria-describedby="error-ficha-tienda"
+                disabled
               >
                 <option value="">Selecciona una tienda...</option>
                 <option value="Steam">Steam</option>
