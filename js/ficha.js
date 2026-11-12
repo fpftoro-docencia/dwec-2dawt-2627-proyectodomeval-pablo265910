@@ -204,6 +204,8 @@ export function alternarSeccionFormato(formulario, formato) {
   }
 }
 
+import { conectarValidacionTiempoReal } from './validacion.js';
+
 export const MAX_DLCS = 3;
 export const MIN_DLCS = 0;
 
@@ -485,8 +487,11 @@ export function iniciarFicha(
 
   const formulario = documento.querySelector('#form-ficha') || documento.querySelector('form');
   let desconectarFormato = () => {};
+  let desconectarValidacion = () => {};
 
   if (formulario) {
+    desconectarValidacion = conectarValidacionTiempoReal(formulario, opciones.validacion);
+
     const radioMarcado = formulario.querySelector('input[name="formato"]:checked');
     const formatoInicial = opciones.formatoInicial || (radioMarcado ? radioMarcado.value : null);
     alternarSeccionFormato(formulario, formatoInicial);
@@ -523,6 +528,7 @@ export function iniciarFicha(
   return function desconectar() {
     desconectarFormato();
     desconectarDlcs();
+    desconectarValidacion();
   };
 }
 
