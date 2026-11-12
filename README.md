@@ -286,7 +286,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
 | `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
-| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | Pendiente |
+| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
