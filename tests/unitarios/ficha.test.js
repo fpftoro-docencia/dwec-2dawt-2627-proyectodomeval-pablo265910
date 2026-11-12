@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
+  MAX_DLCS,
+  MIN_DLCS,
+  generarIdDlc,
+  resetearContadorDlc,
+  sincronizarBotonAnadirDlc,
+  anadirFilaDlc,
+  quitarFilaDlc,
+  conectarDlcs,
   inyectarFechaMaxima,
   alternarSeccionFormato,
   leerDatosFormulario,
@@ -7,11 +15,16 @@ import {
   iniciarFicha,
 } from '../../js/ficha.js';
 
-describe('módulo ficha.js (campos base, condicionales y fecha dinámica)', () => {
+describe('módulo ficha.js (campos base, condicionales, DLCs y fecha dinámica)', () => {
   let formulario;
+  let templateDlc;
+  let contenedorDlcs;
+  let btnAnadirDlc;
 
   beforeEach(() => {
     document.body.innerHTML = '';
+    resetearContadorDlc();
+
     formulario = document.createElement('form');
     formulario.id = 'form-ficha';
     formulario.innerHTML = `
@@ -49,8 +62,36 @@ describe('módulo ficha.js (campos base, condicionales y fecha dinámica)', () =
         </select>
         <div id="error-ficha-tienda" class="field-error"></div>
       </fieldset>
+      <div id="seccion-dlcs">
+        <button type="button" id="btn-anadir-dlc">+ Añadir DLC</button>
+        <div id="lista-dlcs"></div>
+      </div>
     `;
     document.body.appendChild(formulario);
+
+    contenedorDlcs = formulario.querySelector('#lista-dlcs');
+    btnAnadirDlc = formulario.querySelector('#btn-anadir-dlc');
+
+    templateDlc = document.createElement('template');
+    templateDlc.id = 'tpl-dlc';
+    templateDlc.innerHTML = `
+      <div class="gv-dlc-row js-fila-dlc">
+        <label for="dlc-nombre-0" class="js-label-dlc-nombre">Nombre del DLC</label>
+        <input type="text" id="dlc-nombre-0" name="dlcNombre[]" class="js-input-dlc-nombre" />
+        <div id="error-dlc-nombre-0" class="field-error js-error-dlc-nombre"></div>
+
+        <label for="dlc-estado-0" class="js-label-dlc-estado">Estado del DLC</label>
+        <select id="dlc-estado-0" name="dlcEstado[]" class="form-select js-select-dlc-estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="jugando">Jugando</option>
+          <option value="completado">Completado</option>
+        </select>
+        <div id="error-dlc-estado-0" class="field-error js-error-dlc-estado"></div>
+
+        <button type="button" class="js-btn-quitar-dlc">Quitar</button>
+      </div>
+    `;
+    document.body.appendChild(templateDlc);
   });
 
   afterEach(() => {
@@ -261,6 +302,178 @@ describe('módulo ficha.js (campos base, condicionales y fecha dinámica)', () =
     });
   });
 
+  describe('gestión de DLCs dinámicos con <template>', () => {
+    it('define los límites oficiales de 0 a 3 DLCs', () => {
+      expect(MIN_DLCS).toBe(0);
+      expect(MAX_DLCS).toBe(3);
+    });
+
+    describe('generarIdDlc y resetearContadorDlc', () => {
+      it('genera identificadores correlativos únicos', () => {
+        resetearContadorDlc();
+        const id1 = generarIdDlc();
+        const id2 = generarIdDlc();
+        expect(id1).not.toBe(id2);
+        expect(id1).toMatch(/^dlc-\d+-1$/);
+        expect(id2).toMatch(/^dlc-\d+-2$/);
+      });
+    });
+
+    describe('sincronizarBotonAnadirDlc', () => {
+      it('mantiene el botón habilitado si hay menos de 3 DLCs', () => {
+        sincronizarBotonAnadirDlc(contenedorDlcs, btnAnadirDlc, 3);
+        expect(btnAnadirDlc.disabled).toBe(false);
+        expect(btnAnadirDlc.hasAttribute('aria-disabled')).toBe(false);
+      });
+
+      it('deshabilita el botón si se alcanza el máximo de 3 DLCs', () => {
+        for (let i = 0; i < 3; i++) {
+          const fila = document.createElement('div');
+          fila.className = 'js-fila-dlc';
+          contenedorDlcs.appendChild(fila);
+        }
+
+        sincronizarBotonAnadirDlc(contenedorDlcs, btnAnadirDlc, 3);
+        expect(btnAnadirDlc.disabled).toBe(true);
+        expect(btnAnadirDlc.getAttribute('aria-disabled')).toBe('true');
+      });
+
+      it('no falla si el contenedor o el botón son nulos', () => {
+        expect(() => sincronizarBotonAnadirDlc(null, btnAnadirDlc)).not.toThrow();
+        expect(() => sincronizarBotonAnadirDlc(contenedorDlcs, null)).not.toThrow();
+      });
+    });
+
+    describe('anadirFilaDlc', () => {
+      it('clona la plantilla, asigna identificadores únicos e inserta la fila en el contenedor', () => {
+        const fila = anadirFilaDlc(
+          contenedorDlcs,
+          templateDlc,
+          {
+            titulo: 'Blood and Wine',
+            estado: 'completado',
+          },
+          btnAnadirDlc,
+        );
+
+        expect(fila).not.toBeNull();
+        expect(contenedorDlcs.contains(fila)).toBe(true);
+
+        const inputNombre = fila.querySelector('.js-input-dlc-nombre');
+        const labelNombre = fila.querySelector('.js-label-dlc-nombre');
+        const errorNombre = fila.querySelector('.js-error-dlc-nombre');
+
+        expect(inputNombre.value).toBe('Blood and Wine');
+        expect(inputNombre.id).toMatch(/^input-nombre-dlc-\d+-\d+$/);
+        expect(labelNombre.htmlFor).toBe(inputNombre.id);
+        expect(inputNombre.getAttribute('aria-describedby')).toBe(errorNombre.id);
+
+        const selectEstado = fila.querySelector('.js-select-dlc-estado');
+        const labelEstado = fila.querySelector('.js-label-dlc-estado');
+        const errorEstado = fila.querySelector('.js-error-dlc-estado');
+
+        expect(selectEstado.value).toBe('completado');
+        expect(selectEstado.id).toMatch(/^select-estado-dlc-\d+-\d+$/);
+        expect(labelEstado.htmlFor).toBe(selectEstado.id);
+        expect(selectEstado.getAttribute('aria-describedby')).toBe(errorEstado.id);
+
+        expect(btnAnadirDlc.disabled).toBe(false);
+      });
+
+      it('deshabilita el botón al añadir la tercera fila (máximo 3)', () => {
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 1' }, btnAnadirDlc);
+        expect(btnAnadirDlc.disabled).toBe(false);
+
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 2' }, btnAnadirDlc);
+        expect(btnAnadirDlc.disabled).toBe(false);
+
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 3' }, btnAnadirDlc);
+        expect(btnAnadirDlc.disabled).toBe(true);
+        expect(btnAnadirDlc.getAttribute('aria-disabled')).toBe('true');
+      });
+
+      it('rechaza añadir una cuarta fila devolviendo null cuando ya hay 3', () => {
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 1' }, btnAnadirDlc);
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 2' }, btnAnadirDlc);
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 3' }, btnAnadirDlc);
+
+        const filaExtra = anadirFilaDlc(
+          contenedorDlcs,
+          templateDlc,
+          { titulo: 'DLC 4' },
+          btnAnadirDlc,
+        );
+        expect(filaExtra).toBeNull();
+        expect(contenedorDlcs.querySelectorAll('.js-fila-dlc')).toHaveLength(3);
+      });
+
+      it('devuelve null y es resiliente ante parámetros nulos', () => {
+        expect(anadirFilaDlc(null, templateDlc)).toBeNull();
+        expect(anadirFilaDlc(contenedorDlcs, null)).toBeNull();
+        expect(anadirFilaDlc(contenedorDlcs, document.createElement('div'))).toBeNull();
+      });
+    });
+
+    describe('quitarFilaDlc', () => {
+      it('elimina la fila y reactiva el botón si estaba desactivado', () => {
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 1' }, btnAnadirDlc);
+        anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 2' }, btnAnadirDlc);
+        const fila3 = anadirFilaDlc(contenedorDlcs, templateDlc, { titulo: 'DLC 3' }, btnAnadirDlc);
+
+        expect(btnAnadirDlc.disabled).toBe(true);
+
+        quitarFilaDlc(fila3, contenedorDlcs, btnAnadirDlc);
+
+        expect(contenedorDlcs.querySelectorAll('.js-fila-dlc')).toHaveLength(2);
+        expect(btnAnadirDlc.disabled).toBe(false);
+        expect(btnAnadirDlc.hasAttribute('aria-disabled')).toBe(false);
+      });
+
+      it('no falla si la fila o el contenedor son nulos', () => {
+        expect(() => quitarFilaDlc(null, contenedorDlcs)).not.toThrow();
+        expect(() =>
+          quitarFilaDlc(document.createElement('div'), null, btnAnadirDlc),
+        ).not.toThrow();
+      });
+    });
+
+    describe('conectarDlcs', () => {
+      it('añade y quita filas mediante eventos interactivos con delegación', () => {
+        const desconectar = conectarDlcs(contenedorDlcs, templateDlc, btnAnadirDlc);
+
+        // Añadimos una fila haciendo clic en el botón
+        btnAnadirDlc.click();
+        expect(contenedorDlcs.querySelectorAll('.js-fila-dlc')).toHaveLength(1);
+
+        // Añadimos dos más hasta llegar al límite
+        btnAnadirDlc.click();
+        btnAnadirDlc.click();
+        expect(contenedorDlcs.querySelectorAll('.js-fila-dlc')).toHaveLength(3);
+        expect(btnAnadirDlc.disabled).toBe(true);
+
+        // Pulsamos en el botón "Quitar" de la segunda fila
+        const filas = contenedorDlcs.querySelectorAll('.js-fila-dlc');
+        const btnQuitarFila2 = filas[1].querySelector('.js-btn-quitar-dlc');
+        btnQuitarFila2.click();
+
+        expect(contenedorDlcs.querySelectorAll('.js-fila-dlc')).toHaveLength(2);
+        expect(btnAnadirDlc.disabled).toBe(false);
+
+        desconectar();
+
+        // Tras desconectar, un clic en el botón no añade más filas
+        btnAnadirDlc.click();
+        expect(contenedorDlcs.querySelectorAll('.js-fila-dlc')).toHaveLength(2);
+      });
+
+      it('devuelve función no-op si faltan elementos requeridos', () => {
+        const desconectar = conectarDlcs(null, templateDlc, btnAnadirDlc);
+        expect(typeof desconectar).toBe('function');
+        expect(() => desconectar()).not.toThrow();
+      });
+    });
+  });
+
   describe('rellenarFormulario', () => {
     it('puebla los campos base y condicionales para un juego físico', () => {
       const datosJuego = {
@@ -307,6 +520,26 @@ describe('módulo ficha.js (campos base, condicionales y fecha dinámica)', () =
       expect(formulario.querySelector('#bloque-digital').hidden).toBe(false);
       expect(formulario.querySelector('#ficha-tienda').value).toBe('Steam');
       expect(formulario.querySelector('#bloque-fisico').hidden).toBe(true);
+    });
+
+    it('puebla las expansiones dinámicas de DLC respetando el límite', () => {
+      const datosConDlcs = {
+        titulo: 'The Witcher 3',
+        dlcs: [
+          { titulo: 'Hearts of Stone', estado: 'completado' },
+          { titulo: 'Blood and Wine', estado: 'jugando' },
+        ],
+      };
+
+      rellenarFormulario(formulario, datosConDlcs);
+
+      const filas = contenedorDlcs.querySelectorAll('.js-fila-dlc');
+      expect(filas).toHaveLength(2);
+      expect(filas[0].querySelector('.js-input-dlc-nombre').value).toBe('Hearts of Stone');
+      expect(filas[0].querySelector('.js-select-dlc-estado').value).toBe('completado');
+      expect(filas[1].querySelector('.js-input-dlc-nombre').value).toBe('Blood and Wine');
+      expect(filas[1].querySelector('.js-select-dlc-estado').value).toBe('jugando');
+      expect(btnAnadirDlc.disabled).toBe(false);
     });
 
     it('no falla si datos o formulario son nulos', () => {
@@ -364,6 +597,22 @@ describe('módulo ficha.js (campos base, condicionales y fecha dinámica)', () =
       // No debe haber cambiado porque el listener fue desconectado
       expect(formulario.querySelector('#bloque-digital').hidden).toBe(false);
       expect(formulario.querySelector('#bloque-fisico').hidden).toBe(true);
+    });
+
+    it('inicializa los DLCs si se pasan en opciones.dlcsIniciales', () => {
+      const desconectar = iniciarFicha(document, {
+        dlcsIniciales: [
+          { titulo: 'DLC Alfa', estado: 'pendiente' },
+          { titulo: 'DLC Beta', estado: 'completado' },
+        ],
+      });
+
+      const filas = contenedorDlcs.querySelectorAll('.js-fila-dlc');
+      expect(filas).toHaveLength(2);
+      expect(filas[0].querySelector('.js-input-dlc-nombre').value).toBe('DLC Alfa');
+      expect(filas[1].querySelector('.js-input-dlc-nombre').value).toBe('DLC Beta');
+
+      desconectar();
     });
 
     it('no falla si el documento es nulo o no contiene #ficha-fecha', () => {
