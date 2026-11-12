@@ -200,6 +200,12 @@ El formulario de alta y edición de videojuegos implementa la captura y poblaci�
   - Normaliza campos numéricos (`horas` a entero `>= 0`), campos de texto (con `trim()`) y el formato seleccionado (`fisico` o `digital`).
   - Extrae de manera estructurada los grupos repetibles (expansiones DLCs) agrupando pares de `dlc-titulo` y `dlc-estado` mediante `formData.getAll()`.
   - Asegura que los campos condicionales no aplicables (ej. EAN y estantería en formato digital, o tienda en formato físico) se limpien y no contaminen la entidad.
+- **Campo condicional interactivo (`alternarSeccionFormato`):**
+  - Vincula la selección del selector de formato (*Edición Física* vs *Edición Digital*).
+  - Si se selecciona **Físico**, se muestra y habilita la sección `#bloque-fisico` (`hidden = false`, `disabled = false`), activando los campos de código EAN-13 y ubicación en estantería; la sección digital `#bloque-digital` se oculta y deshabilita (`hidden = true`, `disabled = true`).
+  - Si se selecciona **Digital**, se oculta y deshabilita `#bloque-fisico`, y se muestra y habilita `#bloque-digital` con su lista de tiendas digitales compatibles (*Steam, PlayStation Store, Nintendo eShop, Epic Games Store, Xbox Store*).
+  - Al deshabilitar una sección, se limpian automáticamente las clases de error (`is-invalid`), se resetea `aria-invalid="false"` y se vacía el texto de las alertas vinculadas por `aria-describedby`, impidiendo errores fantasma o envíos residuales.
+  - La sincronización nativa mediante el atributo `disabled` asegura que los controles inactivos queden automáticamente excluidos de la serialización con `FormData` y del árbol de accesibilidad.
 - **Población bidireccional (`rellenarFormulario`):** Permite reutilizar el mismo formulario tanto para el alta como para la edición de títulos existentes (`ficha.html?id=X`), asignando los valores de la entidad a cada control y marcando el radio de formato correspondiente.
 
 
