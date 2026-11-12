@@ -204,6 +204,175 @@ export function alternarSeccionFormato(formulario, formato) {
   }
 }
 
+export const MAX_DLCS = 3;
+export const MIN_DLCS = 0;
+
+let contadorDlc = 0;
+
+/**
+ * Genera un identificador único para los campos de una fila dinámica de DLC.
+ * @returns {string} Cadena identificadora única.
+ */
+export function generarIdDlc() {
+  contadorDlc += 1;
+  return `dlc-${Date.now()}-${contadorDlc}`;
+}
+
+/**
+ * Resetea el contador interno de identificadores de DLC (utilizado en pruebas).
+ */
+export function resetearContadorDlc() {
+  contadorDlc = 0;
+}
+
+/**
+ * Sincroniza el estado del botón de añadir DLC según el número actual de filas.
+ * Se desactiva y marca con aria-disabled al alcanzar el límite (3) y se reactiva con menos de 3.
+ *
+ * @param {HTMLElement} contenedor Contenedor #lista-dlcs.
+ * @param {HTMLButtonElement} [btnAnadir] Botón #btn-anadir-dlc.
+ * @param {number} [maximo=MAX_DLCS] Límite máximo de elementos.
+ */
+export function sincronizarBotonAnadirDlc(contenedor, btnAnadir = null, maximo = MAX_DLCS) {
+  if (!contenedor || !btnAnadir) return;
+
+  const totalFilas = contenedor.querySelectorAll('.js-fila-dlc').length;
+  const alcanzadoMaximo = totalFilas >= maximo;
+
+  btnAnadir.disabled = alcanzadoMaximo;
+  if (alcanzadoMaximo) {
+    btnAnadir.setAttribute('aria-disabled', 'true');
+  } else {
+    btnAnadir.removeAttribute('aria-disabled');
+  }
+}
+
+/**
+ * Añade una nueva fila de DLC clonando la plantilla <template id="tpl-dlc">.
+ * Genera identificadores únicos por campo, enlaza label con htmlFor y aria-describedby
+ * con su respectiva caja de error, y gestiona el límite de 3 filas.
+ *
+ * @param {HTMLElement} contenedor Contenedor #lista-dlcs.
+ * @param {HTMLTemplateElement} template Elemento <template id="tpl-dlc">.
+ * @param {Object} [valores={}] Valores iniciales { titulo, estado }.
+ * @param {HTMLButtonElement} [btnAnadir] Botón #btn-anadir-dlc para sincronizar su estado.
+ * @returns {HTMLElement | null} El elemento de fila creado o null si ya se alcanzó el límite.
+ */
+export function anadirFilaDlc(contenedor, template, valores = {}, btnAnadir = null) {
+  if (!contenedor || !template || !(template instanceof HTMLTemplateElement)) {
+    return null;
+  }
+
+  const filasActuales = contenedor.querySelectorAll('.js-fila-dlc');
+  if (filasActuales.length >= MAX_DLCS) {
+    sincronizarBotonAnadirDlc(contenedor, btnAnadir);
+    return null;
+  }
+
+  const clon = template.content.cloneNode(true);
+  const fila = clon.querySelector('.js-fila-dlc');
+  if (!fila) return null;
+
+  const idUnico = generarIdDlc();
+
+  const labelNombre = fila.querySelector('.js-label-dlc-nombre');
+  const inputNombre = fila.querySelector('.js-input-dlc-nombre');
+  const errorNombre = fila.querySelector('.js-error-dlc-nombre');
+
+  const idInputNombre = `input-nombre-${idUnico}`;
+  const idErrorNombre = `error-nombre-${idUnico}`;
+
+  if (labelNombre) labelNombre.htmlFor = idInputNombre;
+  if (inputNombre) {
+    inputNombre.id = idInputNombre;
+    inputNombre.setAttribute('aria-describedby', idErrorNombre);
+    if (typeof valores.titulo === 'string') {
+      inputNombre.value = valores.titulo;
+    }
+  }
+  if (errorNombre) {
+    errorNombre.id = idErrorNombre;
+  }
+
+  const labelEstado = fila.querySelector('.js-label-dlc-estado');
+  const selectEstado = fila.querySelector('.js-select-dlc-estado');
+  const errorEstado = fila.querySelector('.js-error-dlc-estado');
+
+  const idSelectEstado = `select-estado-${idUnico}`;
+  const idErrorEstado = `error-estado-${idUnico}`;
+
+  if (labelEstado) labelEstado.htmlFor = idSelectEstado;
+  if (selectEstado) {
+    selectEstado.id = idSelectEstado;
+    selectEstado.setAttribute('aria-describedby', idErrorEstado);
+    if (typeof valores.estado === 'string') {
+      selectEstado.value = valores.estado.toLowerCase();
+    }
+  }
+  if (errorEstado) {
+    errorEstado.id = idErrorEstado;
+  }
+
+  contenedor.appendChild(fila);
+
+  sincronizarBotonAnadirDlc(contenedor, btnAnadir);
+
+  return fila;
+}
+
+/**
+ * Elimina una fila de DLC del contenedor y reactiva el botón de añadir si estaba desactivado.
+ *
+ * @param {HTMLElement} fila Fila de DLC a eliminar (.js-fila-dlc).
+ * @param {HTMLElement} contenedor Contenedor #lista-dlcs.
+ * @param {HTMLButtonElement} [btnAnadir] Botón #btn-anadir-dlc.
+ */
+export function quitarFilaDlc(fila, contenedor, btnAnadir = null) {
+  if (!fila || typeof fila.remove !== 'function') return;
+
+  fila.remove();
+
+  if (contenedor) {
+    sincronizarBotonAnadirDlc(contenedor, btnAnadir);
+  }
+}
+
+/**
+ * Conecta los eventos del grupo dinámico de DLCs (delegación para quitar filas y click en añadir).
+ *
+ * @param {HTMLElement} contenedor Elemento #lista-dlcs.
+ * @param {HTMLTemplateElement} template Elemento <template id="tpl-dlc">.
+ * @param {HTMLButtonElement} btnAnadir Elemento #btn-anadir-dlc.
+ * @returns {Function} Función para desconectar los oyentes.
+ */
+export function conectarDlcs(contenedor, template, btnAnadir) {
+  if (!contenedor || !template || !btnAnadir) return () => {};
+
+  const alHacerClickAnadir = () => {
+    anadirFilaDlc(contenedor, template, {}, btnAnadir);
+  };
+
+  const alHacerClickQuitar = (evento) => {
+    const btnQuitar = evento.target.closest('.js-btn-quitar-dlc');
+    if (btnQuitar && contenedor.contains(btnQuitar)) {
+      const fila = btnQuitar.closest('.js-fila-dlc');
+      if (fila) {
+        quitarFilaDlc(fila, contenedor, btnAnadir);
+      }
+    }
+  };
+
+  btnAnadir.addEventListener('click', alHacerClickAnadir);
+  contenedor.addEventListener('click', alHacerClickQuitar);
+
+  sincronizarBotonAnadirDlc(contenedor, btnAnadir);
+
+  return function desconectarDlcs() {
+    btnAnadir.removeEventListener('click', alHacerClickAnadir);
+    contenedor.removeEventListener('click', alHacerClickQuitar);
+  };
+}
+
 /**
  * Rellena los campos base y condicionales de un formulario con los datos de un videojuego.
  *
@@ -274,14 +443,33 @@ export function rellenarFormulario(formulario, datos = {}) {
   if (selectTienda && datos.tiendaDigital) {
     selectTienda.value = datos.tiendaDigital;
   }
+
+  // Población de expansiones dinámicas (DLCs)
+  const contenedorDlcs = formulario.querySelector('#lista-dlcs');
+  const templateDlc =
+    formulario.querySelector('#tpl-dlc') ||
+    (formulario.ownerDocument && formulario.ownerDocument.querySelector('#tpl-dlc'));
+  const btnAnadirDlc = formulario.querySelector('#btn-anadir-dlc');
+
+  if (contenedorDlcs) {
+    contenedorDlcs.innerHTML = '';
+    if (Array.isArray(datos.dlcs) && templateDlc) {
+      const dlcsLimite = datos.dlcs.slice(0, MAX_DLCS);
+      dlcsLimite.forEach((dlc) => {
+        anadirFilaDlc(contenedorDlcs, templateDlc, dlc, btnAnadirDlc);
+      });
+    }
+    sincronizarBotonAnadirDlc(contenedorDlcs, btnAnadirDlc);
+  }
 }
 
 /**
  * Inicializa la página ficha.html.
- * Inyecta la fecha máxima en el selector de fecha y conecta el conmutador condicional de formato.
+ * Inyecta la fecha máxima en el selector de fecha, conecta el conmutador condicional de formato
+ * y vincula el gestor dinámico de DLCs clonado desde <template id="tpl-dlc">.
  *
  * @param {Document} [documento=document] Objeto de documento inyectable.
- * @param {Object} [opciones={}] Opciones configurables (fechaReferencia, formatoInicial, etc.).
+ * @param {Object} [opciones={}] Opciones configurables (fechaReferencia, formatoInicial, dlcsIniciales, etc.).
  * @returns {Function} Función de limpieza para desconectar los oyentes.
  */
 export function iniciarFicha(
@@ -296,26 +484,57 @@ export function iniciarFicha(
   }
 
   const formulario = documento.querySelector('#form-ficha') || documento.querySelector('form');
-  if (!formulario) return () => {};
+  let desconectarFormato = () => {};
 
-  const radioMarcado = formulario.querySelector('input[name="formato"]:checked');
-  const formatoInicial = opciones.formatoInicial || (radioMarcado ? radioMarcado.value : null);
-  alternarSeccionFormato(formulario, formatoInicial);
+  if (formulario) {
+    const radioMarcado = formulario.querySelector('input[name="formato"]:checked');
+    const formatoInicial = opciones.formatoInicial || (radioMarcado ? radioMarcado.value : null);
+    alternarSeccionFormato(formulario, formatoInicial);
 
-  const manejadorCambioFormato = (evento) => {
-    if (evento.target && evento.target.name === 'formato') {
-      alternarSeccionFormato(formulario, evento.target.value);
+    const manejadorCambioFormato = (evento) => {
+      if (evento.target && evento.target.name === 'formato') {
+        alternarSeccionFormato(formulario, evento.target.value);
+      }
+    };
+
+    formulario.addEventListener('change', manejadorCambioFormato);
+    desconectarFormato = () => {
+      formulario.removeEventListener('change', manejadorCambioFormato);
+    };
+  }
+
+  const contenedorDlcs = documento.querySelector('#lista-dlcs');
+  const templateDlc = documento.querySelector('#tpl-dlc');
+  const btnAnadirDlc = documento.querySelector('#btn-anadir-dlc');
+  let desconectarDlcs = () => {};
+
+  if (contenedorDlcs && templateDlc && btnAnadirDlc) {
+    desconectarDlcs = conectarDlcs(contenedorDlcs, templateDlc, btnAnadirDlc);
+
+    if (Array.isArray(opciones.dlcsIniciales)) {
+      contenedorDlcs.innerHTML = '';
+      opciones.dlcsIniciales.slice(0, MAX_DLCS).forEach((dlc) => {
+        anadirFilaDlc(contenedorDlcs, templateDlc, dlc, btnAnadirDlc);
+      });
+      sincronizarBotonAnadirDlc(contenedorDlcs, btnAnadirDlc);
     }
-  };
-
-  formulario.addEventListener('change', manejadorCambioFormato);
+  }
 
   return function desconectar() {
-    formulario.removeEventListener('change', manejadorCambioFormato);
+    desconectarFormato();
+    desconectarDlcs();
   };
 }
 
 export default {
+  MAX_DLCS,
+  MIN_DLCS,
+  generarIdDlc,
+  resetearContadorDlc,
+  sincronizarBotonAnadirDlc,
+  anadirFilaDlc,
+  quitarFilaDlc,
+  conectarDlcs,
   inyectarFechaMaxima,
   alternarSeccionFormato,
   leerDatosFormulario,

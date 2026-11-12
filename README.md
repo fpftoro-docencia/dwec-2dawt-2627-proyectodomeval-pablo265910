@@ -206,7 +206,12 @@ El formulario de alta y edición de videojuegos implementa la captura y poblaci�
   - Si se selecciona **Digital**, se oculta y deshabilita `#bloque-fisico`, y se muestra y habilita `#bloque-digital` con su lista de tiendas digitales compatibles (*Steam, PlayStation Store, Nintendo eShop, Epic Games Store, Xbox Store*).
   - Al deshabilitar una sección, se limpian automáticamente las clases de error (`is-invalid`), se resetea `aria-invalid="false"` y se vacía el texto de las alertas vinculadas por `aria-describedby`, impidiendo errores fantasma o envíos residuales.
   - La sincronización nativa mediante el atributo `disabled` asegura que los controles inactivos queden automáticamente excluidos de la serialización con `FormData` y del árbol de accesibilidad.
-- **Población bidireccional (`rellenarFormulario`):** Permite reutilizar el mismo formulario tanto para el alta como para la edición de títulos existentes (`ficha.html?id=X`), asignando los valores de la entidad a cada control y marcando el radio de formato correspondiente.
+- **Grupo dinámico de expansiones/DLCs (`anadirFilaDlc`, `quitarFilaDlc`, `conectarDlcs`):**
+  - Permite asociar de 0 a 3 contenidos descargables o expansiones clonando la plantilla HTML nativa `<template id="tpl-dlc">`.
+  - Genera identificadores únicos correlativos por fila (`id="input-nombre-dlc-..."`, `id="select-estado-dlc-..."`), enlazando de forma accesible sus etiquetas mediante `htmlFor` y sus cajas de error reactivas mediante `aria-describedby`.
+  - Control de límites estricto (mínimo 0, máximo 3): al alcanzar 3 expansiones en el contenedor `#lista-dlcs`, el botón «+ Añadir DLC» se deshabilita (`disabled = true`, `aria-disabled="true"`). Al pulsar «Quitar» en cualquier fila (gestionado mediante delegación de eventos `click`), la fila se elimina y el botón vuelve a reactivarse automáticamente.
+  - La serialización aprovecha `new FormData(formulario)` y `formData.getAll('dlcNombre[]')` junto con `formData.getAll('dlcEstado[]')` para normalizar las colecciones en un array estructurado de objetos `{ titulo, estado }`.
+- **Población bidireccional (`rellenarFormulario`):** Permite reutilizar el mismo formulario tanto para el alta como para la edición de títulos existentes (`ficha.html?id=X`), asignando los valores de la entidad a cada control, sincronizando el radio de formato correspondiente y clonando las filas de DLC existentes.
 
 
 

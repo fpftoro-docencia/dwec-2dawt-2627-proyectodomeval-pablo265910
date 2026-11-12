@@ -375,6 +375,7 @@
               class="form-control js-input-dlc-nombre"
               placeholder="ej. Shadow of the Erdtree"
               required
+              data-validar="titulo"
               aria-invalid="false"
               aria-describedby="error-dlc-nombre-0"
             />
@@ -393,12 +394,13 @@
               name="dlcEstado[]"
               class="form-select js-select-dlc-estado"
               required
+              data-validar="estado"
               aria-invalid="false"
               aria-describedby="error-dlc-estado-0"
             >
-              <option value="Pendiente">Pendiente</option>
-              <option value="Jugando">Jugando</option>
-              <option value="Completado">Completado</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="jugando">Jugando</option>
+              <option value="completado">Completado</option>
             </select>
             <div
               id="error-dlc-estado-0"
