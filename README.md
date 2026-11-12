@@ -151,6 +151,31 @@ Para la edición física de videojuegos, el validador `validarEAN13(codigo)` ver
 - **`validarTiendaDigital(tienda)`:** Valida tienda admitida (`Steam`, `PlayStation Store`, `Nintendo eShop`, `Epic Games Store`, `Xbox Store`).
 - **`validarDlc(dlc)` y `validarDlcs(dlcs)`:** Valida grupos dinámicos de expansiones (entre 0 y 3 elementos, cada uno con título válido y estado `pendiente`, `jugando` o `completado`).
 
+### Lógica Pura de Paginación (`js/paginar.js`)
+
+La paginación de colecciones se implementa como una función pura matemática desacoplada del DOM: `paginar(lista, pagina, porPagina)`.
+
+- **Cálculo de páginas:** $\text{totalPaginas} = \max(1, \lceil \text{total} / \text{porPagina} \rceil)$.
+- **Corrección automática de límites:**
+  - Si se solicita una página menor que 1 (ej. 0 o números negativos), la corrige automáticamente a `1`.
+  - Si se solicita una página superior al total (ej. página 99 teniendo 3), la corrige automáticamente a la última disponible (`totalPaginas`).
+  - Si la colección está vacía (`[]`), devuelve `elementos: []`, `totalPaginas: 1` y `pagina: 1`.
+- **Estructura devuelta:**
+  ```javascript
+  {
+    elementos: [...],      // Porción exacta de elementos de la página
+    pagina: 1,             // Página efectiva corregida
+    paginaActual: 1,       // Alias
+    totalPaginas: 3,       // Total de páginas calculadas
+    porPagina: 6,          // Elementos por página
+    total: 15,             // Total de elementos en la colección original
+    tieneAnterior: false,  // Booleano para controles de navegación
+    tieneSiguiente: true   // Booleano para controles de navegación
+  }
+  ```
+- **Reutilización:** Este módulo sirve de forma transversal para paginar las tarjetas del catálogo en `listado.html` y las filas de la tabla de administración en `usuarios.html`.
+
+
 
 ## Eventos
 
