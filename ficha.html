@@ -59,6 +59,9 @@
         method="post"
         novalidate
       >
+        <!-- Identificador único para modo edición -->
+        <input type="hidden" id="ficha-id" name="id" value="" />
+
         <!-- SECCIÓN 1: Información Principal -->
         <fieldset class="mb-5">
           <legend
@@ -68,7 +71,7 @@
           </legend>
 
           <div class="row g-3">
-            <!-- Título del juego -->
+            <!-- Fila 1: Título y Plataforma -->
             <div class="col-12 col-md-8">
               <label for="ficha-titulo" class="form-label">Título del videojuego *</label>
               <input
@@ -80,6 +83,7 @@
                 minlength="2"
                 maxlength="100"
                 required
+                data-validar="titulo"
                 aria-invalid="false"
                 aria-describedby="error-ficha-titulo"
               />
@@ -91,7 +95,6 @@
               ></div>
             </div>
 
-            <!-- Plataforma -->
             <div class="col-12 col-md-4">
               <label for="ficha-plataforma" class="form-label">Plataforma *</label>
               <select
@@ -99,6 +102,7 @@
                 name="plataforma"
                 class="form-select"
                 required
+                data-validar="plataforma"
                 aria-invalid="false"
                 aria-describedby="error-ficha-plataforma"
               >
@@ -117,24 +121,39 @@
               ></div>
             </div>
 
-            <!-- Fecha de adquisición -->
-            <div class="col-12 col-sm-6 col-md-4">
-              <label for="ficha-fecha" class="form-label">Fecha de adquisición *</label>
+            <!-- Fila 2: SKU, Fecha, Horas y Estado de progreso alineados -->
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="ficha-sku" class="form-label text-nowrap">Código SKU</label>
+              <input
+                type="text"
+                id="ficha-sku"
+                name="sku"
+                class="form-control font-mono"
+                placeholder="GAME-RPG-0042"
+                data-validar="sku"
+                aria-invalid="false"
+                aria-describedby="error-ficha-sku"
+              />
+              <div id="error-ficha-sku" class="field-error" role="alert" aria-live="polite"></div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-3">
+              <label for="ficha-fecha" class="form-label text-nowrap">Fecha de adquisición *</label>
               <input
                 type="date"
                 id="ficha-fecha"
                 name="fechaAdquisicion"
                 class="form-control"
                 required
+                data-validar="fecha"
                 aria-invalid="false"
                 aria-describedby="error-ficha-fecha"
               />
               <div id="error-ficha-fecha" class="field-error" role="alert" aria-live="polite"></div>
             </div>
 
-            <!-- Horas jugadas -->
-            <div class="col-12 col-sm-6 col-md-4">
-              <label for="ficha-horas" class="form-label">Horas jugadas *</label>
+            <div class="col-12 col-sm-6 col-md-2">
+              <label for="ficha-horas" class="form-label text-nowrap">Horas jugadas *</label>
               <input
                 type="number"
                 id="ficha-horas"
@@ -144,27 +163,28 @@
                 step="1"
                 value="0"
                 required
+                data-validar="horas"
                 aria-invalid="false"
                 aria-describedby="error-ficha-horas"
               />
               <div id="error-ficha-horas" class="field-error" role="alert" aria-live="polite"></div>
             </div>
 
-            <!-- Estado de progreso -->
-            <div class="col-12 col-md-4">
-              <label for="ficha-estado" class="form-label">Estado de progreso *</label>
+            <div class="col-12 col-sm-6 col-md-4">
+              <label for="ficha-estado" class="form-label text-nowrap">Estado de progreso *</label>
               <select
                 id="ficha-estado"
                 name="estado"
                 class="form-select"
                 required
+                data-validar="estado"
                 aria-invalid="false"
                 aria-describedby="error-ficha-estado"
               >
-                <option value="Pendiente">Pendiente</option>
-                <option value="Jugando">Jugando</option>
-                <option value="Completado">Completado</option>
-                <option value="Abandonado">Abandonado</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="jugando">Jugando</option>
+                <option value="completado">Completado</option>
+                <option value="abandonado">Abandonado</option>
               </select>
               <div
                 id="error-ficha-estado"
@@ -172,21 +192,6 @@
                 role="alert"
                 aria-live="polite"
               ></div>
-            </div>
-
-            <!-- Código SKU -->
-            <div class="col-12">
-              <label for="ficha-sku" class="form-label">Código de inventario SKU</label>
-              <input
-                type="text"
-                id="ficha-sku"
-                name="sku"
-                class="form-control font-mono"
-                placeholder="GAME-RPG-0042"
-                aria-invalid="false"
-                aria-describedby="error-ficha-sku"
-              />
-              <div id="error-ficha-sku" class="field-error" role="alert" aria-live="polite"></div>
             </div>
           </div>
         </fieldset>
@@ -205,8 +210,9 @@
                 type="radio"
                 id="formato-fisico"
                 name="formato"
-                value="Fisico"
+                value="fisico"
                 required
+                data-validar="formato"
                 aria-invalid="false"
                 aria-describedby="error-ficha-formato"
               />
@@ -223,8 +229,9 @@
                 type="radio"
                 id="formato-digital"
                 name="formato"
-                value="Digital"
+                value="digital"
                 required
+                data-validar="formato"
                 aria-invalid="false"
                 aria-describedby="error-ficha-formato"
               />
@@ -259,6 +266,7 @@
                 placeholder="4020628663124"
                 maxlength="13"
                 inputmode="numeric"
+                data-validar="ean13"
                 aria-invalid="false"
                 aria-describedby="error-ficha-ean"
               />
@@ -273,6 +281,7 @@
                 name="ubicacion"
                 class="form-control font-mono"
                 placeholder="EST-A-03"
+                data-validar="estanteria"
                 aria-invalid="false"
                 aria-describedby="error-ficha-ubicacion"
               />
@@ -296,6 +305,7 @@
                 id="ficha-tienda"
                 name="tiendaDigital"
                 class="form-select"
+                data-validar="tienda"
                 aria-invalid="false"
                 aria-describedby="error-ficha-tienda"
               >
@@ -421,10 +431,12 @@
       import { protegerPaginaPrivada } from './js/rutas.js';
       import { iniciarCabecera } from './js/cabecera.js';
       import { iniciarAvisos } from './js/avisos.js';
+      import { iniciarFicha } from './js/ficha.js';
 
       if (protegerPaginaPrivada()) {
         iniciarCabecera();
         iniciarAvisos();
+        iniciarFicha();
       }
     </script>
   </body>

@@ -190,6 +190,19 @@ El componente visual de paginación implementa la interfaz accesible de navegaci
   - Al volver a la página 1 o al realizar una nueva búsqueda, se elimina el parámetro `pagina` para mantener la URL limpia.
 - **Delegación de eventos:** Un único oyente `click` registrado en el contenedor `<ul>` intercepta cualquier pulsación en fase de burbuja mediante `e.target.closest('button[data-pagina], button[data-page]')`. Esto asegura que los controles respondan de inmediato tras ser re-renderizados sin necesidad de reconectar oyentes individuales.
 
+### Formulario de la Ficha y Lectura de Datos (`ficha.html`, `js/ficha.js`)
+
+El formulario de alta y edición de videojuegos implementa la captura y población estructurada de datos mediante APIs nativas del navegador:
+
+- **Fecha máxima dinámica (`inyectarFechaMaxima`):** Para evitar que el usuario seleccione fechas futuras en el selector nativo de fecha (`<input type="date">`), la función calcula la fecha local actual en formato ISO (`YYYY-MM-DD`) e inyecta dinámicamente el atributo `max`. Esto proporciona una primera barrera visual y nativa antes de la validación lógica.
+- **Lectura íntegra y normalización con `FormData` (`leerDatosFormulario`):**
+  - Utiliza `new FormData(formulario)` para recopilar de forma declarativa todos los controles del formulario según su atributo `name`.
+  - Normaliza campos numéricos (`horas` a entero `>= 0`), campos de texto (con `trim()`) y el formato seleccionado (`fisico` o `digital`).
+  - Extrae de manera estructurada los grupos repetibles (expansiones DLCs) agrupando pares de `dlc-titulo` y `dlc-estado` mediante `formData.getAll()`.
+  - Asegura que los campos condicionales no aplicables (ej. EAN y estantería en formato digital, o tienda en formato físico) se limpien y no contaminen la entidad.
+- **Población bidireccional (`rellenarFormulario`):** Permite reutilizar el mismo formulario tanto para el alta como para la edición de títulos existentes (`ficha.html?id=X`), asignando los valores de la entidad a cada control y marcando el radio de formato correspondiente.
+
+
 
 
 
