@@ -213,6 +213,21 @@ El formulario de alta y edición de videojuegos implementa la captura y poblaci�
   - La serialización aprovecha `new FormData(formulario)` y `formData.getAll('dlcNombre[]')` junto con `formData.getAll('dlcEstado[]')` para normalizar las colecciones en un array estructurado de objetos `{ titulo, estado }`.
 - **Población bidireccional (`rellenarFormulario`):** Permite reutilizar el mismo formulario tanto para el alta como para la edición de títulos existentes (`ficha.html?id=X`), asignando los valores de la entidad a cada control, sincronizando el radio de formato correspondiente y clonando las filas de DLC existentes.
 
+### Motor Genérico de Validación en Tiempo Real y Accesibilidad (`js/validacion.js`)
+
+El motor de validación implementa las directrices de los requisitos 19 y 20 del enunciado, desacoplando la lógica de validación de cada vista y garantizando una experiencia accesible e interactiva:
+
+- **Fases de propagación para el ciclo de vida del error:**
+  - **Fase de captura (`useCapture = true`):** Se registra un único oyente `blur` en el `<form>`. Al abandonar el foco de un campo por primera vez, se evalúa y se marca como visitado (`dirty`), sin necesidad de registrar oyentes individuales en cada control.
+  - **Fase de burbuja:** Una vez que un campo ha sido visitado o presenta un estado de error, los eventos `input` y `change` revalidan el valor de forma reactiva e instantánea, eliminando el mensaje en cuanto el usuario corrige el dato.
+- **Revalidación de campos dependientes (`data-coincidir-con`):**
+  - Cuando se modifica un campo del que dependen otros (por ejemplo, la contraseña principal), el motor localiza automáticamente los controles dependientes (como repetir contraseña) y los revalida de inmediato.
+- **Accesibilidad y Constraint Validation API:**
+  - **Sincronización accesible:** Los campos erróneos reciben `aria-invalid="true"` y se vinculan a través de `aria-describedby` con su caja de mensaje (`role="alert"` o `aria-live="polite"`).
+  - **API nativa:** Se utiliza `setCustomValidity(mensaje)` para alimentar la validación estándar del navegador y clases de Bootstrap (`.is-invalid`, `.invalid-feedback`, `.d-block`).
+  - **Envío y foco automático:** Al pulsar enviar con datos incompletos o erróneos, se cancela el evento `submit` y se transfiere automáticamente el foco (`focus()`) al **primer campo no válido** del formulario.
+
+
 
 
 
