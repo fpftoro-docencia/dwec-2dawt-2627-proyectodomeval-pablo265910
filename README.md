@@ -114,17 +114,43 @@ Este inicio de sesión es una **simulación educativa**:
 
 ## Funcionalidad y formularios
 
-<!-- Una subsección por parte de la aplicación (sesión y registro, listado y paginación, ficha,
-     zona de administración): qué hace y cómo lo has resuelto. Incluye:
-     - cómo lees los datos (FormData: get, getAll), cómo creas y numeras el grupo dinámico, cómo
-       funciona el campo condicional, qué atributos pones desde el código y cómo rellenas el
-       formulario al editar;
-     - la validación: cuándo validas cada campo, de dónde salen los mensajes (validity,
-       setCustomValidity y tus validadores), qué haces para que los errores sean accesibles y cómo
-       evitas el doble envío;
-     - las expresiones regulares: tabla con cada una, en qué validador está, qué acepta (un ejemplo)
-       y qué significan sus partes y sus flags; qué parte de la validación hace la expresión y qué
-       parte el código. -->
+### Validadores y Expresiones Regulares (`js/validadores.js`)
+
+La aplicación implementa validación pura desacoplada del DOM mediante funciones exportadas y un mapa unificado `VALIDADORES` que permite a los formularios enlazar cada campo dinámicamente mediante el atributo `data-validar`.
+
+#### Tabla de Expresiones Regulares
+
+| Expresión Regular | Validador | Ejemplo válido | Desglose y significado de partes y flags | Qué valida la regex vs Qué valida el código |
+|---|---|---|---|---|
+| `/^[a-zA-Z0-9_-]{3,15}$/` | `validarNombreUsuario` | `pablo_dev` | `^` inicio, `[a-zA-Z0-9_-]` letras, dígitos o guiones, `{3,15}` entre 3 y 15 caracteres, `$` fin. Sin flags. | **Regex:** Formato y longitud de caracteres.<br>**Código:** `trim()`, tipo `string` y unicidad contra `localStorage`. |
+| `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` | `validarCorreo` | `gamer@gamevault.org` | `^` inicio, `[^\s@]+` parte local sin espacios ni arrobas, `@` arroba obligatoria, `[^\s@]+` dominio, `\.` punto literal, `[^\s@]+` TLD, `$` fin. | **Regex:** Estructura general de dirección email.<br>**Código:** `trim()` y tipo `string`. |
+| `/\p{Ll}/u`<br>`/\p{Lu}/u`<br>`/\d/` | `evaluarRequisitosClave`<br>`validarClave` | `Password2026!` | `\p{Ll}` minúscula Unicode (flag `u`), `\p{Lu}` mayúscula Unicode (flag `u`), `\d` dígito numérico. | **Regex:** Presencia de cada familia de caracteres sin flag global `g` (evita anomalías de estado con `lastIndex`).<br>**Código:** Longitud mínima `>= 8` y composición booleana reactiva. |
+| `/^GAME-[A-Z]{3}-\d{4}$/` | `validarSKU` | `GAME-RPG-0042` | `^GAME-` prefijo fijo en mayúsculas, `[A-Z]{3}` código de género de 3 letras mayúsculas, `-\d{4}$` guion y 4 dígitos correlativos. | **Regex:** Sintaxis y estructura estricta del SKU de catálogo.<br>**Código:** `trim()` y comprobación de tipo de dato. |
+| `/^\d{13}$/` | `validarEAN13` | `4020628663124` | `^` inicio, `\d{13}` exactamente 13 dígitos numéricos decimales, `$` fin. | **Regex:** Longitud exacta y contenido exclusivamente numérico.<br>**Código:** Algoritmo oficial de control ponderado módulo 10 (impares peso 1, pares peso 3, cálculo de dígito verificador). |
+| `/^EST-[A-Z]-\d{2}$/` | `validarEstanteria` | `EST-A-03` | `^EST-` prefijo de estantería, `[A-Z]` letra mayúscula de módulo, `-\d{2}$` número de balda de 2 dígitos (00 a 99). | **Regex:** Formato físico de balda.<br>**Código:** `trim()` y comprobación de tipo de dato. |
+
+#### Algoritmo Oficial de Control EAN-13
+
+Para la edición física de videojuegos, el validador `validarEAN13(codigo)` verifica la integridad del código de barras de 13 dígitos numéricos:
+1. Valida que el texto recibido coincida con `/^\d{13}$/`.
+2. Extrae los primeros 12 dígitos y reserva el 13º como dígito de control.
+3. Calcula la suma ponderada asignando peso 1 a posiciones impares y peso 3 a posiciones pares (indexadas en 0):
+   $$\text{suma} = \sum_{i=0}^{11} d_i \times (i \bmod 2 === 0 \text{ ? } 1 : 3)$$
+4. Calcula el dígito esperado mediante:
+   $$\text{control} = (10 - (\text{suma} \bmod 10)) \bmod 10$$
+5. Comprueba la coincidencia estricta (`calculado === digitoControl`). Si la suma es múltiplo de 10, el dígito de control es `0`.
+
+#### Validadores de la Entidad Videojuego
+
+- **`validarTitulo(titulo)`:** Cadena obligatoria entre 2 y 100 caracteres tras `trim()`.
+- **`validarPlataforma(plataforma)`:** Debe pertenecer a las opciones oficiales: `PC`, `PlayStation 5`, `Xbox Series X`, `Nintendo Switch` o `Retro`.
+- **`validarFormato(formato)`:** Acepta `'fisico'` o `'digital'` (insensible a mayúsculas).
+- **`validarFechaAdquisicion(fecha, hoy)`:** Comprueba formato `YYYY-MM-DD`, que sea una fecha de calendario real (rechaza 30 de febrero, mes 13, etc.) y que no sea posterior a la fecha de hoy.
+- **`validarHorasJugadas(horas)`:** Número entero no negativo (`>= 0`).
+- **`validarEstadoProgreso(estado)`:** Debe pertenecer a: `pendiente`, `jugando`, `completado` o `abandonado`.
+- **`validarTiendaDigital(tienda)`:** Valida tienda admitida (`Steam`, `PlayStation Store`, `Nintendo eShop`, `Epic Games Store`, `Xbox Store`).
+- **`validarDlc(dlc)` y `validarDlcs(dlcs)`:** Valida grupos dinámicos de expansiones (entre 0 y 3 elementos, cada uno con título válido y estado `pendiente`, `jugando` o `completado`).
+
 
 ## Eventos
 
