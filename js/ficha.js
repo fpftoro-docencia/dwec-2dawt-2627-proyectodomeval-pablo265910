@@ -143,7 +143,69 @@ export function leerDatosFormulario(formulario) {
 }
 
 /**
- * Rellena los campos base de un formulario con los datos de un videojuego.
+ * Alterna la visibilidad y activación de las secciones condicionales según el formato elegido.
+ *
+ * Cumple el Requisito [S2-06] y ENUNCIADO R17:
+ * - 'fisico': muestra y habilita la sección física (#bloque-fisico), ocultando y deshabilitando la digital (#bloque-digital).
+ * - 'digital': muestra y habilita la sección digital (#bloque-digital), ocultando y deshabilitando la física (#bloque-fisico).
+ * - Cualquier otro valor o nulo: oculta y deshabilita ambos bloques.
+ *
+ * Al deshabilitar un bloque limpia clases de error (.is-invalid), resetea aria-invalid a "false"
+ * y vacía el texto de las cajas de error enlazadas mediante aria-describedby.
+ *
+ * @param {HTMLFormElement | HTMLElement | Document} formulario Formulario o contenedor.
+ * @param {'fisico' | 'digital' | string | null} [formato] Formato seleccionado.
+ */
+export function alternarSeccionFormato(formulario, formato) {
+  if (!formulario) return;
+
+  const bloqueFisico = formulario.querySelector('#bloque-fisico');
+  const bloqueDigital = formulario.querySelector('#bloque-digital');
+
+  const formatoLimpio = typeof formato === 'string' ? formato.trim().toLowerCase() : null;
+
+  const esFisico = formatoLimpio === 'fisico';
+  const esDigital = formatoLimpio === 'digital';
+
+  if (bloqueFisico) {
+    bloqueFisico.hidden = !esFisico;
+    bloqueFisico.disabled = !esFisico;
+    const controlesFisicos = bloqueFisico.querySelectorAll('input, select, textarea');
+    controlesFisicos.forEach((control) => {
+      control.disabled = !esFisico;
+      if (!esFisico) {
+        control.classList.remove('is-invalid', 'is-valid');
+        control.setAttribute('aria-invalid', 'false');
+        const descId = control.getAttribute('aria-describedby');
+        if (descId) {
+          const cajaError = formulario.querySelector(`#${descId}`);
+          if (cajaError) cajaError.textContent = '';
+        }
+      }
+    });
+  }
+
+  if (bloqueDigital) {
+    bloqueDigital.hidden = !esDigital;
+    bloqueDigital.disabled = !esDigital;
+    const controlesDigitales = bloqueDigital.querySelectorAll('input, select, textarea');
+    controlesDigitales.forEach((control) => {
+      control.disabled = !esDigital;
+      if (!esDigital) {
+        control.classList.remove('is-invalid', 'is-valid');
+        control.setAttribute('aria-invalid', 'false');
+        const descId = control.getAttribute('aria-describedby');
+        if (descId) {
+          const cajaError = formulario.querySelector(`#${descId}`);
+          if (cajaError) cajaError.textContent = '';
+        }
+      }
+    });
+  }
+}
+
+/**
+ * Rellena los campos base y condicionales de un formulario con los datos de un videojuego.
  *
  * @param {HTMLFormElement} formulario Elemento <form id="form-ficha">.
  * @param {Object} datos Objeto con las propiedades del videojuego.
@@ -178,38 +240,84 @@ export function rellenarFormulario(formulario, datos = {}) {
     selectEstado.value = datos.estadoProgreso.toLowerCase();
   }
 
-  const formato = datos.formato === 'fisico' ? 'fisico' : 'digital';
+  const formato =
+    typeof datos.formato === 'string' && datos.formato.toLowerCase() === 'fisico'
+      ? 'fisico'
+      : datos.formato
+        ? 'digital'
+        : null;
+
   const radioFisico = formulario.querySelector('#formato-fisico');
   const radioDigital = formulario.querySelector('#formato-digital');
 
-  if (formato === 'fisico' && radioFisico) {
-    radioFisico.checked = true;
-  } else if (radioDigital) {
-    radioDigital.checked = true;
+  if (formato === 'fisico') {
+    if (radioFisico) radioFisico.checked = true;
+    if (radioDigital) radioDigital.checked = false;
+  } else if (formato === 'digital') {
+    if (radioDigital) radioDigital.checked = true;
+    if (radioFisico) radioFisico.checked = false;
+  }
+
+  alternarSeccionFormato(formulario, formato);
+
+  const inputEan = formulario.querySelector('#ficha-ean');
+  if (inputEan) {
+    inputEan.value = datos.codigoBarras || datos.ean13 || '';
+  }
+
+  const inputUbicacion = formulario.querySelector('#ficha-ubicacion');
+  if (inputUbicacion) {
+    inputUbicacion.value = datos.ubicacionEstanteria || datos.ubicacion || '';
+  }
+
+  const selectTienda = formulario.querySelector('#ficha-tienda');
+  if (selectTienda && datos.tiendaDigital) {
+    selectTienda.value = datos.tiendaDigital;
   }
 }
 
 /**
  * Inicializa la página ficha.html.
- * Inyecta la fecha máxima en el selector de fecha y deja listos los campos base.
+ * Inyecta la fecha máxima en el selector de fecha y conecta el conmutador condicional de formato.
  *
  * @param {Document} [documento=document] Objeto de documento inyectable.
- * @param {Object} [opciones={}] Opciones configurables (fechaReferencia, etc.).
+ * @param {Object} [opciones={}] Opciones configurables (fechaReferencia, formatoInicial, etc.).
+ * @returns {Function} Función de limpieza para desconectar los oyentes.
  */
 export function iniciarFicha(
   documento = typeof document !== 'undefined' ? document : null,
   opciones = {},
 ) {
-  if (!documento) return;
+  if (!documento) return () => {};
 
   const inputFecha = documento.querySelector('#ficha-fecha');
   if (inputFecha) {
     inyectarFechaMaxima(inputFecha, opciones.fechaReferencia || new Date());
   }
+
+  const formulario = documento.querySelector('#form-ficha') || documento.querySelector('form');
+  if (!formulario) return () => {};
+
+  const radioMarcado = formulario.querySelector('input[name="formato"]:checked');
+  const formatoInicial = opciones.formatoInicial || (radioMarcado ? radioMarcado.value : null);
+  alternarSeccionFormato(formulario, formatoInicial);
+
+  const manejadorCambioFormato = (evento) => {
+    if (evento.target && evento.target.name === 'formato') {
+      alternarSeccionFormato(formulario, evento.target.value);
+    }
+  };
+
+  formulario.addEventListener('change', manejadorCambioFormato);
+
+  return function desconectar() {
+    formulario.removeEventListener('change', manejadorCambioFormato);
+  };
 }
 
 export default {
   inyectarFechaMaxima,
+  alternarSeccionFormato,
   leerDatosFormulario,
   rellenarFormulario,
   iniciarFicha,
