@@ -24,6 +24,14 @@ import {
   renderizarControlesPaginacion,
   conectarPaginacion,
 } from './paginacion.js';
+import {
+  RETARDO_DEBOUNCE_DEFECTO,
+  normalizarTextoBusqueda,
+  debounce,
+  filtrarListaPorTexto,
+} from './buscador.js';
+
+export { RETARDO_DEBOUNCE_DEFECTO, normalizarTextoBusqueda, debounce };
 
 export const ELEMENTOS_POR_PAGINA_DEFECTO = 6;
 
@@ -47,6 +55,22 @@ export const MAPA_ICONOS_CONSOLAS = {
 function capitalizar(str) {
   if (typeof str !== 'string' || !str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Filtra el catálogo de videojuegos por título, plataforma o SKU
+ * ignorando mayúsculas y signos diacríticos (normalización Unicode NFD).
+ *
+ * @param {Array<Object>} juegos Lista completa de videojuegos del usuario.
+ * @param {string} [consulta=''] Texto de búsqueda introducido.
+ * @returns {Array<Object>} Subconjunto de videojuegos coincidentes.
+ */
+export function filtrarJuegos(juegos, consulta = '') {
+  return filtrarListaPorTexto(juegos, consulta, (juego) => [
+    juego.titulo,
+    juego.plataforma,
+    juego.sku,
+  ]);
 }
 
 /**
@@ -326,6 +350,7 @@ export function iniciarListado(
     opciones.almacenSesion ?? (typeof window !== 'undefined' ? window.sessionStorage : null);
   const ventana = opciones.ventana ?? (typeof window !== 'undefined' ? window : null);
   const porPagina = opciones.porPagina || ELEMENTOS_POR_PAGINA_DEFECTO;
+  const retardoDebounce = opciones.retardoDebounce ?? RETARDO_DEBOUNCE_DEFECTO;
 
   const usuario =
     opciones.usuario || (almacenSesion ? obtenerSesion(almacenSesion)?.usuario : '') || '';
@@ -336,21 +361,25 @@ export function iniciarListado(
   const elementoVacio = documento.querySelector('#estado-vacio-catalogo');
   const contenedorPaginacion = documento.querySelector('#paginacion-catalogo');
   const modalBorrado = documento.querySelector('#modal-borrar');
+  const inputBuscador = documento.querySelector('#buscador-catalogo');
 
+  let terminoBusqueda = inputBuscador ? inputBuscador.value : '';
   let desconectarPaginacion = () => {};
   let desconectarModal = () => {};
   let desconectarDelegacion = () => {};
+  let desconectarBuscador = () => {};
 
   // Función interna para refrescar la vista completa
-  const refrescar = () => {
+  const refrescar = (paginaExplicita = null) => {
     const todosLosJuegos = usuario ? obtenerJuegos(usuario, almacenLocal) : [];
-    const totalJuegos = todosLosJuegos.length;
+    const juegosFiltrados = filtrarJuegos(todosLosJuegos, terminoBusqueda);
+    const totalResultados = juegosFiltrados.length;
 
-    actualizarContadorResultados(elementoContador, totalJuegos);
-    alternarEstadoVacio(elementoVacio, totalJuegos > 0);
+    actualizarContadorResultados(elementoContador, totalResultados);
+    alternarEstadoVacio(elementoVacio, totalResultados > 0);
 
-    const paginaActual = obtenerPaginaUrl('pagina', ventana);
-    const resultadoPaginacion = paginar(todosLosJuegos, paginaActual, porPagina);
+    const paginaActual = paginaExplicita ?? obtenerPaginaUrl('pagina', ventana);
+    const resultadoPaginacion = paginar(juegosFiltrados, paginaActual, porPagina);
 
     // Si la página calculada difiere de la solicitada (por ejemplo tras borrar elementos), actualizamos la URL
     if (resultadoPaginacion.pagina !== paginaActual) {
@@ -362,7 +391,7 @@ export function iniciarListado(
     }
 
     if (contenedorPaginacion) {
-      if (totalJuegos > 0) {
+      if (totalResultados > 0) {
         contenedorPaginacion.hidden = false;
         renderizarControlesPaginacion(contenedorPaginacion, resultadoPaginacion);
       } else {
@@ -371,6 +400,29 @@ export function iniciarListado(
       }
     }
   };
+
+  // Conexión del buscador con retardo (debounce) y reinicio a página 1
+  if (inputBuscador) {
+    const ejecutarBusqueda = debounce((valor) => {
+      terminoBusqueda = typeof valor === 'string' ? valor : '';
+      fijarPaginaUrl(1, 'pagina', ventana);
+      refrescar(1);
+    }, retardoDebounce);
+
+    const manejadorInputBusqueda = (evento) => {
+      const valorActual =
+        evento.target && typeof evento.target.value === 'string'
+          ? evento.target.value
+          : inputBuscador.value;
+      ejecutarBusqueda(valorActual);
+    };
+
+    inputBuscador.addEventListener('input', manejadorInputBusqueda);
+    desconectarBuscador = () => {
+      ejecutarBusqueda.cancelar();
+      inputBuscador.removeEventListener('input', manejadorInputBusqueda);
+    };
+  }
 
   // Conexión del modal de confirmación de borrado
   if (modalBorrado) {
@@ -436,6 +488,7 @@ export function iniciarListado(
   refrescar();
 
   return function desconectar() {
+    desconectarBuscador();
     desconectarDelegacion();
     desconectarModal();
     desconectarPaginacion();
@@ -444,7 +497,11 @@ export function iniciarListado(
 
 export default {
   ELEMENTOS_POR_PAGINA_DEFECTO,
+  RETARDO_DEBOUNCE_DEFECTO,
   MAPA_ICONOS_CONSOLAS,
+  normalizarTextoBusqueda,
+  debounce,
+  filtrarJuegos,
   renderizarTarjetaJuego,
   renderizarListadoJuegos,
   actualizarContadorResultados,
