@@ -103,12 +103,16 @@ describe('módulo buscador.js (normalización NFD, debounce y filtrado)', () => 
       { id: 3, titulo: 'Cyberpunk 2077', plataforma: 'PC', sku: 'GAME-RPG-0003' },
     ];
 
-    it('devuelve [] si la lista no es un array y una copia si la consulta está vacía', () => {
+    it('devuelve [] si la lista no es un array y una copia si la consulta está vacía o falta el extractor', () => {
       expect(filtrarListaPorTexto(null, 'pc', (x) => [x.titulo])).toEqual([]);
 
-      const copia = filtrarListaPorTexto(catalogo, '   ', (x) => [x.titulo]);
-      expect(copia).toEqual(catalogo);
-      expect(copia).not.toBe(catalogo);
+      const copiaVacia = filtrarListaPorTexto(catalogo, '   ', (x) => [x.titulo]);
+      expect(copiaVacia).toEqual(catalogo);
+      expect(copiaVacia).not.toBe(catalogo);
+
+      const copiaSinExtractor = filtrarListaPorTexto(catalogo, 'pc');
+      expect(copiaSinExtractor).toEqual(catalogo);
+      expect(copiaSinExtractor).not.toBe(catalogo);
     });
 
     it('filtra ignorando mayúsculas y tildes usando la función extractora', () => {
