@@ -3,6 +3,8 @@ import { AlmacenFalso } from '../AlmacenFalso.js';
 import { crearJuego, obtenerJuegos } from '../../js/juegos.js';
 import {
   MAPA_ICONOS_CONSOLAS,
+  RETARDO_DEBOUNCE_DEFECTO,
+  filtrarJuegos,
   renderizarTarjetaJuego,
   renderizarListadoJuegos,
   actualizarContadorResultados,
@@ -18,10 +20,12 @@ describe('módulo listado.js (renderizado con <template>, modal <dialog> y catá
   let elementoVacio;
   let contenedorPaginacion;
   let modalBorrado;
+  let inputBuscador;
 
   beforeEach(() => {
     document.body.innerHTML = `
       <section>
+        <input type="search" id="buscador-catalogo" name="q" />
         <p id="contador-resultados">
           Mostrando <strong class="text-light font-mono">0</strong> videojuegos
         </p>
@@ -76,6 +80,7 @@ describe('módulo listado.js (renderizado con <template>, modal <dialog> y catá
     elementoVacio = document.querySelector('#estado-vacio-catalogo');
     contenedorPaginacion = document.querySelector('#paginacion-catalogo');
     modalBorrado = document.querySelector('#modal-borrar');
+    inputBuscador = document.querySelector('#buscador-catalogo');
 
     // Polyfill básico para happy-dom si no implementa showModal/close
     if (!modalBorrado.showModal) {
@@ -404,6 +409,160 @@ describe('módulo listado.js (renderizado con <template>, modal <dialog> y catá
       expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(1);
 
       desconectar();
+    });
+  });
+
+  describe('filtrarJuegos y buscador con debounce en iniciarListado [S2-11]', () => {
+    let almacenLocal;
+    let almacenSesion;
+    const usuarioPrueba = 'pablo_dev';
+
+    beforeEach(() => {
+      almacenLocal = new AlmacenFalso();
+      almacenSesion = new AlmacenFalso();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('filtrarJuegos busca por título, plataforma o SKU sin distinguir tildes ni mayúsculas', () => {
+      const lista = [
+        { titulo: 'Pokémon Púrpura', plataforma: 'Nintendo Switch', sku: 'GAME-RPG-0001' },
+        { titulo: 'God of War: Ragnarök', plataforma: 'PlayStation 5', sku: 'GAME-ACT-0002' },
+        { titulo: 'Hollow Knight', plataforma: 'PC', sku: 'GAME-IND-0003' },
+      ];
+
+      expect(filtrarJuegos(lista, 'pokemon')).toHaveLength(1);
+      expect(filtrarJuegos(lista, 'RAGNAROK')).toHaveLength(1);
+      expect(filtrarJuegos(lista, 'playstation')).toHaveLength(1);
+      expect(filtrarJuegos(lista, 'game-ind-0003')).toHaveLength(1);
+      expect(filtrarJuegos(lista, '')).toHaveLength(3);
+    });
+
+    it('aplica debounce de 300ms al escribir en #buscador-catalogo y actualiza resultados y contador', () => {
+      crearJuego(
+        { titulo: 'Pokémon Púrpura', plataforma: 'Nintendo Switch', sku: 'GAME-RPG-0010' },
+        usuarioPrueba,
+        almacenLocal,
+      );
+      crearJuego(
+        { titulo: 'Elden Ring', plataforma: 'PC', sku: 'GAME-RPG-0020' },
+        usuarioPrueba,
+        almacenLocal,
+      );
+
+      const desconectar = iniciarListado(document, {
+        almacenLocal,
+        almacenSesion,
+        usuario: usuarioPrueba,
+      });
+
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(2);
+
+      // Pulsaciones rápidas antes de cumplirse el debounce
+      inputBuscador.value = 'pok';
+      inputBuscador.dispatchEvent(new Event('input', { bubbles: true }));
+      vi.advanceTimersByTime(150);
+
+      // Todavía no debe haber filtrado
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(2);
+
+      inputBuscador.value = 'pokemon';
+      inputBuscador.dispatchEvent(new Event('input', { bubbles: true }));
+      vi.advanceTimersByTime(RETARDO_DEBOUNCE_DEFECTO - 1);
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(2);
+
+      vi.advanceTimersByTime(1);
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(1);
+      expect(contenedorGrid.querySelector('.js-juego-titulo').textContent).toBe('Pokémon Púrpura');
+      expect(elementoContador.textContent).toContain('1 videojuego');
+      expect(elementoVacio.hidden).toBe(true);
+
+      // Búsqueda sin coincidencias muestra estado vacío y oculta paginación
+      inputBuscador.value = 'Inexistente';
+      inputBuscador.dispatchEvent(new Event('input', { bubbles: true }));
+      vi.advanceTimersByTime(RETARDO_DEBOUNCE_DEFECTO);
+
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(0);
+      expect(elementoContador.textContent).toContain('0 videojuegos');
+      expect(elementoVacio.hidden).toBe(false);
+      expect(contenedorPaginacion.hidden).toBe(true);
+
+      // Limpiar buscador restaura el catálogo completo
+      inputBuscador.value = '';
+      inputBuscador.dispatchEvent(new Event('input', { bubbles: true }));
+      vi.advanceTimersByTime(RETARDO_DEBOUNCE_DEFECTO);
+
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(2);
+      expect(elementoVacio.hidden).toBe(true);
+
+      desconectar();
+    });
+
+    it('resetea la paginación a la página 1 y limpia ?pagina en la URL al buscar desde otra página', () => {
+      for (let i = 1; i <= 8; i += 1) {
+        crearJuego(
+          { titulo: `Juego Catálogo ${i}`, plataforma: 'PC', sku: `GAME-RPG-000${i}` },
+          usuarioPrueba,
+          almacenLocal,
+        );
+      }
+
+      const replaceState = vi.fn((_state, _title, nuevaUrl) => {
+        const parsed = new URL(nuevaUrl, 'http://localhost');
+        ventanaFalsa.location.search = parsed.search;
+        ventanaFalsa.location.href = parsed.href;
+      });
+      const ventanaFalsa = {
+        location: {
+          search: '?pagina=2',
+          href: 'http://localhost/listado.html?pagina=2',
+        },
+        history: { replaceState },
+      };
+
+      const desconectar = iniciarListado(document, {
+        almacenLocal,
+        almacenSesion,
+        usuario: usuarioPrueba,
+        porPagina: 4,
+        ventana: ventanaFalsa,
+      });
+
+      // Inicialmente está en página 2 mostrando juegos 5..8
+      expect(contenedorGrid.querySelector('.js-juego-titulo').textContent).toBe('Juego Catálogo 5');
+
+      // Al buscar "Juego Catálogo 1" desde página 2, vuelve automáticamente a página 1
+      inputBuscador.value = 'Juego Catálogo 1';
+      inputBuscador.dispatchEvent(new Event('input', { bubbles: true }));
+      vi.advanceTimersByTime(RETARDO_DEBOUNCE_DEFECTO);
+
+      expect(replaceState).toHaveBeenCalled();
+      expect(ventanaFalsa.location.search).toBe('');
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(1);
+      expect(contenedorGrid.querySelector('.js-juego-titulo').textContent).toBe('Juego Catálogo 1');
+
+      desconectar();
+    });
+
+    it('cancela temporizadores de búsqueda pendientes al llamar a desconectar()', () => {
+      crearJuego({ titulo: 'Hades', plataforma: 'PC' }, usuarioPrueba, almacenLocal);
+
+      const desconectar = iniciarListado(document, {
+        almacenLocal,
+        almacenSesion,
+        usuario: usuarioPrueba,
+      });
+
+      inputBuscador.value = 'nada';
+      inputBuscador.dispatchEvent(new Event('input', { bubbles: true }));
+      desconectar();
+
+      vi.advanceTimersByTime(RETARDO_DEBOUNCE_DEFECTO);
+      // No debe haberse aplicado el filtro porque se canceló al desconectar
+      expect(contenedorGrid.querySelectorAll('.col')).toHaveLength(1);
     });
   });
 });

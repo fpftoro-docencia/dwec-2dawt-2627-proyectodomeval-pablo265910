@@ -211,6 +211,15 @@ El catálogo personal de videojuegos centraliza la visualización, conteo y supr
 - **Delegación de eventos en fase de burbuja:**
   - Un único oyente `click` registrado en `#grid-catalogo` intercepta cualquier pulsación sobre `.js-btn-eliminar` mediante `evento.target.closest('.js-btn-eliminar')`, garantizando interactividad instantánea sin necesidad de registrar manejadores por cada tarjeta generada.
 
+### Buscador con Debounce y Normalización Unicode (`js/buscador.js`)
+
+El buscador transversal del catálogo (`#buscador-catalogo` en `listado.html`) aplica optimización de frecuencia e insensibilidad tipográfica cumpliendo los requisitos 15 y 16 del enunciado:
+
+- **Control de frecuencia (`debounce`):** Retrasa la ejecución del filtrado (300 ms por defecto) cancelando temporizadores previos en cada pulsación rápida, evitando recalcular el catálogo y reconstruir el DOM innecesariamente. Incluye `.cancelar()` para limpieza segura al desmontar vistas.
+- **Normalización Unicode NFD (`normalizarTextoBusqueda`):** Descompone caracteres mediante `.normalize('NFD')`, elimina marcas diacríticas combinadas (`/[\u0300-\u036f]/g`) y transforma a minúsculas con recorte de espacios (`trim()`), de modo que buscar «pokemon» coincida exactamente con «Pokémon: Leyendas Árceus».
+- **Filtrado multicampo (`filtrarJuegos`, `filtrarListaPorTexto`):** Evalúa coincidencias en título, plataforma y SKU actualizando el contador de resultados y conmutando el estado vacío cuando no hay coincidencias.
+- **Reinicio automático de paginación:** Cada nueva búsqueda restablece la página activa a `1` invocando `fijarPaginaUrl(1)` y limpiando `?pagina=X` en la barra de direcciones.
+
 ### Formulario de la Ficha y Lectura de Datos (`ficha.html`, `js/ficha.js`)
 
 El formulario de alta y edición de videojuegos implementa la captura y población estructurada de datos mediante APIs nativas del navegador:
