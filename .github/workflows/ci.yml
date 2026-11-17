@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   calidad:
     name: Calidad
@@ -51,5 +55,41 @@ jobs:
       - name: Instalar dependencias limpias
         run: npm ci
 
-      - name: Ejecutar pruebas automatizadas con Vitest
-        run: npm test
+      - name: Ejecutar pruebas y comprobar cobertura con Vitest
+        run: npm run coverage
+
+      - name: Subir informe de cobertura
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-cobertura
+          path: coverage/
+
+  e2e:
+    name: E2E
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias limpias
+        run: npm ci
+
+      - name: Instalar navegador Chromium de Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar pruebas de extremo a extremo con Playwright
+        run: npm run e2e
+
+      - name: Subir informe de Playwright si falla
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-playwright
+          path: playwright-report/
