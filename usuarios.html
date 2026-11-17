@@ -172,10 +172,12 @@
       import { protegerPaginaAdmin } from './js/rutas.js';
       import { iniciarCabecera } from './js/cabecera.js';
       import { iniciarAvisos } from './js/avisos.js';
+      import { iniciarAdminUsuarios } from './js/admin-usuarios.js';
 
       if (protegerPaginaAdmin()) {
         iniciarCabecera();
         iniciarAvisos();
+        iniciarAdminUsuarios();
       }
     </script>
   </body>
