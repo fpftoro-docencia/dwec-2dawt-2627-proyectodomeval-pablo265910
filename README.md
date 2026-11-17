@@ -190,6 +190,27 @@ El componente visual de paginación implementa la interfaz accesible de navegaci
   - Al volver a la página 1 o al realizar una nueva búsqueda, se elimina el parámetro `pagina` para mantener la URL limpia.
 - **Delegación de eventos:** Un único oyente `click` registrado en el contenedor `<ul>` intercepta cualquier pulsación en fase de burbuja mediante `e.target.closest('button[data-pagina], button[data-page]')`. Esto asegura que los controles respondan de inmediato tras ser re-renderizados sin necesidad de reconectar oyentes individuales.
 
+### Catálogo de Videojuegos, `<template>` y Diálogo Modal `<dialog>` (`listado.html`, `js/listado.js`)
+
+El catálogo personal de videojuegos centraliza la visualización, conteo y supresión interactiva de registros cumpliendo los requisitos 15 y 20 del enunciado:
+
+- **Renderizado seguro desde `<template id="tpl-juego">` (`renderizarTarjetaJuego`):**
+  - Clona la plantilla HTML5 del documento y puebla título, plataforma, SKU, horas, insignias de estado de progreso (`.gv-badge-*`) y detalles condicionales.
+  - **Seguridad XSS estricta:** Todo el contenido dinámico del usuario se asigna exclusivamente mediante `textContent` y atributos nativos de elemento, impidiendo la inyección o ejecución de scripts maliciosos.
+  - **Iconografía decorativa adaptativa:** Muestra el icono SVG vectorial de la plataforma correspondiente (`PC`, `PlayStation 5`, `Xbox Series X`, `Nintendo Switch`, `Retro`) almacenado en `img/consolas/*.svg`.
+  - **Enlace de edición:** Enlaza a `ficha.html?id=ID_JUEGO` para acceder directamente a la modificación del título.
+- **Sustitución atómica de una sola vez (`renderizarListadoJuegos`):**
+  - Construye la colección de tarjetas mediante un `DocumentFragment` y realiza una única inserción en el contenedor `#grid-catalogo`, evitando reflows sucesivos y maximizando el rendimiento del navegador.
+- **Contador y Empty State (`actualizarContadorResultados`, `alternarEstadoVacio`):**
+  - Actualiza el texto accesible `#contador-resultados` mostrando la cifra exacta con pluralización gramatical («1 videojuego» / «X videojuegos»).
+  - Si la colección del usuario no contiene registros, conmuta la visibilidad del bloque `#estado-vacio-catalogo` mediante la propiedad nativa `hidden` y oculta los controles de paginación.
+- **Confirmación interactiva con diálogo modal nativo `<dialog id="modal-borrar">` (`conectarModalBorrado`):**
+  - Al pulsar el botón «Eliminar» en cualquier tarjeta, se extrae el ID y título del juego y se invoca `modal.showModal()`. Esto sitúa el diálogo en el top-layer del navegador y bloquea el fondo con su pseudo-elemento `::backdrop`.
+  - **Cancelación accesible:** Se cierra al pulsar el botón «Cancelar», al hacer clic en el backdrop exterior o al pulsar la tecla `Escape` (evento nativo `cancel`).
+  - **Confirmación y reactividad:** Al confirmar la eliminación, se ejecuta `eliminarJuego(id)` en `localStorage`, se emite una notificación desacoplada `aviso` con severidad `success` («Videojuego eliminado con éxito de tu catálogo») y se refresca automáticamente la vista reajustando la página si la actual queda vacía.
+- **Delegación de eventos en fase de burbuja:**
+  - Un único oyente `click` registrado en `#grid-catalogo` intercepta cualquier pulsación sobre `.js-btn-eliminar` mediante `evento.target.closest('.js-btn-eliminar')`, garantizando interactividad instantánea sin necesidad de registrar manejadores por cada tarjeta generada.
+
 ### Formulario de la Ficha y Lectura de Datos (`ficha.html`, `js/ficha.js`)
 
 El formulario de alta y edición de videojuegos implementa la captura y población estructurada de datos mediante APIs nativas del navegador:
