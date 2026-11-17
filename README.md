@@ -90,6 +90,12 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
    npm run format        # Aplica el formateo automático con Prettier
    ```
 
+6. **Ejecutar pruebas de extremo a extremo (Playwright):**
+   ```bash
+   npm run e2e
+   ```
+   Arranca automáticamente el servidor estático (`serve` en el puerto `3901`) según `playwright.config.js` y ejecuta los recorridos reales en Chromium. También admite la variable `BASE_URL` para lanzar las mismas pruebas contra una web ya desplegada (por ejemplo, `BASE_URL=https://mi-proyecto.vercel.app npm run e2e`).
+
 ## Almacenamiento y sesión
 
 La aplicación persiste su estado íntegramente en el navegador web del cliente mediante las APIs estándar `sessionStorage` y `localStorage`, garantizando un funcionamiento desacoplado y sin backend.
@@ -433,20 +439,25 @@ El flujo de integración continua está automatizado mediante GitHub Actions en 
 
 - **Cuándo se ejecuta:** En cada evento `push` hacia `main` y en cada `pull_request` dirigida a `main`.
 - **Permisos de seguridad:** `permissions: contents: read` (principio de mínimo privilegio, el workflow únicamente requiere lectura del repositorio).
+- **Concurrencia (`concurrency`):** Agrupa las ejecuciones por flujo y rama (`github.ref`) con `cancel-in-progress: true`, manteniendo una única ejecución activa por rama y cancelando automáticamente la anterior si se suben varios commits seguidos.
 - **Entorno de ejecución:** Máquinas virtuales `ubuntu-latest` con Node.js 24 y caché nativa de dependencias de npm.
 
-#### Trabajos de Integración Continua (Paso 1: Sprint 1)
+#### Trabajos de Integración Continua (Paso 2: Sprint 2)
 
 | Trabajo | Espera a | Pasos que ejecuta | Artefacto |
 |---------|----------|-------------------|-----------|
 | `Calidad` | — *(Primer trabajo)* | 1. Descargar el código (`actions/checkout@v7`)<br>2. Instalar Node.js 24 con caché de npm (`actions/setup-node@v7`)<br>3. Instalar dependencias limpias (`npm ci`)<br>4. Comprobar calidad estática (`npm run lint`)<br>5. Comprobar formato (`npm run format:check`) | — |
-| `Tests` | `Calidad` (`needs: calidad`) | 1. Descargar el código (`actions/checkout@v7`)<br>2. Instalar Node.js 24 con caché de npm (`actions/setup-node@v7`)<br>3. Instalar dependencias limpias (`npm ci`)<br>4. Ejecutar pruebas automatizadas (`npm test`) | *(En Sprint 2: `coverage/`)* |
-| `E2E` | *(Sprint 2)* | *(Se incorporará en el Sprint 2 tras configurar Playwright)* | *(En Sprint 2: `playwright-report/`)* |
+| `Tests` | `Calidad` (`needs: calidad`) | 1. Descargar el código (`actions/checkout@v7`)<br>2. Instalar Node.js 24 con caché de npm (`actions/setup-node@v7`)<br>3. Instalar dependencias limpias (`npm ci`)<br>4. Ejecutar pruebas y comprobar umbral de cobertura ≥ 90% (`npm run coverage`)<br>5. Subir informe de cobertura (`actions/upload-artifact@v7`) | `coverage/` |
+| `E2E` | `Tests` (`needs: tests`) | 1. Descargar el código (`actions/checkout@v7`)<br>2. Instalar Node.js 24 con caché de npm (`actions/setup-node@v7`)<br>3. Instalar dependencias limpias (`npm ci`)<br>4. Instalar Chromium con dependencias (`npx playwright install --with-deps chromium`)<br>5. Ejecutar pruebas E2E (`npm run e2e`)<br>6. Subir reporte en caso de fallo (`if: failure()`, `actions/upload-artifact@v7`) | `playwright-report/` *(solo `if: failure()`)* |
 
-**Justificación técnica del orden de ejecución:**
-El trabajo de `Calidad` se sitúa en primer lugar porque el análisis estático de código (ESLint) y la comprobación de formato (Prettier) se ejecutan en pocos segundos y detectan inmediatamente variables no utilizadas, referencias no inicializadas o inconsistencias de estilo. Si la calidad estática falla, el flujo se detiene de inmediato mediante *fail-fast*, evitando consumir minutos de cómputo innecesarios en la ejecución de la suite de pruebas unitarias (`Tests`).
+**Justificación técnica del orden de ejecución (`Calidad` → `Tests` → `E2E`):**
+El flujo sigue un escalonamiento de menor a mayor coste computacional aplicando *fail-fast*:
+1. **`Calidad`** se ejecuta primero porque ESLint y Prettier tardan pocos segundos en detectar errores de sintaxis, variables no utilizadas o formato incorrecto.
+2. **`Tests`** (`needs: calidad`) ejecuta después las suites unitarias y de integración en Vitest junto con la verificación del umbral mínimo del 90% de cobertura en funciones puras (`npm run coverage`), publicando el informe HTML en el artefacto `coverage/`.
+3. **`E2E`** (`needs: tests`) queda en último lugar porque instalar Chromium con sus librerías del sistema (`npx playwright install --with-deps chromium`) y ejecutar recorridos completos en navegador real es el paso más pesado; de este modo no se consumen minutos de CI si ya han fallado la calidad estática, los tests o la cobertura, y `playwright-report/` solo se sube con `if: failure()` para depurar errores reales.
 
-**Ejecución en verde:** [Ejecución #42892582735 (Calidad y Tests)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/42892582735) en la Pull Request [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19).
+**Ejecución en verde (Paso 1):** [Ejecución #42892582735 (Calidad y Tests)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/42892582735) en la Pull Request [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19).
+**Ejecución en verde (Paso 2):** [Ejecución #44162196993 (Calidad, Tests con cobertura y E2E)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/44162196993) en la Pull Request [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37).
 
 ## Despliegue continuo
 
@@ -488,7 +499,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | Sprint | Fecha límite | *Tag* | Qué incluye | Reflexión |
 |--------|--------------|-------|-------------|-----------|
 | 1 | 12 nov 2026 | `v0.1` | Usuarios, sesión en `sessionStorage`, roles con primer usuario administrador, registro con validador reactivo de contraseña (`\p{Ll}`, `\p{Lu}`), login con SHA-256 (`resumirClave`), maquetación base de las 5 páginas, sistema de eventos propios `aviso`, tests unitarios con `AlmacenFalso` y workflow CI paso 1 (calidad y tests). | El Sprint 1 ha establecido con éxito los cimientos arquitectónicos de GameVault. Se ha implementado un flujo de autenticación, control de roles y sesiones completamente desacoplado y protegido contra datos corruptos en el navegador del cliente. La suite de 127 tests en Vitest con `AlmacenFalso` y el pipeline de CI en GitHub Actions garantizan una base de código limpia y con cobertura verificada superior al 90%. El mayor aprendizaje ha sido la aplicación práctica de inyección de dependencias y eventos nativos (`CustomEvent`), fundamentales para lograr un diseño modular y fácilmente testeable. |
-| 2 | 19 nov 2026 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y estantería, lógica condicional de formato físico vs digital, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | *Pendiente de cierre de Sprint 2.* |
+| 2 | 19 nov 2026 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y estantería, lógica condicional de formato físico vs digital, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | El Sprint 2 ha completado toda la funcionalidad CRUD de GameVault y su pirámide de pruebas sin recurrir a JavaScript de Bootstrap ni librerías externas. Destacan la reutilización transversal de `paginar.js`, `paginacion.js` y `buscador.js` entre el catálogo y la administración de usuarios, el motor genérico de validación en tiempo real (`blur` en captura, `setCustomValidity` y `aria-describedby`) y la gestión accesible del modal nativo `<dialog>` y de las secciones condicionales con `<fieldset disabled>` y `FormData`. Cubrir los tres niveles de prueba (unitarias con umbral >= 90% en funciones puras, integración en Happy-DOM con temporizadores falsos y E2E en Playwright con selectores semánticos) ha reforzado la accesibilidad real y la fiabilidad previa al despliegue continuo del Sprint 3. |
 | 3 | 26 nov 2026 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3.* |
 
 **Tablero de Trello:** [GameVault - Tablero de Seguimiento (DWEC)](https://trello.com/b/b1iXcn0Q/gamevault-proyecto-dom-dwec) *(compartido con el profesor)*
@@ -514,6 +525,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
 | `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
 | `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
+| `ci-paso-2-cierre-sprint-2` | [S2-17][S2-18] Workflow CI Paso 2 (E2E y artefactos), blog y cierre del Sprint 2 (v0.2) | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
