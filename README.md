@@ -220,6 +220,16 @@ El buscador transversal del catálogo (`#buscador-catalogo` en `listado.html`) a
 - **Filtrado multicampo (`filtrarJuegos`, `filtrarListaPorTexto`):** Evalúa coincidencias en título, plataforma y SKU actualizando el contador de resultados y conmutando el estado vacío cuando no hay coincidencias.
 - **Reinicio automático de paginación:** Cada nueva búsqueda restablece la página activa a `1` invocando `fijarPaginaUrl(1)` y limpiando `?pagina=X` en la barra de direcciones.
 
+### Zona de Administración de Usuarios (`usuarios.html`, `js/admin-usuarios.js`)
+
+El panel exclusivo de administradores centraliza la supervisión de cuentas registradas y la asignación de permisos cumpliendo el requisito 18:
+
+- **Control de acceso (`protegerPaginaAdmin`):** Cualquier intento de acceso sin sesión redirige a `index.html`; un usuario estándar autenticado es redirigido a `listado.html` mediante `location.replace` con un aviso diferido de denegación.
+- **Reutilización de componentes (`buscador.js`, `paginar.js`, `paginacion.js`):** Filtra cuentas por nombre o correo electrónico con *debounce* de 300 ms e insensibilidad a tildes/mayúsculas, paginando la tabla sincronizada con `?pagina=X`.
+- **Renderizado seguro desde `<template id="tpl-usuario">`:** Clona las filas empleando estrictamente `textContent` (prevención XSS) e inserción atómica mediante `DocumentFragment` en `#tabla-usuarios-body`.
+- **Delegación de eventos y alternancia de roles:** Un único oyente `click` en `#tabla-usuarios-body` intercepta los botones `.js-btn-alternar-rol` para alternar el rol entre `usuario` y `administrador`, persistiendo en `localStorage` y emitiendo avisos reactivos.
+- **Protección contra auto-revocación:** La fila correspondiente al administrador que tiene la sesión iniciada muestra el botón deshabilitado (`disabled`, `aria-disabled="true"`), con texto explicativo («No puedes retirar tu propio rol») y `title="No puedes retirar tu propio rol de administrador"`, además de una comprobación adicional en el manejador lógico.
+
 ### Formulario de la Ficha y Lectura de Datos (`ficha.html`, `js/ficha.js`)
 
 El formulario de alta y edición de videojuegos implementa la captura y población estructurada de datos mediante APIs nativas del navegador:
