@@ -137,26 +137,30 @@
       </nav>
     </main>
 
-    <!-- Template para filas de usuario -->
+    <!-- Template para filas de usuario (envuelto en table/tbody para compatibilidad con Happy-DOM y HTML5) -->
     <template id="tpl-usuario">
-      <tr class="js-fila-usuario">
-        <td class="fw-semibold font-mono text-light js-usuario-nombre">nombre_usuario</td>
-        <td class="text-secondary js-usuario-email">usuario@ejemplo.com</td>
-        <td>
-          <span class="gv-badge gv-badge-meta js-usuario-rol-badge">Usuario</span>
-        </td>
-        <td class="text-end">
-          <button
-            type="button"
-            class="btn-gv-ghost js-btn-alternar-rol"
-            role="switch"
-            aria-checked="false"
-            aria-label="Alternar rol entre Usuario y Administrador"
-          >
-            Cambiar a Administrador
-          </button>
-        </td>
-      </tr>
+      <table>
+        <tbody>
+          <tr class="js-fila-usuario">
+            <td class="fw-semibold font-mono text-light js-usuario-nombre">nombre_usuario</td>
+            <td class="text-secondary js-usuario-email">usuario@ejemplo.com</td>
+            <td>
+              <span class="gv-badge gv-badge-meta js-usuario-rol-badge">Usuario</span>
+            </td>
+            <td class="text-end">
+              <button
+                type="button"
+                class="btn-gv-ghost js-btn-alternar-rol"
+                role="switch"
+                aria-checked="false"
+                aria-label="Alternar rol entre Usuario y Administrador"
+              >
+                Cambiar a Administrador
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </template>
 
     <!-- Contenedor global de notificaciones -->
