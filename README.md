@@ -278,23 +278,100 @@ El motor de validación implementa las directrices de los requisitos 19 y 20 del
 
 ## Eventos
 
+Toda la interactividad de GameVault está desacoplada del HTML mediante módulos ES6 y APIs nativas del DOM, combinando delegación de eventos en fase de burbuja, captura para eventos sin burbujeo y eventos personalizados (`CustomEvent`).
+
 ### Eventos en el HTML
 
-<!-- Qué consigues con el HTML sin escribir oyentes (envío con Intro, novalidate y los atributos de
-     validación, dialog, label for…) y por qué no usas atributos on…. -->
+- **Comportamientos nativos aprovechados sin escribir oyentes:**
+  - **Envío de formularios con la tecla `Intro`:** Al emplear etiquetas `<form>` con botones `<button type="submit">`, el navegador dispara automáticamente el evento `submit` al pulsar `Intro` desde cualquier campo de texto sin programar oyentes de teclado (`keydown`/`keyup`).
+  - **Validación personalizada con `novalidate`:** Los formularios (`#form-login`, `#form-registro`, `#form-ficha`) incluyen `novalidate` para suprimir los globos nativos inconsistentes entre navegadores mientras se mantienen los atributos semánticos (`required`, `type="email"`, `max`, `maxlength`, `inputmode`) y la API nativa `setCustomValidity()`.
+  - **Activación accesible mediante `<label for="...">`:** Todas las etiquetas y las tarjetas de formato (`Edición Física` / `Edición Digital`) se vinculan mediante `for`, permitiendo al navegador trasladar el foco o alternar el estado `checked` sin JavaScript.
+  - **Modal nativo `<dialog id="modal-borrar">`:** Con `modal.showModal()`, el navegador gestiona de forma nativa la capa superior (*top-layer*), el fondo bloqueante `::backdrop`, la trampa de foco y el cierre mediante la tecla `Escape` (evento `cancel`) sin usar JavaScript de Bootstrap ni librerías de terceros.
+  - **Navegación declarativa (`<a href="ficha.html?id=...">`):** El botón «Editar» de las tarjetas usa un enlace estándar `<a>`, habilitando apertura en pestaña nueva (`Ctrl` + clic), menú contextual y lectores de pantalla sin oyentes `click`.
+  - **Secciones condicionales (`hidden` + `disabled` en `<fieldset>`):** Al desactivar `#bloque-fisico` o `#bloque-digital`, el navegador excluye automáticamente sus controles internos del foco por tabulación y de la serialización con `FormData`.
+- **Por qué no se usan atributos `on…` (`onclick`, `onsubmit`, etc.):**
+  - Mezclan estructura (HTML) con comportamiento (JavaScript), rompiendo la separación de responsabilidades.
+  - Entran en conflicto con políticas de seguridad *Content Security Policy* (CSP) estrictas que prohíben scripts en línea.
+  - Solo admiten un único manejador por elemento en fase de burbuja (no permiten múltiples oyentes desacoplados ni fase de captura `useCapture = true`).
+  - Dificultan la modularidad con ES Modules, la limpieza de oyentes (`removeEventListener`) y las pruebas automatizadas con Vitest y Happy-DOM.
 
 ### Tipos de eventos
 
-<!-- Tabla con los eventos que usas y por qué has elegido cada uno frente a otros parecidos
-     (submit frente a click, input frente a change, blur frente a focusout…). -->
+| Evento | Elegido frente a | Dónde se utiliza | Justificación técnica |
+|---|---|---|---|
+| `submit` | `click` en el botón de envío | `validacion.js`, `login.js`, `registro.js` | Captura tanto el clic en el botón como el envío accesible pulsando `Intro` dentro de cualquier campo del formulario, permitiendo cancelar la recarga con `preventDefault()`. |
+| `input` | `change` | `validacion.js`, `registro.js`, `listado.js`, `admin-usuarios.js` | Se dispara instantáneamente en cada pulsación, pegado o borrado (`x` de `<input type="search">`), indispensable para los requisitos de contraseña en vivo, la limpieza reactiva de errores y el buscador con *debounce*. |
+| `change` | `input` | `validacion.js`, `registro.js`, `ficha.js` | Adecuado para controles discretos (`<select>`, `<input type="radio">` de formato físico/digital y casilla de términos), donde la intención del usuario queda confirmada tras elegir la opción. |
+| `blur` | `focusout` | `validacion.js` (captura), `login.js`, `registro.js` | Evalúa el campo la primera vez que el usuario lo abandona sin molestar mientras escribe por primera vez; en `validacion.js` permite demostrar y justificar la fase de captura al no burbujear. |
+| `click` | `mousedown` / `pointerdown` | `cabecera.js`, `avisos.js`, `ficha.js`, `listado.js`, `paginacion.js`, `admin-usuarios.js` | Garantiza la activación accesible también mediante teclado (`Enter`/`Espacio` sobre `<button>`) y es compatible con la delegación de eventos mediante `closest()`. |
+| `cancel` | `keydown` (`Escape`) | `listado.js` (`<dialog id="modal-borrar">`) | Evento nativo del elemento `<dialog>` al pulsar `Escape`, asegurando coherencia de estado (`alCancelar`) sin interceptar teclas manualmente. |
+| `aviso` (`CustomEvent`) | Llamada directa al DOM | `avisos.js` (emisor y receptor global) | Evento personalizado con `bubbles: true` que desacopla por completo cualquier módulo o formulario de la región de notificaciones `#region-avisos`. |
 
 ### Propagación
 
-<!-- 1. Tabla con TODOS tus oyentes: evento, dónde lo registras, en qué fase actúa
-        (captura, objetivo o burbuja) y para qué.
-     2. Dónde usas la delegación y qué ganas con ella.
-     3. Tu uso de la captura y por qué no servía la burbuja.
-     4. Si usas stopPropagation, por qué. -->
+#### 1. Inventario completo de oyentes registrados
+
+| Evento | Elemento donde se registra | Módulo | Fase de actuación | Objetivo |
+|---|---|---|---|---|
+| `aviso` | `document` | `js/avisos.js` | Burbuja (en raíz) | Recibir cualquier `CustomEvent('aviso', { bubbles: true })` emitido desde cualquier módulo y renderizar la alerta en `#region-avisos`. |
+| `click` | Botón de cierre `.btn-close` | `js/avisos.js` | Objetivo | Eliminar del DOM la alerta que el usuario cierra manualmente. |
+| `click` | `#btn-cerrar-sesion` | `js/cabecera.js` | Objetivo | Limpiar la sesión en `sessionStorage` y redirigir a `index.html`. |
+| `blur` | `#login-usuario`, `#login-clave` | `js/login.js` | Objetivo | Validar campos obligatorios de inicio de sesión al salir de cada control. |
+| `submit` | `#form-login` | `js/login.js` | Objetivo / Burbuja | Prevenir recarga, validar y autenticar credenciales con SHA-256 evitando doble envío. |
+| `input` | `#registro-clave` | `js/registro.js` | Objetivo / Burbuja | Marcar en tiempo real los requisitos cumplidos (`#requisitos-clave`) mientras se teclea. |
+| `blur` | `#registro-usuario`, `#registro-correo`, `#registro-clave`, `#registro-repetir-clave` | `js/registro.js` | Objetivo | Validar formato, disponibilidad de usuario y coincidencia de clave al salir del campo. |
+| `change` | `#registro-terminos` | `js/registro.js` | Objetivo / Burbuja | Comprobar la aceptación obligatoria de condiciones al marcar/desmarcar la casilla. |
+| `submit` | `#form-registro` | `js/registro.js` | Objetivo / Burbuja | Prevenir recarga, registrar usuario con SHA-256, iniciar sesión y redirigir con aviso diferido. |
+| `blur` | `<form>` (`useCapture = true`) | `js/validacion.js` | **Captura** | Detectar cuando el usuario abandona cualquier control hijo (`esCampoValidable`), marcarlo como visitado y ejecutar su primera validación. |
+| `input` | `<form>` | `js/validacion.js` | **Burbuja** | Revalidar al instante controles ya visitados o con error y revalidar campos dependientes (`data-coincidir-con`). |
+| `change` | `<form>` | `js/validacion.js` | **Burbuja** | Revalidar `<select>`, `<input type="radio">` y checkboxes al cambiar su valor, además de sus dependientes. |
+| `submit` | `<form>` | `js/validacion.js` | Objetivo / Burbuja | Marcar todos los controles como tocados, validar el formulario entero, detener el envío con foco al primer error o ejecutar `alEnviarValido`. |
+| `change` | `#form-ficha` | `js/ficha.js` | **Burbuja** (delegado) | Detectar selección en `name="formato"` (`fisico`/`digital`) para alternar `hidden` y `disabled` en `#bloque-fisico` y `#bloque-digital`. |
+| `click` | `#btn-anadir-dlc` | `js/ficha.js` | Objetivo | Clonar una nueva fila desde `<template id="tpl-dlc">` hasta el límite de 3 expansiones. |
+| `click` | `#lista-dlcs` | `js/ficha.js` | **Burbuja** (delegación) | Interceptar clics en `.js-btn-quitar-dlc` con `closest` para eliminar filas dinámicas y reactivar el botón de añadir. |
+| `input` | `#buscador-catalogo` | `js/listado.js` | Objetivo | Filtrar videojuegos con *debounce* (300 ms) y normalización Unicode NFD reiniciando a página `1`. |
+| `click` | `#grid-catalogo` | `js/listado.js` | **Burbuja** (delegación) | Detectar clics en `.js-btn-eliminar` con `closest` sobre tarjetas dinámicas y abrir `<dialog id="modal-borrar">`. |
+| `click` | `#btn-cancelar-borrado`, `#btn-confirmar-borrado`, `#modal-borrar` | `js/listado.js` | Objetivo / Burbuja | Gestionar cancelación, clic en *backdrop* y confirmación definitiva de borrado en `<dialog>`. |
+| `cancel` | `<dialog id="modal-borrar">` | `js/listado.js` | Objetivo | Limpiar el ID pendiente y ejecutar `alCancelar` al cerrar el modal con la tecla `Escape`. |
+| `click` | `#paginacion-catalogo`, `#paginacion-usuarios` | `js/paginacion.js` | **Burbuja** (delegación) | Detectar pulsaciones en `button[data-pagina], button[data-page]` mediante `closest` tras cada re-renderizado de páginas. |
+| `input` | `#buscador-usuarios` | `js/admin-usuarios.js` | Objetivo | Filtrar usuarios por nombre o correo con *debounce* (300 ms) y normalización NFD reiniciando a página `1`. |
+| `click` | `#tabla-usuarios-body` | `js/admin-usuarios.js` | **Burbuja** (delegación) | Interceptar `.js-btn-alternar-rol` mediante `closest` para conmutar roles en `localStorage` con protección contra auto-revocación. |
+
+#### 2. Uso de delegación de eventos y ventajas obtenidas
+
+Se aplica delegación en fase de burbuja mediante un único oyente en el contenedor estable padre y verificación con `evento.target.closest(...)` en los cuatro bloques dinámicos de la aplicación:
+
+1. **Listado de videojuegos (`#grid-catalogo` en `js/listado.js`):** detecta `.js-btn-eliminar`.
+2. **Paginación compartida (`#paginacion-catalogo` y `#paginacion-usuarios` en `js/paginacion.js`):** detecta `button[data-pagina], button[data-page]`.
+3. **Zona de administración (`#tabla-usuarios-body` en `js/admin-usuarios.js`):** detecta `.js-btn-alternar-rol`.
+4. **Grupo dinámico de DLCs (`#lista-dlcs` en `js/ficha.js`):** detecta `.js-btn-quitar-dlc`.
+
+**Ventajas obtenidas:**
+- Un único manejador por contenedor reduce el consumo de memoria y evita tener que desconectar y reconectar oyentes cada vez que se pagina, se filtra el listado/tabla o se añaden/eliminan tarjetas o filas desde `<template>`.
+- Cualquier elemento nuevo insertado en el DOM responde de inmediato porque su evento `click` burbujea de forma natural hasta el contenedor padre.
+
+#### 3. Uso de la fase de captura y por qué no servía la burbuja
+
+En el motor genérico de formularios (`js/validacion.js`), el oyente `blur` se registra explícitamente en fase de captura:
+
+```javascript
+formulario.addEventListener('blur', alSalirCampo, true);
+```
+
+Según la especificación estándar del DOM, el evento **`blur` no burbujea** (*non-bubbling*): tras alcanzar el `<input>` o `<select>` de destino en la fase objetivo, el evento finaliza sin ascender hacia sus ancestros. Si se registrara en `<form>` en fase de burbuja (`false`, valor por defecto), el manejador jamás se ejecutaría al salir de los controles hijos. Al activar la **fase de captura (`true`)**, el `<form>` intercepta `blur` en el descenso previo hacia el control concreto, permitiendo validar cualquier campo del formulario (incluidos los añadidos dinámicamente como las filas de DLCs) desde un único punto centralizado.
+
+#### 4. Uso justificado de `stopPropagation()`
+
+Solo se utiliza `evento.stopPropagation()` en un único punto concreto y acotado del proyecto, dentro de `js/validacion.js` en el manejador de `submit`:
+
+```javascript
+if (!resultado.esValido) {
+  evento.preventDefault();
+  evento.stopPropagation();
+}
+```
+
+**Por qué se utiliza:** Cuando el motor genérico de validación (`conectarValidacionTiempoReal`) detecta errores al intentar enviar un formulario, además de impedir el envío nativo (`preventDefault()`), detiene la propagación (`stopPropagation()`) para garantizar que ningún otro oyente `submit` registrado posteriormente o en un contenedor superior ejecute acciones de guardado o navegación sobre datos inválidos.
 
 ## Pruebas y cobertura
 
