@@ -457,7 +457,7 @@ El flujo sigue un escalonamiento de menor a mayor coste computacional aplicando 
 3. **`E2E`** (`needs: tests`) queda en último lugar porque instalar Chromium con sus librerías del sistema (`npx playwright install --with-deps chromium`) y ejecutar recorridos completos en navegador real es el paso más pesado; de este modo no se consumen minutos de CI si ya han fallado la calidad estática, los tests o la cobertura, y `playwright-report/` solo se sube con `if: failure()` para depurar errores reales.
 
 **Ejecución en verde (Paso 1):** [Ejecución #42892582735 (Calidad y Tests)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/42892582735) en la Pull Request [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19).
-<!-- Paso 2 (Sprint 2): añadir aquí el enlace a la ejecución en verde con los artefactos coverage/ y playwright-report/ al subir la PR. -->
+**Ejecución en verde (Paso 2):** [Ejecución #44162196993 (Calidad, Tests con cobertura y E2E)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/44162196993) en la Pull Request [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37).
 
 ## Despliegue continuo
 
@@ -525,6 +525,7 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
 | `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
 | `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
+| `ci-paso-2-cierre-sprint-2` | [S2-17][S2-18] Workflow CI Paso 2 (E2E y artefactos), blog y cierre del Sprint 2 (v0.2) | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
