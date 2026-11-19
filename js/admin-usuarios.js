@@ -1,5 +1,5 @@
 /**
- * Controlador de la zona de administración de usuarios (usuarios.html).
+ * Controlador de la zona de administración de usuarios (`usuarios.html`).
  *
  * Implementa el Requisito 18 y 20 del ENUNCIADO:
  * - Renderizado seguro de filas de usuario desde `<template id="tpl-usuario">` usando `textContent`.
@@ -9,6 +9,15 @@
  * - Delegación de eventos `click` en `#tabla-usuarios-body` para alternar roles (`usuario` <-> `administrador`).
  * - Protección contra auto-revocación: el botón del administrador con sesión activa se muestra
  *   deshabilitado (`disabled`) con mensaje explicativo y queda bloqueado también en capa lógica.
+ *
+ * HTML requerido en `usuarios.html`:
+ * - `#buscador-usuarios`: Campo de búsqueda (`<input type="search">`) por nombre o correo.
+ * - `#tabla-usuarios-body`: Cuerpo `<tbody>` de la tabla donde se insertan las filas de usuario.
+ * - `#estado-vacio-usuarios`: Contenedor de estado vacío cuando no hay coincidencias (controlado vía `hidden`).
+ * - `#paginacion-usuarios`: Contenedor de controles de paginación accesible.
+ * - `#tpl-usuario`: Plantilla `<template id="tpl-usuario">` con fila `.js-fila-usuario` y los selectores:
+ *   `.js-usuario-nombre`, `.js-usuario-email`, `.js-usuario-rol-badge` y `.js-btn-alternar-rol`.
+ * - `#region-avisos`: Contenedor global donde `avisos.js` renderiza eventos `aviso`.
  *
  * @module admin-usuarios
  */
@@ -25,7 +34,18 @@ import {
 } from './paginacion.js';
 import { RETARDO_DEBOUNCE_DEFECTO, debounce, filtrarListaPorTexto } from './buscador.js';
 
+/**
+ * Número de filas de usuario mostradas por página por defecto.
+ *
+ * @type {number}
+ */
 export const USUARIOS_POR_PAGINA_DEFECTO = 8;
+
+/**
+ * Mensaje informativo y accesible mostrado para impedir la auto-revocación del administrador activo.
+ *
+ * @type {string}
+ */
 export const MENSAJE_AUTO_REVOCACION = 'No puedes retirar tu propio rol de administrador';
 
 /**
@@ -35,6 +55,8 @@ export const MENSAJE_AUTO_REVOCACION = 'No puedes retirar tu propio rol de admin
  * @param {Array<Object>} usuarios Lista completa de usuarios registrados.
  * @param {string} [consulta=''] Texto de búsqueda introducido.
  * @returns {Array<Object>} Subconjunto de usuarios coincidentes.
+ * @example
+ * const filtrados = filtrarUsuarios(listaUsuarios, 'admin');
  */
 export function filtrarUsuarios(usuarios, consulta = '') {
   return filtrarListaPorTexto(usuarios, consulta, (u) => [u.nombre || u.usuario, u.correo]);
@@ -43,10 +65,12 @@ export function filtrarUsuarios(usuarios, consulta = '') {
 /**
  * Configura el botón de alternancia de rol respetando la protección contra auto-revocación.
  *
+ * @private
  * @param {HTMLButtonElement} boton Botón `.js-btn-alternar-rol`.
  * @param {string} nombreUsuario Nombre del usuario de la fila.
  * @param {boolean} esAdmin Si el usuario de la fila tiene rol `'administrador'`.
  * @param {boolean} esUsuarioActual Si la fila corresponde al administrador autenticado.
+ * @returns {void}
  */
 function configurarBotonRol(boton, nombreUsuario, esAdmin, esUsuarioActual) {
   if (!boton) return;
@@ -132,6 +156,7 @@ export function renderizarFilaUsuario(usuario, template, usuarioActual = '') {
  * @param {Array<Object>} usuarios Lista de usuarios de la página actual.
  * @param {HTMLTemplateElement} template Plantilla `<template id="tpl-usuario">`.
  * @param {string} [usuarioActual=''] Nombre del administrador con sesión activa.
+ * @returns {void}
  */
 export function renderizarTablaUsuarios(cuerpoTabla, usuarios, template, usuarioActual = '') {
   if (!cuerpoTabla) return;
@@ -161,12 +186,15 @@ export function renderizarTablaUsuarios(cuerpoTabla, usuarios, template, usuario
  * 4. Delegación de eventos `click` en `#tabla-usuarios-body` para alternar roles con protección
  *    frente a auto-revocación.
  *
+ * @listens input
+ * @listens click
+ * @fires aviso
  * @param {Document} [documento=document] Objeto Document inyectable.
  * @param {Object} [opciones={}] Opciones de configuración e inyección para pruebas.
  * @param {Storage} [opciones.almacenLocal] Almacén de usuarios (`localStorage`).
  * @param {Storage} [opciones.almacenSesion] Almacén de sesión (`sessionStorage`).
  * @param {string} [opciones.usuarioActual] Nombre del administrador en sesión.
- * @param {Window | { location: { search: string, href?: string } }} [opciones.ventana] Objeto ventana.
+ * @param {Window | Object} [opciones.ventana] Objeto ventana o doble con `location` para pruebas.
  * @param {number} [opciones.porPagina=USUARIOS_POR_PAGINA_DEFECTO] Filas por página.
  * @param {number} [opciones.retardoDebounce=RETARDO_DEBOUNCE_DEFECTO] Retardo del buscador en ms.
  * @param {Function} [opciones.alCambiarRol] Callback tras modificar un rol.

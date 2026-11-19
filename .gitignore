@@ -1,8 +1,9 @@
 # Dependencias
 node_modules/
 
-# Compilación y distribución
+# Compilación, distribución y documentación generada
 dist/
+docs/
 
 # Informes de pruebas y cobertura
 coverage/

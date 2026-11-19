@@ -10,9 +10,16 @@
 
 import { resumirClave } from './clave.js';
 
+/**
+ * Clave utilizada en `localStorage` para persistir la colección de usuarios registrados.
+ *
+ * @type {string}
+ */
 export const CLAVE_USUARIOS = 'gamevault_usuarios';
 
 /**
+ * Representa un usuario registrado en GameVault y almacenado en `localStorage`.
+ *
  * @typedef {Object} Usuario
  * @property {string} nombre Nombre de usuario único.
  * @property {string} usuario Alias de nombre para compatibilidad con sesión.
@@ -20,12 +27,14 @@ export const CLAVE_USUARIOS = 'gamevault_usuarios';
  * @property {string} clave Resumen SHA-256 de la contraseña.
  * @property {string} claveHash Alias del resumen SHA-256.
  * @property {'usuario' | 'administrador'} rol Rol asignado en la aplicación.
- * @property {string} [creadoEn] Fecha y hora de registro en formato ISO.
+ * @property {string} [creadoEn] Fecha y hora de registro en formato ISO 8601.
  */
 
 /**
- * Helper para obtener el almacén de usuarios por defecto de forma segura en navegador o tests.
- * @returns {Storage | null}
+ * Helper para obtener el almacén de usuarios por defecto (`window.localStorage`) de forma segura en navegador o tests.
+ *
+ * @private
+ * @returns {Storage | null} Instancia de `localStorage` disponible o `null`.
  */
 function obtenerAlmacenDefecto() {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -86,6 +95,8 @@ export function obtenerUsuarios(almacen = obtenerAlmacenDefecto()) {
  *
  * @param {Usuario[]} usuarios Array de usuarios a persistir.
  * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde persistir.
+ * @returns {void}
+ * @throws {Error} Si el almacén no está disponible.
  */
 export function guardarUsuarios(usuarios, almacen = obtenerAlmacenDefecto()) {
   if (!almacen || typeof almacen.setItem !== 'function') {
@@ -130,13 +141,14 @@ export function existeUsuario(nombre, almacen = obtenerAlmacenDefecto()) {
  * El primer usuario en registrarse adquiere automáticamente el rol de 'administrador';
  * los usuarios posteriores se registran como 'usuario'.
  *
- * @param {Object} datos Datos del usuario a registrar.
+ * @param {Object} [datos={}] Datos del usuario a registrar.
  * @param {string} datos.nombre Nombre de usuario.
  * @param {string} [datos.usuario] Alias de nombre.
  * @param {string} datos.correo Correo electrónico.
  * @param {string} [datos.email] Alias de correo.
  * @param {string} datos.clave Contraseña en texto plano a resumir con SHA-256.
  * @param {string} [datos.contrasena] Alias de clave.
+ * @param {string} [datos.password] Alias alternativo de clave.
  * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde guardar.
  * @returns {Promise<Usuario>} El usuario creado y guardado.
  * @throws {Error} Si faltan datos obligatorios o el nombre ya está ocupado.
@@ -254,6 +266,7 @@ export function eliminarUsuario(nombre, almacen = obtenerAlmacenDefecto()) {
  * Elimina todos los usuarios del almacenamiento.
  *
  * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén a vaciar.
+ * @returns {void}
  */
 export function vaciarUsuarios(almacen = obtenerAlmacenDefecto()) {
   try {
