@@ -203,7 +203,7 @@ El catálogo personal de videojuegos centraliza la visualización, conteo y supr
 - **Renderizado seguro desde `<template id="tpl-juego">` (`renderizarTarjetaJuego`):**
   - Clona la plantilla HTML5 del documento y puebla título, plataforma, SKU, horas, insignias de estado de progreso (`.gv-badge-*`) y detalles condicionales.
   - **Seguridad XSS estricta:** Todo el contenido dinámico del usuario se asigna exclusivamente mediante `textContent` y atributos nativos de elemento, impidiendo la inyección o ejecución de scripts maliciosos.
-  - **Iconografía decorativa adaptativa:** Muestra el icono SVG vectorial de la plataforma correspondiente (`PC`, `PlayStation 5`, `Xbox Series X`, `Nintendo Switch`, `Retro`) almacenado en `img/consolas/*.svg`.
+  - **Tarjetas Spatial Flip 3D y renders de estudio:** Muestra un render 3D en alta resolución (`1376×768`) de la plataforma correspondiente (`PC`, `PlayStation 5`, `Xbox Series X`, `Nintendo Switch`, `Retro`) almacenado en `img/consolas/*.jpg`, con portada limpia en cristal esmerilado y giro 3D bidireccional (`.js-btn-girar` / `.js-btn-volver`) hacia el reverso con SKU, fecha de adquisición, EAN-13 y listado de DLCs.
   - **Enlace de edición:** Enlaza a `ficha.html?id=ID_JUEGO` para acceder directamente a la modificación del título.
 - **Sustitución atómica de una sola vez (`renderizarListadoJuegos`):**
   - Construye la colección de tarjetas mediante un `DocumentFragment` y realiza una única inserción en el contenedor `#grid-catalogo`, evitando reflows sucesivos y maximizando el rendimiento del navegador.
