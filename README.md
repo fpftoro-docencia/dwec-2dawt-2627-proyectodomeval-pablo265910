@@ -11,7 +11,7 @@
 
 **GameVault** es una aplicación web de gestión (CRUD) para que cada usuario registrado organice y controle su colección personal de videojuegos, diferenciando de forma realista entre ediciones **físicas** (en disco/cartucho) y **digitales** (Steam, PlayStation Store, eShop, etc.). Permite catalogar títulos, registrar horas de juego, controlar en qué tienda o estantería están y gestionar sus expansiones/DLCs. Toda la persistencia es local en el navegador del usuario (`localStorage` por usuario y `sessionStorage` para la sesión), sin dependencias de librerías externas (salvo el CSS de Bootstrap) y sin APIs remotas.
 
-**Web publicada:** https://dwec-2dawt-2627-proyectodomeval-pab.vercel.app/
+**Web publicada:** https://gamevault-pablo.vercel.app/
 
 ### La entidad
 
@@ -466,7 +466,7 @@ El flujo sigue un escalonamiento de menor a mayor coste computacional aplicando 
      3. El camino de un cambio, con tus palabras: desde tu git push en una rama hasta que se ve en
         la web, qué se comprueba en cada paso y qué pasa si algo falla. -->
 
-**Web publicada:** https://dwec-2dawt-2627-proyectodomeval-pab.vercel.app/
+**Web publicada:** https://gamevault-pablo.vercel.app/
 
 ### Configuración de Vercel
 
