@@ -1,8 +1,16 @@
 /**
- * Componente de cabecera común y barra de navegación para páginas privadas.
+ * Componente de cabecera común y barra de navegación para páginas privadas
+ * (`listado.html`, `ficha.html`, `usuarios.html`).
  *
  * Muestra el usuario activo, su rol y controla la visibilidad del enlace
  * a la zona de administración. Gestiona el cierre de sesión.
+ *
+ * Selectores HTML utilizados en la cabecera de las páginas privadas:
+ * - `#panel-sesion`: Contenedor del panel de sesión (se oculta con `hidden` si no hay sesión).
+ * - `#sesion-usuario`, `#usuario-activo-nombre`: Elemento donde se muestra el nombre del usuario activo (o `'Invitado'`).
+ * - `#sesion-rol`, `#usuario-activo-rol`: Insignia de rol (`'Administrador'`, `'Usuario'` o `'Sin sesión'`).
+ * - `#nav-link-admin`, `#enlace-admin`, `#nav-item-admin`: Enlace de navegación hacia `usuarios.html`, visible solo para administradores.
+ * - `#btn-cerrar-sesion`: Botón encargado de cerrar sesión al hacer clic.
  *
  * @module cabecera
  */
@@ -11,11 +19,14 @@ import { obtenerSesion, cerrarSesion } from './sesion.js';
 
 /**
  * Inicializa la cabecera común de la aplicación en el documento dado.
+ * Sincroniza el nombre de usuario, la insignia de rol, la visibilidad de `#panel-sesion`
+ * y `#nav-link-admin`, y asocia el evento `click` en `#btn-cerrar-sesion`.
  *
+ * @listens click
  * @param {Document} [documento=document] Árbol DOM donde se encuentra la cabecera.
  * @param {Object} [opciones={}] Configuración y dobles de prueba para navegación y almacenamiento.
  * @param {Storage} [opciones.almacen=window.sessionStorage] Almacén de sesión.
- * @param {Function} [opciones.alCerrarSesion] Función a ejecutar tras cerrar sesión.
+ * @param {function(): void} [opciones.alCerrarSesion] Función a ejecutar tras cerrar sesión.
  * @returns {void}
  */
 export function iniciarCabecera(documento = document, opciones = {}) {

@@ -7,11 +7,33 @@
  * - Clases de alerta de Bootstrap (`alert-success`, `alert-danger`, `alert-info`, `alert-warning`).
  * - Persistencia de avisos en `sessionStorage` para mantener mensajes entre redirecciones.
  *
+ * Selectores HTML requeridos en las páginas que integran avisos (por defecto buscados en orden):
+ * - `#region-avisos`: Contenedor principal de notificaciones en la página.
+ * - `.gv-toast-region`: Contenedor alternativo de avisos flotantes.
+ * - `[role="status"]`: Región viva accesible (`aria-live="polite"`) donde insertar las alertas.
+ *
  * @module avisos
  */
 
+/**
+ * Nombre del evento personalizado utilizado para emitir y capturar notificaciones.
+ *
+ * @type {string}
+ */
 export const NOMBRE_EVENTO_AVISO = 'aviso';
+
+/**
+ * Clave utilizada en `sessionStorage` para guardar avisos diferidos entre redirecciones.
+ *
+ * @type {string}
+ */
 export const CLAVE_AVISO_SESION = 'gamevault_aviso_pendiente';
+
+/**
+ * Tiempo por defecto en milisegundos antes de que una notificación se cierre automáticamente.
+ *
+ * @type {number}
+ */
 export const TIEMPO_DESAPARICION_MS = 5000;
 
 /**
@@ -19,9 +41,28 @@ export const TIEMPO_DESAPARICION_MS = 5000;
  */
 
 /**
+ * Carga útil incluida en el evento personalizado `aviso` y en los avisos diferidos de `sessionStorage`.
+ *
  * @typedef {Object} DetalleAviso
  * @property {string} mensaje Contenido textual de la notificación.
  * @property {TipoAvisoBootstrap} tipo Categoría normalizada para estilos de Bootstrap.
+ */
+
+/**
+ * Alias de {@link module:avisos~DetalleAviso} para representar un aviso de usuario.
+ *
+ * @typedef {DetalleAviso} Aviso
+ */
+
+/**
+ * Evento personalizado emitido en el DOM cuando se solicita mostrar una notificación.
+ * Se instancia como `CustomEvent` con `bubbles: true` (para ascender hasta `document`),
+ * `cancelable: true` y `detail` de tipo {@link module:avisos~DetalleAviso}.
+ *
+ * @event module:avisos~aviso
+ * @type {CustomEvent<DetalleAviso>}
+ * @property {DetalleAviso} detail Objeto con el mensaje y el tipo de alerta normalizado.
+ * @property {boolean} bubbles Siempre `true` para propagar el aviso hasta el oyente global en `document`.
  */
 
 /**
@@ -158,7 +199,9 @@ export function consumirAviso(almacen = window.sessionStorage) {
 
 /**
  * Construye e inserta la alerta visual con clases de Bootstrap dentro de la región accesible.
+ * Registra un oyente `click` nativo en el botón de cierre para eliminar la alerta del DOM.
  *
+ * @listens click
  * @param {HTMLElement} region Contenedor donde alojar la alerta (con role="status").
  * @param {string} mensaje Texto a mostrar en el aviso.
  * @param {string} [tipo='info'] Tipo de aviso para aplicar la clase alert-{tipo}.
@@ -214,12 +257,13 @@ export function renderizarAviso(region, mensaje, tipo = 'info', opciones = {}) {
  * y dispara cualquier aviso que hubiera quedado guardado en `sessionStorage`.
  *
  * @listens aviso
+ * @fires aviso
  * @param {Document} [documento=document] Documento donde registrar el oyente global.
  * @param {Object} [opciones={}] Configuración y dependencias.
  * @param {Storage} [opciones.almacen=window.sessionStorage] Almacén para avisos diferidos.
  * @param {string} [opciones.selectorRegion='#region-avisos, .gv-toast-region, [role="status"]'] Selector CSS de la región accesible.
  * @param {number} [opciones.duracionMs=TIEMPO_DESAPARICION_MS] Milisegundos de visualización antes de auto-cerrar.
- * @returns {() => void} Función de desuscripción para limpiar el oyente (útil en pruebas).
+ * @returns {function(): void} Función de desuscripción para limpiar el oyente (útil en pruebas).
  * @example
  * // En el script principal de la página:
  * iniciarAvisos();

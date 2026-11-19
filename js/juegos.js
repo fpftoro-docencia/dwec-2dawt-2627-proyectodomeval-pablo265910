@@ -8,15 +8,30 @@
  * @module juegos
  */
 
+/**
+ * Prefijo de clave utilizado en `localStorage` para aislar el catálogo por usuario (`gamevault_juegos_<usuario>`).
+ *
+ * @type {string}
+ */
 export const PREFIJO_CLAVE_JUEGOS = 'gamevault_juegos_';
 
 /**
- * @typedef {Object} DlcItem
+ * Contenido descargable o expansión asociada a un videojuego.
+ *
+ * @typedef {Object} DLC
  * @property {string} titulo Nombre o título del DLC o expansión.
  * @property {'pendiente' | 'jugando' | 'completado'} estado Estado de avance del DLC.
  */
 
 /**
+ * Alias de compatibilidad de {@link module:juegos~DLC}.
+ *
+ * @typedef {DLC} DlcItem
+ */
+
+/**
+ * Representación normalizada de un videojuego en el catálogo del usuario.
+ *
  * @typedef {Object} Videojuego
  * @property {string} id Identificador único del videojuego.
  * @property {string} titulo Título del videojuego (entre 2 y 100 caracteres).
@@ -29,14 +44,16 @@ export const PREFIJO_CLAVE_JUEGOS = 'gamevault_juegos_';
  * @property {string | null} [codigoBarras] Código de barras EAN-13 (solo formato físico).
  * @property {string | null} [ubicacionEstanteria] Ubicación en balda EST-X-00 (solo formato físico).
  * @property {string | null} [tiendaDigital] Tienda de adquisición digital (solo formato digital).
- * @property {DlcItem[]} [dlcs] Lista de contenidos descargables o expansiones (de 0 a 3).
+ * @property {DLC[]} [dlcs] Lista de contenidos descargables o expansiones (de 0 a 3).
  * @property {string} [creadoEn] Fecha y hora de creación del registro (ISO 8601).
  * @property {string} [actualizadoEn] Fecha y hora de última modificación (ISO 8601).
  */
 
 /**
- * Obtiene el almacén por defecto de forma segura en navegador o tests.
- * @returns {Storage | null}
+ * Obtiene el almacén por defecto (`window.localStorage`) de forma segura en navegador o tests.
+ *
+ * @private
+ * @returns {Storage | null} Instancia de `localStorage` si está disponible, o `null`.
  */
 function obtenerAlmacenDefecto() {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -51,8 +68,10 @@ function obtenerAlmacenDefecto() {
  * Normaliza el nombre de usuario eliminando espacios y convirtiéndolo a minúsculas
  * para garantizar el aislamiento multiusuario.
  *
- * @param {string} usuario
+ * @param {string} usuario Nombre del usuario propietario del catálogo.
  * @returns {string} Clave de almacenamiento (ej. 'gamevault_juegos_pablo_dev').
+ * @example
+ * obtenerClaveJuegos('  Pablo_Dev '); // 'gamevault_juegos_pablo_dev'
  */
 export function obtenerClaveJuegos(usuario) {
   if (typeof usuario !== 'string') return '';
@@ -64,6 +83,8 @@ export function obtenerClaveJuegos(usuario) {
  * Genera un identificador único para un nuevo videojuego.
  *
  * @returns {string} Identificador único con prefijo 'gv_' y marca temporal.
+ * @example
+ * const id = generarIdJuego(); // 'gv_1731268800000_a1b2c3d'
  */
 export function generarIdJuego() {
   const timestamp = Date.now();
@@ -74,8 +95,9 @@ export function generarIdJuego() {
 /**
  * Normaliza y sanea las propiedades de un registro de videojuego.
  *
- * @param {Object} raw
- * @returns {Videojuego | null}
+ * @private
+ * @param {Object} raw Objeto sin normalizar leído del almacenamiento o entrada.
+ * @returns {Videojuego | null} Videojuego saneado o `null` si carece de `id` o `titulo` válidos.
  */
 function normalizarJuego(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -195,9 +217,10 @@ export function obtenerJuegoPorId(id, usuario, almacen = obtenerAlmacenDefecto()
 /**
  * Persiste la colección de videojuegos de un usuario en el almacenamiento.
  *
- * @param {Videojuego[]} juegos
- * @param {string} usuario
- * @param {Storage} [almacen=obtenerAlmacenDefecto()]
+ * @param {Videojuego[]} juegos Lista de videojuegos a persistir.
+ * @param {string} usuario Nombre del usuario propietario.
+ * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde persistir.
+ * @returns {void}
  * @throws {Error} Si el usuario es inválido o el almacén no está disponible.
  */
 export function guardarJuegos(juegos, usuario, almacen = obtenerAlmacenDefecto()) {
@@ -219,9 +242,9 @@ export function guardarJuegos(juegos, usuario, almacen = obtenerAlmacenDefecto()
 /**
  * Registra un nuevo videojuego en el catálogo del usuario asignándole un ID único.
  *
- * @param {Partial<Videojuego>} datosJuego
- * @param {string} usuario
- * @param {Storage} [almacen=obtenerAlmacenDefecto()]
+ * @param {Object} datosJuego Propiedades del videojuego a crear (ver {@link module:juegos~Videojuego}).
+ * @param {string} usuario Nombre del usuario propietario.
+ * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde persistir.
  * @returns {Videojuego} Videojuego creado y persistido.
  * @throws {Error} Si faltan datos obligatorios o el usuario es inválido.
  */
@@ -255,10 +278,10 @@ export function crearJuego(datosJuego, usuario, almacen = obtenerAlmacenDefecto(
 /**
  * Actualiza los datos de un videojuego existente identificado por su ID.
  *
- * @param {string} id
- * @param {Partial<Videojuego>} datosActualizados
- * @param {string} usuario
- * @param {Storage} [almacen=obtenerAlmacenDefecto()]
+ * @param {string} id Identificador del videojuego a modificar.
+ * @param {Object} datosActualizados Campos a actualizar (ver {@link module:juegos~Videojuego}).
+ * @param {string} usuario Nombre del usuario propietario.
+ * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde persistir.
  * @returns {Videojuego | null} Videojuego modificado o null si no se encontró.
  */
 export function actualizarJuego(id, datosActualizados, usuario, almacen = obtenerAlmacenDefecto()) {
@@ -294,10 +317,10 @@ export function actualizarJuego(id, datosActualizados, usuario, almacen = obtene
 /**
  * Guarda un videojuego: si tiene ID y ya existe lo actualiza; si no, lo crea nuevo.
  *
- * @param {Partial<Videojuego>} datosJuego
- * @param {string} usuario
- * @param {Storage} [almacen=obtenerAlmacenDefecto()]
- * @returns {Videojuego}
+ * @param {Object} datosJuego Datos del videojuego a crear o actualizar (ver {@link module:juegos~Videojuego}).
+ * @param {string} usuario Nombre del usuario propietario.
+ * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde persistir.
+ * @returns {Videojuego} Videojuego creado o actualizado.
  */
 export function guardarJuego(datosJuego, usuario, almacen = obtenerAlmacenDefecto()) {
   if (datosJuego && typeof datosJuego.id === 'string' && datosJuego.id.trim()) {
@@ -335,8 +358,9 @@ export function eliminarJuego(id, usuario, almacen = obtenerAlmacenDefecto()) {
 /**
  * Elimina todos los videojuegos del catálogo de un usuario.
  *
- * @param {string} usuario
- * @param {Storage} [almacen=obtenerAlmacenDefecto()]
+ * @param {string} usuario Nombre del usuario propietario.
+ * @param {Storage} [almacen=obtenerAlmacenDefecto()] Almacén donde eliminar el catálogo.
+ * @returns {void}
  */
 export function vaciarJuegos(usuario, almacen = obtenerAlmacenDefecto()) {
   const clave = obtenerClaveJuegos(usuario);

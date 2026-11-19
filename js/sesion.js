@@ -1,23 +1,33 @@
 /**
- * Gestión de la sesión de usuario en sessionStorage.
+ * Gestión de la sesión de usuario en `sessionStorage` (`gamevault_sesion`).
  *
- * Maneja la persistencia y lectura de la sesión activa del usuario
- * actual (nombre de usuario y rol).
+ * Maneja la persistencia, validación de esquema y lectura de la sesión activa
+ * del usuario actual (nombre de usuario y rol) usando la clave `gamevault_sesion`
+ * en `sessionStorage`.
  *
  * @module sesion
  */
 
+/**
+ * Clave utilizada en `sessionStorage` para almacenar los datos de la sesión activa (`gamevault_sesion`).
+ *
+ * @type {string}
+ */
 export const CLAVE_SESION = 'gamevault_sesion';
 
 /**
+ * Datos de la sesión activa persistidos en `sessionStorage` bajo la clave `gamevault_sesion`.
+ *
  * @typedef {Object} Sesion
  * @property {string} usuario Nombre del usuario con sesión iniciada.
  * @property {'usuario' | 'administrador'} rol Rol asignado al usuario.
  */
 
 /**
- * Helper para obtener el almacén de sesión por defecto de forma segura en navegador o tests.
- * @returns {Storage | null}
+ * Obtiene el almacén de sesión por defecto (`window.sessionStorage`) de forma segura en navegador o tests.
+ *
+ * @private
+ * @returns {Storage | null} Instancia de `sessionStorage` si está disponible, o `null`.
  */
 function obtenerAlmacenDefecto() {
   if (typeof window !== 'undefined' && window.sessionStorage) {
@@ -27,11 +37,11 @@ function obtenerAlmacenDefecto() {
 }
 
 /**
- * Obtiene los datos de la sesión actual.
- * Devuelve un valor por defecto (null) si no hay sesión o si los datos están corruptos.
+ * Obtiene los datos de la sesión actual desde `sessionStorage` (`gamevault_sesion`).
+ * Devuelve `null` si no hay sesión, el almacén no está disponible o los datos JSON están corruptos.
  *
  * @param {Storage} [almacen=window.sessionStorage] Almacén de sesión a consultar.
- * @returns {Sesion | null} Objeto con usuario y rol, o null si no hay sesión válida.
+ * @returns {Sesion | null} Objeto con usuario y rol, o `null` si no hay sesión válida.
  */
 export function obtenerSesion(almacen = obtenerAlmacenDefecto()) {
   try {
@@ -58,13 +68,13 @@ export function obtenerSesion(almacen = obtenerAlmacenDefecto()) {
 }
 
 /**
- * Inicia una nueva sesión persistiendo el usuario y su rol.
+ * Inicia una nueva sesión persistiendo el usuario y su rol en `sessionStorage` (`gamevault_sesion`).
  *
  * @param {string} usuario Nombre de usuario.
  * @param {'usuario' | 'administrador'} rol Rol asignado.
  * @param {Storage} [almacen=window.sessionStorage] Almacén donde guardar.
  * @returns {Sesion} La sesión creada.
- * @throws {Error} Si el usuario o el rol no son válidos.
+ * @throws {Error} Si el usuario o el rol no son válidos, o si el almacén no está disponible.
  */
 export function iniciarSesion(usuario, rol, almacen = obtenerAlmacenDefecto()) {
   if (!usuario || typeof usuario !== 'string' || usuario.trim() === '') {
@@ -82,14 +92,23 @@ export function iniciarSesion(usuario, rol, almacen = obtenerAlmacenDefecto()) {
 }
 
 /**
- * Alias de iniciarSesion para compatibilidad con la especificación de tareas.
+ * Alias de {@link module:sesion.iniciarSesion} para compatibilidad con la especificación de tareas.
+ * Inicia una nueva sesión persistiendo el usuario y su rol en `sessionStorage` (`gamevault_sesion`).
+ *
+ * @function
+ * @param {string} usuario Nombre de usuario.
+ * @param {'usuario' | 'administrador'} rol Rol asignado.
+ * @param {Storage} [almacen=window.sessionStorage] Almacén donde guardar.
+ * @returns {Sesion} La sesión creada.
+ * @throws {Error} Si el usuario o el rol no son válidos, o si el almacén no está disponible.
  */
 export const guardarSesion = iniciarSesion;
 
 /**
- * Cierra la sesión activa eliminando sus datos del almacenamiento.
+ * Cierra la sesión activa eliminando la entrada `gamevault_sesion` del almacenamiento.
  *
  * @param {Storage} [almacen=window.sessionStorage] Almacén del que borrar la sesión.
+ * @returns {void}
  */
 export function cerrarSesion(almacen = obtenerAlmacenDefecto()) {
   try {
@@ -121,6 +140,11 @@ export function esAdministrador(almacen = obtenerAlmacenDefecto()) {
 }
 
 /**
- * Alias de esAdministrador para compatibilidad con la especificación de tareas.
+ * Alias de {@link module:sesion.esAdministrador} para compatibilidad con la especificación de tareas.
+ * Comprueba si el usuario de la sesión actual en `sessionStorage` tiene rol de administrador.
+ *
+ * @function
+ * @param {Storage} [almacen=window.sessionStorage] Almacén a consultar.
+ * @returns {boolean} True si el usuario activo es administrador.
  */
 export const esAdmin = esAdministrador;
