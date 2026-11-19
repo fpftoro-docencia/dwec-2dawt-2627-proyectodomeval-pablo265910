@@ -1,9 +1,19 @@
 /**
- * Controlador de la página de inicio de sesión (index.html).
+ * Controlador de la página de inicio de sesión (`index.html`).
  *
  * Gestiona la autenticación de usuarios mediante resúmenes SHA-256,
  * protección anti-doble envío, vaciado de contraseña y foco ante error,
  * y redirección automática si ya existe sesión activa.
+ *
+ * HTML requerido en `index.html`:
+ * - `#form-login`: Formulario principal de inicio de sesión (`novalidate`).
+ * - `#login-usuario`: Campo de texto para el nombre de usuario.
+ * - `#login-password`: Campo de contraseña.
+ * - `#btn-submit-login`: Botón de envío (gestiona `disabled` y clase `.loading`).
+ * - `#error-login-usuario`: Caja de error accesible asociada a `#login-usuario`.
+ * - `#error-login-password`: Caja de error accesible asociada a `#login-password`.
+ * - `#error-login-general`: Caja de error general para fallos de autenticación.
+ * - `#region-avisos`: Contenedor global donde `avisos.js` renderiza eventos `aviso`.
  *
  * @module login
  */
@@ -15,7 +25,10 @@ import { guardarAviso, lanzarAviso } from './avisos.js';
 /**
  * Inicializa la lógica de inicio de sesión.
  *
- * @param {Document} [documento=document]
+ * @listens blur
+ * @listens submit
+ * @fires aviso
+ * @param {Document} [documento=document] Instancia de Document del DOM.
  * @param {Object} [opciones={}] Dobles de prueba para redirección y almacenamiento.
  * @param {Storage} [opciones.almacenSesion] Almacén de sesión (sessionStorage o doble).
  * @param {Storage} [opciones.almacenUsuarios] Almacén de usuarios (localStorage o doble).
@@ -50,9 +63,11 @@ export function iniciarLogin(documento = document, opciones = {}) {
   /**
    * Muestra u oculta mensaje de error en un campo de forma accesible.
    *
-   * @param {HTMLInputElement} input
-   * @param {HTMLElement} cajaError
-   * @param {string} mensaje
+   * @private
+   * @param {HTMLInputElement} input Campo de entrada asociado.
+   * @param {HTMLElement} cajaError Contenedor donde se muestra el mensaje de error.
+   * @param {string} mensaje Texto de error (cadena vacía para limpiar el estado).
+   * @returns {void}
    */
   function establecerError(input, cajaError, mensaje) {
     if (!input || !cajaError) return;

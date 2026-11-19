@@ -1,10 +1,28 @@
 /**
- * Controlador del formulario de alta y edición de videojuegos (ficha.html).
+ * Controlador del formulario de alta y edición de videojuegos (`ficha.html`).
  *
  * Gestiona los campos base de la entidad Videojuego, la inyección dinámica de la fecha
- * máxima (max = hoy), la extracción y normalización de datos con FormData, el flujo
+ * máxima (`max = hoy`), la extracción y normalización de datos con `FormData`, el flujo
  * completo de alta y edición según parámetros de URL, persistencia desacoplada y la
  * inicialización accesible de la vista.
+ *
+ * HTML requerido en `ficha.html`:
+ * - `#titulo-pagina-ficha`: Encabezado principal (`Alta de Videojuego` / `Edición de Videojuego`).
+ * - `#form-ficha`: Formulario principal de alta/edición (`novalidate`).
+ * - Campos base: `#ficha-id` (hidden, `name="id"`), `#ficha-titulo` (`name="titulo"`),
+ *   `#ficha-plataforma` (`name="plataforma"`), `#ficha-sku` (`name="sku"`),
+ *   `#ficha-fecha` (`name="fechaAdquisicion"`), `#ficha-horas` (`name="horasJugadas"`),
+ *   `#ficha-estado` (`name="estado"`), `#formato-fisico` y `#formato-digital` (`name="formato"`).
+ * - `#bloque-fisico`: `<fieldset>` condicional con `#ficha-ean` (`name="ean13"`) y
+ *   `#ficha-ubicacion` (`name="ubicacion"`).
+ * - `#bloque-digital`: `<fieldset>` condicional con `#ficha-tienda` (`name="tiendaDigital"`).
+ * - `#btn-anadir-dlc`: Botón para añadir filas de expansión (deshabilitado al alcanzar `MAX_DLCS`).
+ * - `#lista-dlcs`: Contenedor donde se insertan las filas dinámicas de DLCs.
+ * - `#tpl-dlc`: Plantilla `<template id="tpl-dlc">` con `.js-fila-dlc` y las clases internas:
+ *   `.js-label-dlc-nombre`, `.js-input-dlc-nombre`, `.js-error-dlc-nombre`,
+ *   `.js-label-dlc-estado`, `.js-select-dlc-estado`, `.js-error-dlc-estado` y `.js-btn-quitar-dlc`.
+ * - `#btn-guardar-ficha`: Botón de envío (contiene `.btn-text`).
+ * - `#region-avisos`: Contenedor global donde `avisos.js` renderiza eventos `aviso`.
  *
  * @module ficha
  */
@@ -161,6 +179,7 @@ export function leerDatosFormulario(formulario) {
  *
  * @param {HTMLFormElement | HTMLElement | Document} formulario Formulario o contenedor.
  * @param {'fisico' | 'digital' | string | null} [formato] Formato seleccionado.
+ * @returns {void}
  */
 export function alternarSeccionFormato(formulario, formato) {
   if (!formulario) return;
@@ -210,7 +229,18 @@ export function alternarSeccionFormato(formulario, formato) {
   }
 }
 
+/**
+ * Número máximo de expansiones (DLCs) permitidas por videojuego.
+ *
+ * @type {number}
+ */
 export const MAX_DLCS = 3;
+
+/**
+ * Número mínimo de expansiones (DLCs) permitidas por videojuego.
+ *
+ * @type {number}
+ */
 export const MIN_DLCS = 0;
 
 let contadorDlc = 0;
@@ -226,6 +256,8 @@ export function generarIdDlc() {
 
 /**
  * Resetea el contador interno de identificadores de DLC (utilizado en pruebas).
+ *
+ * @returns {void}
  */
 export function resetearContadorDlc() {
   contadorDlc = 0;
@@ -238,6 +270,7 @@ export function resetearContadorDlc() {
  * @param {HTMLElement} contenedor Contenedor #lista-dlcs.
  * @param {HTMLButtonElement} [btnAnadir] Botón #btn-anadir-dlc.
  * @param {number} [maximo=MAX_DLCS] Límite máximo de elementos.
+ * @returns {void}
  */
 export function sincronizarBotonAnadirDlc(contenedor, btnAnadir = null, maximo = MAX_DLCS) {
   if (!contenedor || !btnAnadir) return;
@@ -332,6 +365,7 @@ export function anadirFilaDlc(contenedor, template, valores = {}, btnAnadir = nu
  * @param {HTMLElement} fila Fila de DLC a eliminar (.js-fila-dlc).
  * @param {HTMLElement} contenedor Contenedor #lista-dlcs.
  * @param {HTMLButtonElement} [btnAnadir] Botón #btn-anadir-dlc.
+ * @returns {void}
  */
 export function quitarFilaDlc(fila, contenedor, btnAnadir = null) {
   if (!fila || typeof fila.remove !== 'function') return;
@@ -346,6 +380,7 @@ export function quitarFilaDlc(fila, contenedor, btnAnadir = null) {
 /**
  * Conecta los eventos del grupo dinámico de DLCs (delegación para quitar filas y click en añadir).
  *
+ * @listens click
  * @param {HTMLElement} contenedor Elemento #lista-dlcs.
  * @param {HTMLTemplateElement} template Elemento <template id="tpl-dlc">.
  * @param {HTMLButtonElement} btnAnadir Elemento #btn-anadir-dlc.
@@ -383,7 +418,8 @@ export function conectarDlcs(contenedor, template, btnAnadir) {
  * Rellena los campos base y condicionales de un formulario con los datos de un videojuego.
  *
  * @param {HTMLFormElement} formulario Elemento <form id="form-ficha">.
- * @param {Object} datos Objeto con las propiedades del videojuego.
+ * @param {Object} [datos={}] Objeto con las propiedades del videojuego.
+ * @returns {void}
  */
 export function rellenarFormulario(formulario, datos = {}) {
   if (!formulario || !datos || typeof datos !== 'object') return;
@@ -470,33 +506,35 @@ export function rellenarFormulario(formulario, datos = {}) {
 }
 
 /**
- * Inicializa la página ficha.html.
+ * Inicializa la página `ficha.html`.
  *
  * Controla el flujo integral de alta y edición de la entidad Videojuego:
  * - Detecta el modo (Alta o Edición) a partir del parámetro de URL `?id=...` o `opciones.id`.
  * - En modo edición: carga el juego del catálogo del usuario. Si no existe, almacena
  *   un aviso diferido de error y redirige inmediatamente a `listado.html`.
  * - En modo alta: ajusta los títulos y botones para la creación de un nuevo registro.
- * - Inyecta dinámicamente la fecha máxima permitida (max = hoy) en el selector de fecha.
+ * - Inyecta dinámicamente la fecha máxima permitida (`max = hoy`) en el selector de fecha.
  * - Conecta la reactividad accesible para la sección condicional de formato (físico / digital).
  * - Vincula la gestión dinámica del grupo de DLCs con límites (0 a 3).
  * - Conecta el motor genérico de validación en tiempo real y captura el envío (`submit`).
  * - Al guardar con datos válidos: persiste el videojuego normalizado (crear o actualizar),
  *   almacena el aviso diferido de éxito en `sessionStorage` y redirige a `listado.html`.
  *
- * @param {Document} [documento=typeof document !== 'undefined' ? document : null] Objeto Document del DOM.
+ * @listens change
+ * @fires aviso
+ * @param {Document} [documento=document] Objeto Document del DOM.
  * @param {Object} [opciones={}] Opciones configurables e inyección de dependencias.
- * @param {Storage} [opciones.almacenLocal] Almacén de persistencia para videojuegos (localStorage).
- * @param {Storage} [opciones.almacenSesion] Almacén de persistencia para sesión y avisos (sessionStorage).
- * @param {Window | { location: { search: string, href?: string } }} [opciones.ventana] Objeto de ventana o mock para navegación.
- * @param {Function} [opciones.navegar] Callback de navegación para redirección (por defecto window.location.href).
+ * @param {Storage} [opciones.almacenLocal] Almacén de persistencia para videojuegos (`localStorage`).
+ * @param {Storage} [opciones.almacenSesion] Almacén de persistencia para sesión y avisos (`sessionStorage`).
+ * @param {Window | Object} [opciones.ventana] Objeto de ventana o doble con `location` para navegación.
+ * @param {Function} [opciones.navegar] Callback de navegación para redirección (por defecto `window.location.href`).
  * @param {string} [opciones.usuario] Usuario propietario (por defecto extraído de la sesión activa).
  * @param {string | null} [opciones.id] ID de videojuego explícito para modo edición o anulación.
  * @param {Date | string} [opciones.fechaReferencia] Fecha de referencia para fecha máxima.
  * @param {'fisico' | 'digital'} [opciones.formatoInicial] Formato inicial en modo alta.
  * @param {Array<Object>} [opciones.dlcsIniciales] Lista inicial de DLCs en modo alta.
- * @param {Object} [opciones.validacion] Opciones adicionales pasadas a conectarValidacionTiempoReal.
- * @param {Function} [opciones.alGuardar] Callback opcional invocado al guardar con éxito ({ modo, juego }).
+ * @param {Object} [opciones.validacion] Opciones adicionales pasadas a `conectarValidacionTiempoReal`.
+ * @param {Function} [opciones.alGuardar] Callback opcional invocado al guardar con éxito (`{ modo, juego }`).
  * @returns {Function} Función de limpieza para desconectar todos los oyentes de eventos.
  */
 export function iniciarFicha(

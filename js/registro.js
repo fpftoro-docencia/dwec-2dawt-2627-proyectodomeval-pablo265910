@@ -1,9 +1,26 @@
 /**
- * Controlador de la página de registro (registro.html).
+ * Controlador de la página de registro (`registro.html`).
  *
  * Gestiona la validación reactiva de la contraseña, control de errores accesible
  * en los campos, verificación de disponibilidad del nombre de usuario,
  * registro, auto-login, aviso diferido y redirección.
+ *
+ * HTML requerido en `registro.html`:
+ * - `#form-registro`: Formulario de registro (`novalidate`).
+ * - `#reg-usuario`: Campo de texto para el nombre de usuario.
+ * - `#reg-email`: Campo de correo electrónico.
+ * - `#reg-password`: Campo de contraseña.
+ * - `#reg-password-confirm`: Campo de confirmación de contraseña.
+ * - `#reg-condiciones`: Casilla de aceptación de condiciones de uso.
+ * - `#btn-submit-registro`: Botón de envío (gestiona `disabled` y clase `.loading`).
+ * - `#panel-requisitos-pwd`: Contenedor del indicador visual de requisitos de contraseña:
+ *   - `#req-longitud`: Indicador de mínimo 8 caracteres.
+ *   - `#req-minuscula`: Indicador de letra minúscula.
+ *   - `#req-mayuscula`: Indicador de letra mayúscula.
+ *   - `#req-numero`: Indicador de dígito numérico.
+ * - Cajas de error accesibles: `#error-reg-usuario`, `#error-reg-email`, `#error-reg-password`,
+ *   `#error-reg-password-confirm`, `#error-reg-condiciones`.
+ * - `#region-avisos`: Contenedor global donde `avisos.js` renderiza eventos `aviso`.
  *
  * @module registro
  */
@@ -16,7 +33,12 @@ import { validarNombreUsuario, validarCorreo, evaluarRequisitosClave } from './v
 /**
  * Inicializa la lógica de la página de registro.
  *
- * @param {Document} [documento=document]
+ * @listens input
+ * @listens blur
+ * @listens change
+ * @listens submit
+ * @fires aviso
+ * @param {Document} [documento=document] Instancia de Document del DOM.
  * @param {Object} [opciones={}] Dobles de prueba para redirección y almacenamiento.
  * @param {Storage} [opciones.almacenSesion] Almacén de sesión (sessionStorage o doble).
  * @param {Storage} [opciones.almacenUsuarios] Almacén de usuarios (localStorage o doble).
@@ -64,9 +86,11 @@ export function iniciarRegistro(documento = document, opciones = {}) {
   /**
    * Muestra u oculta el mensaje de error de un campo de forma accesible.
    *
-   * @param {HTMLInputElement} input
-   * @param {HTMLElement} cajaError
-   * @param {string} mensaje
+   * @private
+   * @param {HTMLInputElement} input Campo de entrada asociado.
+   * @param {HTMLElement} cajaError Contenedor donde se muestra el mensaje de error.
+   * @param {string} mensaje Texto de error (cadena vacía para limpiar el estado).
+   * @returns {void}
    */
   function establecerError(input, cajaError, mensaje) {
     if (!input || !cajaError) return;

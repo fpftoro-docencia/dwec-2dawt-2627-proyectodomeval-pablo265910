@@ -1,15 +1,29 @@
 /**
- * Controlador de la vista del catálogo y backlog de videojuegos (listado.html).
+ * Controlador de la vista del catálogo y backlog de videojuegos (`listado.html`).
  *
  * Implementa el Requisito 15 del ENUNCIADO:
  * - Renderizado accesible de videojuegos desde `<template id="tpl-juego">` usando
- *   estrictamente textContent y atributos seguros (sin innerHTML vulnerable a XSS).
- * - Sustitución atómica del contenido de una sola vez mediante DocumentFragment.
+ *   estrictamente `textContent` y atributos seguros (sin `innerHTML` vulnerable a XSS).
+ * - Sustitución atómica del contenido de una sola vez mediante `DocumentFragment`.
  * - Enlace «Editar» dirigido a `ficha.html?id=...`.
  * - Botón «Eliminar» con apertura de diálogo modal nativo `<dialog>` pidiendo confirmación.
  * - Contador dinámico de videojuegos encontrados y Empty State cuando la colección esté vacía.
- * - Integración con paginación accesible (paginar.js y paginacion.js).
+ * - Integración con paginación accesible (`paginar.js` y `paginacion.js`).
  * - Delegación de eventos en fase de burbuja para las acciones de las tarjetas.
+ *
+ * HTML requerido en `listado.html`:
+ * - `#buscador-catalogo`: Campo de búsqueda (`<input type="search">`) con debounce.
+ * - `#contador-resultados`: Contenedor textual del total de videojuegos mostrados (puede incluir `<strong>`).
+ * - `#estado-vacio-catalogo`: Bloque Empty State cuya visibilidad se alterna mediante `hidden`.
+ * - `#grid-catalogo`: Contenedor rejilla donde se inyectan las tarjetas clonadas.
+ * - `#tpl-juego`: Plantilla `<template id="tpl-juego">` con un nodo `.col` y los selectores:
+ *   `.js-juego-consola-img`, `.js-juego-plataforma`, `.js-juego-formato`, `.js-juego-estado`,
+ *   `.js-juego-titulo`, `.js-juego-sku`, `.js-juego-horas`, `.js-juego-detalle-label`,
+ *   `.js-juego-detalle-valor`, `.js-btn-editar` y `.js-btn-eliminar`.
+ * - `#paginacion-catalogo`: Lista de controles de paginación accesible.
+ * - `#modal-borrar`: Diálogo modal nativo `<dialog id="modal-borrar">` con `#modal-juego-nombre`,
+ *   `#btn-cancelar-borrado` y `#btn-confirmar-borrado`.
+ * - `#region-avisos`: Contenedor global donde `avisos.js` renderiza eventos `aviso`.
  *
  * @module listado
  */
@@ -33,10 +47,17 @@ import {
 
 export { RETARDO_DEBOUNCE_DEFECTO, normalizarTextoBusqueda, debounce };
 
+/**
+ * Número de tarjetas de videojuego mostradas por página por defecto.
+ *
+ * @type {number}
+ */
 export const ELEMENTOS_POR_PAGINA_DEFECTO = 6;
 
 /**
  * Mapa de rutas relativas de iconos SVG vectoriales por plataforma.
+ *
+ * @type {Object<string, string>}
  */
 export const MAPA_ICONOS_CONSOLAS = {
   PC: 'img/consolas/pc.svg',
@@ -49,8 +70,9 @@ export const MAPA_ICONOS_CONSOLAS = {
 /**
  * Capitaliza la primera letra de un texto.
  *
- * @param {string} str
- * @returns {string}
+ * @private
+ * @param {string} str Cadena de entrada.
+ * @returns {string} Cadena con el primer carácter en mayúscula.
  */
 function capitalizar(str) {
   if (typeof str !== 'string' || !str) return '';
@@ -64,6 +86,8 @@ function capitalizar(str) {
  * @param {Array<Object>} juegos Lista completa de videojuegos del usuario.
  * @param {string} [consulta=''] Texto de búsqueda introducido.
  * @returns {Array<Object>} Subconjunto de videojuegos coincidentes.
+ * @example
+ * const resultados = filtrarJuegos(catalogo, 'elden');
  */
 export function filtrarJuegos(juegos, consulta = '') {
   return filtrarListaPorTexto(juegos, consulta, (juego) => [
@@ -169,6 +193,7 @@ export function renderizarTarjetaJuego(juego, template) {
  * @param {HTMLElement} contenedor Elemento #grid-catalogo.
  * @param {Array<Object>} juegos Lista de videojuegos a renderizar en la página actual.
  * @param {HTMLTemplateElement} template Elemento <template id="tpl-juego">.
+ * @returns {void}
  */
 export function renderizarListadoJuegos(contenedor, juegos, template) {
   if (!contenedor) return;
@@ -192,7 +217,8 @@ export function renderizarListadoJuegos(contenedor, juegos, template) {
  * Actualiza el contador textual accesible de videojuegos encontrados.
  *
  * @param {HTMLElement} elementoContador Elemento #contador-resultados.
- * @param {number} total Cantidad total de videojuegos disponibles.
+ * @param {number} [total=0] Cantidad total de videojuegos disponibles.
+ * @returns {void}
  */
 export function actualizarContadorResultados(elementoContador, total = 0) {
   if (!elementoContador) return;
@@ -215,6 +241,7 @@ export function actualizarContadorResultados(elementoContador, total = 0) {
  *
  * @param {HTMLElement} elementoVacio Elemento #estado-vacio-catalogo.
  * @param {boolean} tieneElementos True si existen videojuegos a mostrar; false si está vacío.
+ * @returns {void}
  */
 export function alternarEstadoVacio(elementoVacio, tieneElementos) {
   if (!elementoVacio) return;
@@ -224,14 +251,16 @@ export function alternarEstadoVacio(elementoVacio, tieneElementos) {
 /**
  * Conecta los manejadores del modal nativo `<dialog id="modal-borrar">`.
  *
- * Gestiona la apertura accesible con showModal(), el foco, la confirmación
+ * Gestiona la apertura accesible con `showModal()`, el foco, la confirmación
  * y la cancelación sin dependencias de frameworks externos.
  *
- * @param {HTMLDialogElement} modal Elemento <dialog id="modal-borrar">.
- * @param {Object} callbacks
- * @param {Function} callbacks.alConfirmar Callback invocado con el ID a eliminar.
+ * @listens click
+ * @listens cancel
+ * @param {HTMLDialogElement} modal Elemento `<dialog id="modal-borrar">`.
+ * @param {Object} [callbacks={}] Callbacks de confirmación y cancelación.
+ * @param {Function} [callbacks.alConfirmar] Callback invocado con el ID a eliminar.
  * @param {Function} [callbacks.alCancelar] Callback invocado al cancelar.
- * @returns {{ abrir: Function, cerrar: Function, desconectar: Function }}
+ * @returns {{ abrir: Function, cerrar: Function, desconectar: Function }} Controlador del modal.
  */
 export function conectarModalBorrado(modal, { alConfirmar, alCancelar } = {}) {
   if (!modal) {
@@ -318,23 +347,27 @@ export function conectarModalBorrado(modal, { alConfirmar, alCancelar } = {}) {
 }
 
 /**
- * Inicializa la página listado.html.
+ * Inicializa la página `listado.html`.
  *
  * Orquesta:
- * 1. La carga y filtrado del catálogo del usuario activo en localStorage.
- * 2. La paginación sincronizada con la URL (?pagina=X).
- * 3. El renderizado atómico mediante <template id="tpl-juego">.
+ * 1. La carga y filtrado del catálogo del usuario activo en `localStorage`.
+ * 2. La paginación sincronizada con la URL (`?pagina=X`).
+ * 3. El renderizado atómico mediante `<template id="tpl-juego">`.
  * 4. La actualización del contador y del estado vacío.
- * 5. La delegación de eventos click en #grid-catalogo para la eliminación.
- * 6. La confirmación interactiva mediante <dialog id="modal-borrar">.
+ * 5. La delegación de eventos `click` en `#grid-catalogo` para la eliminación.
+ * 6. La confirmación interactiva mediante `<dialog id="modal-borrar">`.
  *
+ * @listens input
+ * @listens click
+ * @fires aviso
  * @param {Document} [documento=document] Objeto Document inyectable.
  * @param {Object} [opciones={}] Opciones de configuración e inyección.
  * @param {Storage} [opciones.almacenLocal] Almacén de persistencia para videojuegos.
  * @param {Storage} [opciones.almacenSesion] Almacén de sesión para consultar usuario activo.
  * @param {string} [opciones.usuario] Nombre del usuario propietario de la biblioteca.
- * @param {Window | { location: { search: string, href?: string } }} [opciones.ventana] Objeto ventana.
+ * @param {Window | Object} [opciones.ventana] Objeto ventana o doble con `location` para pruebas.
  * @param {number} [opciones.porPagina=ELEMENTOS_POR_PAGINA_DEFECTO] Elementos por página.
+ * @param {number} [opciones.retardoDebounce=RETARDO_DEBOUNCE_DEFECTO] Retardo del buscador en ms.
  * @param {Function} [opciones.alEliminar] Callback tras eliminar un videojuego.
  * @returns {Function} Función de limpieza para desconectar oyentes.
  */
