@@ -11,7 +11,7 @@
 
 **GameVault** es una aplicación web de gestión (CRUD) para que cada usuario registrado organice y controle su colección personal de videojuegos, diferenciando de forma realista entre ediciones **físicas** (en disco/cartucho) y **digitales** (Steam, PlayStation Store, eShop, etc.). Permite catalogar títulos, registrar horas de juego, controlar en qué tienda o estantería están y gestionar sus expansiones/DLCs. Toda la persistencia es local en el navegador del usuario (`localStorage` por usuario y `sessionStorage` para la sesión), sin dependencias de librerías externas (salvo el CSS de Bootstrap) y sin APIs remotas.
 
-**Web publicada:** <!-- https://<proyecto>.vercel.app (se añadirá en el Sprint 3 al desplegar en Vercel) -->
+**Web publicada:** https://dwec-2dawt-2627-proyectodomeval-pab.vercel.app/
 
 ### La entidad
 
@@ -461,13 +461,22 @@ El flujo sigue un escalonamiento de menor a mayor coste computacional aplicando 
 
 ## Despliegue continuo
 
-<!-- Sprint 3. 1. Cómo has configurado Vercel: build, carpeta de salida, protección de los
-        despliegues y Deployment Checks (qué comprobaciones exige y por qué).
+<!-- Sprint 3 pendientes:
      2. Qué hacen despliegue.yml y release.yml, y qué comprueba tu prueba de humo.
      3. El camino de un cambio, con tus palabras: desde tu git push en una rama hasta que se ve en
         la web, qué se comprueba en cada paso y qué pasa si algo falla. -->
 
-**Web publicada:** <!-- https://<proyecto>.vercel.app -->
+**Web publicada:** https://dwec-2dawt-2627-proyectodomeval-pab.vercel.app/
+
+### Configuración de Vercel
+
+El proyecto está conectado al repositorio de GitHub mediante la aplicación oficial de **Vercel** (plan *Hobby*), sin necesidad de tokens ni secretos manuales para los despliegues automáticos:
+
+- **Application Preset / Framework Preset:** `Other`, al tratarse de una aplicación cliente estática en HTML, CSS y JavaScript nativo sin *framework* de servidor.
+- **Build Command:** `npm run build`. Ejecuta `scripts/construir.js`, que genera la carpeta `dist/` copiando las 5 páginas HTML, `css/`, `js/`, `img/` y la hoja de estilos CSS de Bootstrap (`node_modules/bootstrap/dist/css/bootstrap.min.css`).
+- **Output Directory:** `dist` (directorio de salida que Vercel publica en producción y en cada vista previa).
+- **Deployment Protection:** Se ha desactivado *Vercel Authentication* para que tanto el entorno de producción como las URLs de vista previa sean accesibles públicamente sin iniciar sesión en Vercel, requisito indispensable para que Playwright pueda ejecutar las pruebas automatizadas contra la web desplegada.
+- **Deployment Checks (`Settings → Build and Deployment → Deployment Checks` → GitHub):** Se han vinculado como comprobaciones obligatorias los trabajos `Calidad`, `Tests` y `E2E` del *workflow* de GitHub Actions (`ci.yml`), manteniendo activada la asignación automática del dominio de producción. Con esta configuración, cada `push` a `main` construye el despliegue en paralelo, pero Vercel bloquea su promoción al dominio público de producción si cualquiera de las comprobaciones de CI falla, conservando activa la versión anterior en verde (`E2E desplegado` se incorporará en el siguiente paso al configurar las vistas previas).
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
