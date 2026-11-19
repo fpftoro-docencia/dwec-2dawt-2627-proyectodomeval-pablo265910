@@ -17,9 +17,10 @@
  * - `#estado-vacio-catalogo`: Bloque Empty State cuya visibilidad se alterna mediante `hidden`.
  * - `#grid-catalogo`: Contenedor rejilla donde se inyectan las tarjetas clonadas.
  * - `#tpl-juego`: Plantilla `<template id="tpl-juego">` con un nodo `.col` y los selectores:
- *   `.js-juego-consola-img`, `.js-juego-plataforma`, `.js-juego-formato`, `.js-juego-estado`,
- *   `.js-juego-titulo`, `.js-juego-sku`, `.js-juego-horas`, `.js-juego-detalle-label`,
- *   `.js-juego-detalle-valor`, `.js-btn-editar` y `.js-btn-eliminar`.
+ *   `.gv-card-game`, `.js-juego-consola-img`, `.js-juego-plataforma`, `.js-juego-formato`,
+ *   `.js-juego-estado`, `.js-juego-titulo`, `.js-juego-sku`, `.js-juego-horas`,
+ *   `.js-juego-detalle-label`, `.js-juego-detalle-valor`, `.js-juego-fecha`, `.js-juego-ean`,
+ *   `.js-juego-dlcs`, `.js-btn-girar`, `.js-btn-volver`, `.js-btn-editar` y `.js-btn-eliminar`.
  * - `#paginacion-catalogo`: Lista de controles de paginación accesible.
  * - `#modal-borrar`: Diálogo modal nativo `<dialog id="modal-borrar">` con `#modal-juego-nombre`,
  *   `#btn-cancelar-borrado` y `#btn-confirmar-borrado`.
@@ -55,17 +56,45 @@ export { RETARDO_DEBOUNCE_DEFECTO, normalizarTextoBusqueda, debounce };
 export const ELEMENTOS_POR_PAGINA_DEFECTO = 6;
 
 /**
- * Mapa de rutas relativas de iconos SVG vectoriales por plataforma.
+ * Mapa de rutas relativas de los renders 3D de estudio por plataforma.
  *
  * @type {Object<string, string>}
  */
 export const MAPA_ICONOS_CONSOLAS = {
-  PC: 'img/consolas/pc.svg',
-  'PlayStation 5': 'img/consolas/playstation-5.svg',
-  'Xbox Series X': 'img/consolas/xbox-series-x.svg',
-  'Nintendo Switch': 'img/consolas/nintendo-switch.svg',
-  Retro: 'img/consolas/retro.svg',
+  PC: 'img/consolas/pc.jpg',
+  'PlayStation 5': 'img/consolas/playstation-5.jpg',
+  'Xbox Series X': 'img/consolas/xbox-series-x.jpg',
+  'Nintendo Switch': 'img/consolas/nintendo-switch.jpg',
+  Retro: 'img/consolas/retro.jpg',
 };
+
+/**
+ * Mapa de claves semánticas de plataforma usadas en `data-platform` para acentos de color.
+ *
+ * @type {Object<string, string>}
+ */
+export const MAPA_CLAVES_PLATAFORMA = {
+  PC: 'pc',
+  'PlayStation 5': 'ps5',
+  'Xbox Series X': 'xbox',
+  'Nintendo Switch': 'switch',
+  Retro: 'retro',
+};
+
+const MESES_CORTOS = [
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sep',
+  'oct',
+  'nov',
+  'dic',
+];
 
 /**
  * Capitaliza la primera letra de un texto.
@@ -77,6 +106,59 @@ export const MAPA_ICONOS_CONSOLAS = {
 function capitalizar(str) {
   if (typeof str !== 'string' || !str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Formatea una fecha ISO (`YYYY-MM-DD`) en formato corto legible en español (`25 feb 2024`).
+ *
+ * @private
+ * @param {string} fechaIso Cadena de fecha en formato ISO.
+ * @returns {string} Fecha legible o indicador neutro si no es válida.
+ */
+function formatearFechaCorta(fechaIso) {
+  if (typeof fechaIso !== 'string' || !fechaIso.trim()) return 'Sin fecha';
+  const partes = fechaIso.trim().split('-').map(Number);
+  if (partes.length !== 3 || partes.some(Number.isNaN)) return fechaIso.trim();
+  const [anio, mes, dia] = partes;
+  const nombreMes = MESES_CORTOS[mes - 1];
+  return nombreMes ? `${dia} ${nombreMes} ${anio}` : fechaIso.trim();
+}
+
+/**
+ * Alterna el giro 3D bidireccional de una tarjeta Spatial Flip asegurando
+ * accesibilidad (`aria-hidden`, `inert`, `aria-expanded`) e interacción fiable.
+ *
+ * @param {HTMLElement | null} tarjeta Nodo `<article class="gv-card-game">`.
+ * @param {boolean} [girar] Estado explícito (`true` reverso, `false` portada); si se omite, conmuta.
+ * @returns {boolean} Estado final (`true` si muestra el reverso, `false` si muestra la portada).
+ */
+export function alternarGiroTarjeta(tarjeta, girar) {
+  if (!tarjeta) return false;
+
+  const mostrarReverso =
+    typeof girar === 'boolean' ? girar : !tarjeta.classList.contains('is-flipped');
+
+  tarjeta.classList.toggle('is-flipped', mostrarReverso);
+
+  const caraFrontal = tarjeta.querySelector('.gv-card-face--front');
+  const caraTrasera = tarjeta.querySelector('.gv-card-face--back');
+  const btnGirar = tarjeta.querySelector('.js-btn-girar');
+
+  if (caraFrontal) {
+    caraFrontal.setAttribute('aria-hidden', String(mostrarReverso));
+    caraFrontal.inert = mostrarReverso;
+  }
+
+  if (caraTrasera) {
+    caraTrasera.setAttribute('aria-hidden', String(!mostrarReverso));
+    caraTrasera.inert = !mostrarReverso;
+  }
+
+  if (btnGirar) {
+    btnGirar.setAttribute('aria-expanded', String(mostrarReverso));
+  }
+
+  return mostrarReverso;
 }
 
 /**
@@ -121,16 +203,31 @@ export function renderizarTarjetaJuego(juego, template) {
   const columna = clon.querySelector('.col') || clon.firstElementChild;
   if (!columna) return null;
 
+  const tituloTexto = juego.titulo || 'Sin título';
+  const plataformaTexto = juego.plataforma || 'PC';
+  const clavePlataforma = MAPA_CLAVES_PLATAFORMA[plataformaTexto] || 'pc';
+
+  const articulo = columna.querySelector('.gv-card-game');
+  if (articulo) {
+    articulo.dataset.platform = clavePlataforma;
+  }
+
   // 1. Título y SKU
   const elTitulo = columna.querySelector('.js-juego-titulo');
-  if (elTitulo) elTitulo.textContent = juego.titulo || 'Sin título';
+  if (elTitulo) elTitulo.textContent = tituloTexto;
+
+  const elTituloReverso = columna.querySelector('.js-juego-titulo-reverso');
+  if (elTituloReverso) elTituloReverso.textContent = tituloTexto;
 
   const elSku = columna.querySelector('.js-juego-sku');
   if (elSku) elSku.textContent = juego.sku || 'Sin SKU';
 
-  // 2. Plataforma, Formato e Icono decorativo de consola
+  // 2. Plataforma, Formato e imagen de consola en alta resolución
   const elPlataforma = columna.querySelector('.js-juego-plataforma');
-  if (elPlataforma) elPlataforma.textContent = juego.plataforma || 'PC';
+  if (elPlataforma) elPlataforma.textContent = plataformaTexto;
+
+  const elPlataformaReverso = columna.querySelector('.js-juego-plataforma-reverso');
+  if (elPlataformaReverso) elPlataformaReverso.textContent = plataformaTexto;
 
   const elFormato = columna.querySelector('.js-juego-formato');
   if (elFormato) {
@@ -139,7 +236,7 @@ export function renderizarTarjetaJuego(juego, template) {
 
   const imgConsola = columna.querySelector('.js-juego-consola-img');
   if (imgConsola) {
-    imgConsola.src = MAPA_ICONOS_CONSOLAS[juego.plataforma] || 'img/consolas/pc.svg';
+    imgConsola.src = MAPA_ICONOS_CONSOLAS[plataformaTexto] || MAPA_ICONOS_CONSOLAS.PC;
     imgConsola.alt = ''; // Decorativa
   }
 
@@ -149,37 +246,122 @@ export function renderizarTarjetaJuego(juego, template) {
     const estadoLimpio = (juego.estadoProgreso || 'pendiente').toLowerCase();
     elEstado.textContent = capitalizar(estadoLimpio);
     elEstado.className = `gv-badge gv-badge-${estadoLimpio} js-juego-estado`;
-    elEstado.style.marginLeft = 'auto';
   }
 
-  // 4. Horas jugadas
+  // 4. Horas jugadas y fecha de adquisición
   const elHoras = columna.querySelector('.js-juego-horas');
   if (elHoras) elHoras.textContent = String(juego.horasJugadas ?? 0);
 
-  // 5. Detalles condicionales (Ubicación en estantería vs Tienda digital)
+  const elFecha = columna.querySelector('.js-juego-fecha');
+  if (elFecha) elFecha.textContent = formatearFechaCorta(juego.fechaAdquisicion);
+
+  // 5. Detalles condicionales (Ubicación en estantería + EAN-13 vs Tienda digital)
   const elDetalleLabel = columna.querySelector('.js-juego-detalle-label');
   const elDetalleValor = columna.querySelector('.js-juego-detalle-valor');
+  const filaEan = columna.querySelector('.js-juego-ean-fila');
+  const elEan = columna.querySelector('.js-juego-ean');
 
   if (juego.formato === 'fisico') {
     if (elDetalleLabel) elDetalleLabel.textContent = 'Ubicación / Balda';
     if (elDetalleValor) elDetalleValor.textContent = juego.ubicacionEstanteria || 'Sin asignar';
+    if (filaEan && elEan) {
+      if (juego.codigoBarras) {
+        elEan.textContent = juego.codigoBarras;
+        filaEan.hidden = false;
+      } else {
+        filaEan.hidden = true;
+      }
+    }
   } else {
     if (elDetalleLabel) elDetalleLabel.textContent = 'Tienda Digital';
     if (elDetalleValor) elDetalleValor.textContent = juego.tiendaDigital || 'Digital';
+    if (filaEan) filaEan.hidden = true;
   }
 
-  // 6. Enlace de edición y botón de eliminación
+  // 6. Expansiones / DLCs en el reverso (creación DOM segura contra XSS)
+  const dlcs = Array.isArray(juego.dlcs) ? juego.dlcs : [];
+  const elDlcsTitulo = columna.querySelector('.js-juego-dlcs-titulo');
+  if (elDlcsTitulo) {
+    elDlcsTitulo.textContent = `Expansiones / DLCs (${dlcs.length})`;
+  }
+
+  const contenedorDlcs = columna.querySelector('.js-juego-dlcs');
+  if (contenedorDlcs) {
+    const doc = template.ownerDocument || document;
+    contenedorDlcs.textContent = '';
+
+    if (dlcs.length === 0) {
+      const vacio = doc.createElement('p');
+      vacio.className = 'gv-dlc-empty';
+      vacio.textContent = 'Sin expansiones añadidas.';
+      contenedorDlcs.appendChild(vacio);
+    } else {
+      dlcs.forEach((dlc) => {
+        const estadoDlc = (dlc.estado || 'pendiente').toLowerCase();
+        const fila = doc.createElement('div');
+        fila.className = 'gv-ios-row';
+
+        const izquierda = doc.createElement('span');
+        izquierda.className = 'd-inline-flex align-items-center gap-2 min-w-0';
+
+        const punto = doc.createElement('span');
+        punto.className = `gv-dlc-dot gv-dlc-dot--${estadoDlc}`;
+        punto.setAttribute('aria-hidden', 'true');
+
+        const nombre = doc.createElement('span');
+        nombre.className = 'text-light text-truncate';
+        nombre.textContent = dlc.titulo || 'DLC';
+
+        izquierda.appendChild(punto);
+        izquierda.appendChild(nombre);
+
+        const estado = doc.createElement('span');
+        estado.className = `small fw-semibold flex-shrink-0 gv-dlc-status--${estadoDlc}`;
+        estado.textContent = capitalizar(estadoDlc);
+
+        fila.appendChild(izquierda);
+        fila.appendChild(estado);
+        contenedorDlcs.appendChild(fila);
+      });
+    }
+  }
+
+  // 7. Botones de giro bidireccional, enlace de edición y botón de eliminación
+  const btnGirar = columna.querySelector('.js-btn-girar');
+  if (btnGirar) {
+    btnGirar.setAttribute('aria-label', `Ver ficha técnica de ${tituloTexto}`);
+    const textoGirar = btnGirar.querySelector('.js-btn-girar-texto');
+    if (textoGirar) {
+      textoGirar.textContent =
+        dlcs.length > 0
+          ? `Ficha · ${dlcs.length} ${dlcs.length === 1 ? 'DLC' : 'DLCs'}`
+          : 'Girar ficha';
+    }
+  }
+
+  const btnVolver = columna.querySelector('.js-btn-volver');
+  if (btnVolver) {
+    btnVolver.setAttribute('aria-label', `Volver a la portada de ${tituloTexto}`);
+  }
+
+  const urlEdicion = `ficha.html?id=${encodeURIComponent(juego.id)}`;
   const enlaceEditar = columna.querySelector('.js-btn-editar');
   if (enlaceEditar) {
-    enlaceEditar.href = `ficha.html?id=${encodeURIComponent(juego.id)}`;
-    enlaceEditar.setAttribute('aria-label', `Editar ${juego.titulo || 'videojuego'}`);
+    enlaceEditar.href = urlEdicion;
+    enlaceEditar.setAttribute('aria-label', `Editar ${tituloTexto}`);
+  }
+
+  const enlaceEditarReverso = columna.querySelector('.js-btn-editar-reverso');
+  if (enlaceEditarReverso) {
+    enlaceEditarReverso.href = urlEdicion;
+    enlaceEditarReverso.setAttribute('aria-label', `Editar ficha de ${tituloTexto}`);
   }
 
   const btnEliminar = columna.querySelector('.js-btn-eliminar');
   if (btnEliminar) {
     btnEliminar.dataset.id = juego.id;
     btnEliminar.dataset.titulo = juego.titulo || '';
-    btnEliminar.setAttribute('aria-label', `Eliminar ${juego.titulo || 'videojuego'}`);
+    btnEliminar.setAttribute('aria-label', `Eliminar ${tituloTexto}`);
   }
 
   return columna;
@@ -458,8 +640,9 @@ export function iniciarListado(
   }
 
   // Conexión del modal de confirmación de borrado
+  let gestorModal = null;
   if (modalBorrado) {
-    const gestorModal = conectarModalBorrado(modalBorrado, {
+    gestorModal = conectarModalBorrado(modalBorrado, {
       alConfirmar: (id) => {
         if (!usuario) return;
         const exito = eliminarJuego(id, usuario, almacenLocal);
@@ -484,26 +667,50 @@ export function iniciarListado(
     });
 
     desconectarModal = gestorModal.desconectar;
+  }
 
-    // Conexión de delegación de eventos click en #grid-catalogo para el botón Eliminar
-    if (contenedorGrid) {
-      const manejadorClickGrid = (evento) => {
-        const btnEliminar = evento.target.closest('.js-btn-eliminar');
-        if (btnEliminar && contenedorGrid.contains(btnEliminar)) {
-          evento.preventDefault();
-          const id = btnEliminar.dataset.id;
-          const titulo = btnEliminar.dataset.titulo || '';
-          if (id) {
-            gestorModal.abrir(id, titulo);
-          }
+  // Delegación única de eventos click en #grid-catalogo (giro bidireccional 3D y borrado)
+  if (contenedorGrid) {
+    const manejadorClickGrid = (evento) => {
+      const btnGirar = evento.target.closest('.js-btn-girar');
+      if (btnGirar && contenedorGrid.contains(btnGirar)) {
+        const tarjeta = btnGirar.closest('.gv-card-game');
+        if (tarjeta) {
+          alternarGiroTarjeta(tarjeta, true);
+          const btnVolver = tarjeta.querySelector('.js-btn-volver');
+          if (btnVolver) btnVolver.focus();
         }
-      };
+        return;
+      }
 
-      contenedorGrid.addEventListener('click', manejadorClickGrid);
-      desconectarDelegacion = () => {
-        contenedorGrid.removeEventListener('click', manejadorClickGrid);
-      };
-    }
+      const btnVolver = evento.target.closest('.js-btn-volver');
+      if (btnVolver && contenedorGrid.contains(btnVolver)) {
+        const tarjeta = btnVolver.closest('.gv-card-game');
+        if (tarjeta) {
+          alternarGiroTarjeta(tarjeta, false);
+          const btnAbrir = tarjeta.querySelector('.js-btn-girar');
+          if (btnAbrir) btnAbrir.focus();
+        }
+        return;
+      }
+
+      if (!gestorModal) return;
+
+      const btnEliminar = evento.target.closest('.js-btn-eliminar');
+      if (btnEliminar && contenedorGrid.contains(btnEliminar)) {
+        evento.preventDefault();
+        const id = btnEliminar.dataset.id;
+        const titulo = btnEliminar.dataset.titulo || '';
+        if (id) {
+          gestorModal.abrir(id, titulo);
+        }
+      }
+    };
+
+    contenedorGrid.addEventListener('click', manejadorClickGrid);
+    desconectarDelegacion = () => {
+      contenedorGrid.removeEventListener('click', manejadorClickGrid);
+    };
   }
 
   // Conexión del oyente delegado de paginación
@@ -532,9 +739,11 @@ export default {
   ELEMENTOS_POR_PAGINA_DEFECTO,
   RETARDO_DEBOUNCE_DEFECTO,
   MAPA_ICONOS_CONSOLAS,
+  MAPA_CLAVES_PLATAFORMA,
   normalizarTextoBusqueda,
   debounce,
   filtrarJuegos,
+  alternarGiroTarjeta,
   renderizarTarjetaJuego,
   renderizarListadoJuegos,
   actualizarContadorResultados,

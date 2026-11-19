@@ -3,8 +3,10 @@ import { AlmacenFalso } from '../AlmacenFalso.js';
 import { crearJuego, obtenerJuegos } from '../../js/juegos.js';
 import {
   MAPA_ICONOS_CONSOLAS,
+  MAPA_CLAVES_PLATAFORMA,
   RETARDO_DEBOUNCE_DEFECTO,
   filtrarJuegos,
+  alternarGiroTarjeta,
   renderizarTarjetaJuego,
   renderizarListadoJuegos,
   actualizarContadorResultados,
@@ -188,6 +190,21 @@ describe('módulo listado.js (renderizado con <template>, modal <dialog> y catá
       const elSku = tarjeta.querySelector('.js-juego-sku');
       expect(elSku.textContent).toBe('<b>SKU-NEGRITA</b>');
       expect(elSku.children).toHaveLength(0);
+    });
+
+    it('asigna data-platform según MAPA_CLAVES_PLATAFORMA y alterna el giro bidireccional', () => {
+      const tarjeta = renderizarTarjetaJuego(
+        { id: 'gv_ps', titulo: 'Returnal', plataforma: 'PlayStation 5', formato: 'digital' },
+        templateJuego,
+      );
+      const articulo = tarjeta.querySelector('.gv-card-game');
+      expect(articulo.dataset.platform).toBe(MAPA_CLAVES_PLATAFORMA['PlayStation 5']);
+
+      expect(alternarGiroTarjeta(null)).toBe(false);
+      expect(alternarGiroTarjeta(articulo, true)).toBe(true);
+      expect(articulo.classList.contains('is-flipped')).toBe(true);
+      expect(alternarGiroTarjeta(articulo, false)).toBe(false);
+      expect(articulo.classList.contains('is-flipped')).toBe(false);
     });
   });
 

@@ -31,6 +31,16 @@ test.describe('Recorrido 2: CRUD completo de GameVault y persistencia', () => {
     await expect(page.getByRole('heading', { name: 'Elden Ring' })).toBeVisible();
     await expect(page.getByText('EST-A-03')).toBeVisible();
 
+    // 1b. Comprobar giro bidireccional 3D de la tarjeta (ficha técnica, EAN-13 y DLCs)
+    await page.getByRole('button', { name: 'Ver ficha técnica de Elden Ring' }).click();
+    await expect(page.getByText('GAME-RPG-0042')).toBeVisible();
+    await expect(page.getByText('4020628663124')).toBeVisible();
+    await expect(page.getByText('Shadow of the Erdtree')).toBeVisible();
+    await page.getByRole('button', { name: 'Volver a la portada de Elden Ring' }).click();
+    await expect(
+      page.getByRole('button', { name: 'Ver ficha técnica de Elden Ring' }),
+    ).toBeVisible();
+
     // 2. Comprobar persistencia en localStorage tras recargar
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Elden Ring' })).toBeVisible();

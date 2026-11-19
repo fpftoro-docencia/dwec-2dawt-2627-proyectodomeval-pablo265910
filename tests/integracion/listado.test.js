@@ -183,4 +183,56 @@ describe('integración listado.html (buscador con fake timers, paginación y mod
       'Videojuego eliminado con éxito',
     );
   });
+
+  it('gira la tarjeta en ambos sentidos mostrando SKU, EAN-13 y DLCs seguros en el reverso', () => {
+    crearJuego(
+      {
+        titulo: 'Elden Ring',
+        plataforma: 'PlayStation 5',
+        formato: 'fisico',
+        fechaAdquisicion: '2024-02-25',
+        horasJugadas: 148,
+        estadoProgreso: 'completado',
+        sku: 'GAME-RPG-0042',
+        codigoBarras: '3391892017892',
+        ubicacionEstanteria: 'EST-A-03',
+        dlcs: [{ titulo: 'Shadow of the Erdtree', estado: 'completado' }],
+      },
+      'pablo_dev',
+      almacenLocal,
+    );
+
+    desconectar = iniciarListado(document, {
+      almacenLocal,
+      almacenSesion,
+      ventana: ventanaMock,
+    });
+
+    const tarjeta = document.querySelector('#grid-catalogo .gv-card-game');
+    const caraFrontal = tarjeta.querySelector('.gv-card-face--front');
+    const caraTrasera = tarjeta.querySelector('.gv-card-face--back');
+    const btnGirar = tarjeta.querySelector('.js-btn-girar');
+    const btnVolver = tarjeta.querySelector('.js-btn-volver');
+
+    expect(tarjeta.dataset.platform).toBe('ps5');
+    expect(tarjeta.classList.contains('is-flipped')).toBe(false);
+    expect(tarjeta.querySelector('.js-juego-sku').textContent).toBe('GAME-RPG-0042');
+    expect(tarjeta.querySelector('.js-juego-ean').textContent).toBe('3391892017892');
+    expect(tarjeta.querySelector('.js-juego-ean-fila').hidden).toBe(false);
+    expect(tarjeta.querySelector('.js-juego-dlcs').textContent).toContain('Shadow of the Erdtree');
+
+    // Girar al reverso
+    btnGirar.click();
+    expect(tarjeta.classList.contains('is-flipped')).toBe(true);
+    expect(caraFrontal.getAttribute('aria-hidden')).toBe('true');
+    expect(caraTrasera.getAttribute('aria-hidden')).toBe('false');
+    expect(btnGirar.getAttribute('aria-expanded')).toBe('true');
+
+    // Volver a la portada
+    btnVolver.click();
+    expect(tarjeta.classList.contains('is-flipped')).toBe(false);
+    expect(caraFrontal.getAttribute('aria-hidden')).toBe('false');
+    expect(caraTrasera.getAttribute('aria-hidden')).toBe('true');
+    expect(btnGirar.getAttribute('aria-expanded')).toBe('false');
+  });
 });
