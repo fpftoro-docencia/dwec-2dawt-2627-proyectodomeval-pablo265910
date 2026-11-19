@@ -10,10 +10,43 @@
  * - Feedback visual con clases de Bootstrap (.is-invalid, .invalid-feedback).
  * - Foco automático en el primer campo no válido al intentar enviar el formulario con errores.
  *
+ * Requisitos HTML esperados en los formularios:
+ * - Contenedor `<form novalidate>` (ej. `#form-registro` en `registro.html` o `#form-ficha` en `ficha.html`).
+ * - Controles (`input`, `select`, `textarea`) con atributos `data-validar="<clave>"` (vinculados a
+ *   `VALIDADORES`), `data-coincidir-con="<id-o-name>"` (para confirmación cruzada), `required`,
+ *   `aria-invalid="false"|"true"` y `aria-describedby` apuntando al ID de la caja de error.
+ * - Cajas de error accesibles con clase `.field-error` o `.invalid-feedback`, o identificadores por
+ *   convención `#error-<id>` / `#error-<name>` (con `role="alert"` y `aria-live="polite"`).
+ *
  * @module validacion
  */
 
 import { VALIDADORES, MENSAJES_ERROR } from './validadores.js';
+
+/**
+ * Resultado de la validación de un control individual de formulario.
+ *
+ * @typedef {Object} ResultadoValidacionCampo
+ * @property {boolean} valido Indica si el control supera todas las reglas de validación.
+ * @property {string} mensaje Mensaje de error resultante o cadena vacía si es válido.
+ */
+
+/**
+ * Detalle de un error detectado durante la validación completa de un formulario.
+ *
+ * @typedef {Object} ErrorValidacionFormulario
+ * @property {HTMLElement} campo Control del formulario que falló la validación.
+ * @property {string} mensaje Mensaje descriptivo del error asociado al control.
+ */
+
+/**
+ * Resultado global de la validación de todos los controles activos de un formulario.
+ *
+ * @typedef {Object} ResultadoValidacionFormulario
+ * @property {boolean} esValido Indica si todos los controles activos son válidos.
+ * @property {(HTMLElement|null)} primerInvalido Primer control erróneo para recibir el foco, o `null`.
+ * @property {ErrorValidacionFormulario[]} errores Lista ordenada de errores detectados.
+ */
 
 /**
  * Determina si un elemento HTML es un control de formulario validable.
@@ -103,7 +136,8 @@ export function obtenerCajaError(campo, formulario = campo ? campo.form : null) 
  *
  * @param {HTMLElement} campo Control a modificar.
  * @param {string} [mensaje=''] Mensaje de error a reflejar (vacío para limpiar).
- * @param {HTMLElement | Document} [formulario=campo.form] Formulario contenedor.
+ * @param {(HTMLElement|Document|null)} [formulario=campo.form] Formulario contenedor.
+ * @returns {void}
  */
 export function mostrarErrorCampo(campo, mensaje = '', formulario = campo ? campo.form : null) {
   if (!campo) return;
@@ -140,9 +174,10 @@ export function mostrarErrorCampo(campo, mensaje = '', formulario = campo ? camp
 /**
  * Valida un campo individual de formulario según sus reglas y tipo de validador.
  *
- * @param {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} campo Control a validar.
- * @param {Object} [opciones={}] Opciones de validación (fechaReferencia, etc.).
- * @returns {{ valido: boolean, mensaje: string }}
+ * @param {(HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement)} campo Control a validar.
+ * @param {Object} [opciones={}] Opciones de validación.
+ * @param {(Date|string)} [opciones.fechaReferencia] Fecha de referencia para controles `data-validar="fecha"`.
+ * @returns {ResultadoValidacionCampo}
  */
 export function validarCampo(campo, opciones = {}) {
   if (!campo || campo.disabled) {
@@ -230,8 +265,10 @@ export function validarCampo(campo, opciones = {}) {
  * Valida todos los controles activos de un formulario.
  *
  * @param {HTMLFormElement} formulario Formulario a validar.
- * @param {Object} [opciones={}] Opciones configurables (focoAlPrimerError, fechaReferencia).
- * @returns {{ esValido: boolean, primerInvalido: HTMLElement | null, errores: Array<{ campo: HTMLElement, mensaje: string }> }}
+ * @param {Object} [opciones={}] Opciones configurables.
+ * @param {boolean} [opciones.focoAlPrimerError=true] Si es `false`, evita mover el foco al primer error.
+ * @param {(Date|string)} [opciones.fechaReferencia] Fecha de referencia para validadores de fecha.
+ * @returns {ResultadoValidacionFormulario}
  */
 export function validarFormulario(formulario, opciones = {}) {
   if (!formulario) {
@@ -282,9 +319,15 @@ export function validarFormulario(formulario, opciones = {}) {
  * - Revalidación automática de campos dependientes (data-coincidir-con).
  * - Prevención de envío y foco en el primer error ante 'submit' inválido.
  *
- * @param {HTMLFormElement} formulario
- * @param {Object} [opciones={}]
- * @returns {Function} Función para desconectar los oyentes de eventos.
+ * @listens blur
+ * @listens input
+ * @listens change
+ * @listens submit
+ * @param {HTMLFormElement} formulario Formulario `<form novalidate>` a supervisar.
+ * @param {Object} [opciones={}] Opciones de configuración.
+ * @param {function(Event): void} [opciones.alEnviarValido] Callback invocado si el evento `submit` supera la validación.
+ * @param {(Date|string)} [opciones.fechaReferencia] Fecha de referencia para validadores de fecha.
+ * @returns {function(): void} Función para desconectar los oyentes de eventos.
  */
 export function conectarValidacionTiempoReal(formulario, opciones = {}) {
   if (!formulario || !(formulario instanceof HTMLFormElement)) {

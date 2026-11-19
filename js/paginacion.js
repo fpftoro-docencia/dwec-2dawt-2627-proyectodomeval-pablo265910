@@ -5,6 +5,14 @@
  * gestiona los atributos aria-current y disabled, sincroniza el estado en la URL
  * (?pagina=X mediante URLSearchParams y history.replaceState) y aplica delegación de eventos.
  *
+ * Requisitos HTML y selectores reales esperados en las vistas:
+ * - Contenedores de lista: `<ul id="paginacion-catalogo" class="pagination gv-pagination">`
+ *   en `listado.html` y `<ul id="paginacion-usuarios" class="pagination gv-pagination">`
+ *   en `usuarios.html`, envueltos en su correspondiente `<nav aria-label="...">`.
+ * - Botones delegados: elementos `button[data-pagina]` / `button[data-page]` dentro de
+ *   `<li class="page-item">`, con valores `'prev'`, `'next'` o número de página (`'1'`, `'2'`, ...),
+ *   clases `.page-link`, `.active`, `.disabled` y atributo `aria-current="page"` en la página activa.
+ *
  * @module paginacion
  */
 
@@ -45,7 +53,8 @@ export function obtenerPaginaUrl(
  *
  * @param {number} pagina Número de página efectiva.
  * @param {string} [claveParametro='pagina'] Nombre del parámetro de URL.
- * @param {Window} [ventana=window] Objeto de ventana inyectable.
+ * @param {(Window|null)} [ventana=window] Objeto de ventana inyectable.
+ * @returns {void}
  */
 export function fijarPaginaUrl(
   pagina,
@@ -82,12 +91,13 @@ export function fijarPaginaUrl(
  * Genera el botón «Anterior», los botones numéricos de página y el botón «Siguiente».
  * Desactiva «Anterior» y «Siguiente» en los extremos y marca la página activa con aria-current="page".
  *
- * @param {HTMLElement} contenedor Elemento DOM (ej. <ul id="paginacion-catalogo">) donde renderizar.
- * @param {Object} infoPaginacion Información de paginación devuelta por `paginar()`.
- * @param {number} infoPaginacion.pagina Página actual activa.
- * @param {number} infoPaginacion.totalPaginas Total de páginas disponibles.
- * @param {Object} [opciones={}]
+ * @param {HTMLElement} contenedor Elemento DOM (ej. `#paginacion-catalogo` o `#paginacion-usuarios`) donde renderizar.
+ * @param {(module:paginar~ResultadoPaginacion|Object)} infoPaginacion Información de paginación (`ResultadoPaginacion`) devuelta por `paginar()`.
+ * @param {number} [infoPaginacion.pagina] Página actual activa.
+ * @param {number} [infoPaginacion.totalPaginas] Total de páginas disponibles.
+ * @param {Object} [opciones={}] Opciones de renderizado.
  * @param {Document} [opciones.documento=document] Documento para creación de nodos.
+ * @returns {void}
  */
 export function renderizarControlesPaginacion(contenedor, infoPaginacion, opciones = {}) {
   if (!contenedor) return;
@@ -171,13 +181,14 @@ export function renderizarControlesPaginacion(contenedor, infoPaginacion, opcion
  * Escucha el evento click en fase de burbuja sobre el contenedor común y delega
  * la acción al botón correspondiente mediante `closest()`.
  *
- * @param {HTMLElement} contenedor Elemento DOM contenedor de la lista de paginación.
- * @param {Object} opciones
- * @param {Function} opciones.alCambiarPagina Callback invocado con el nuevo número de página.
- * @param {Function} [opciones.obtenerEstadoActual] Función que devuelve { pagina, totalPaginas }.
+ * @listens click
+ * @param {HTMLElement} contenedor Elemento DOM contenedor de la lista de paginación (`#paginacion-catalogo` o `#paginacion-usuarios`).
+ * @param {Object} opciones Configuración de la paginación interactiva.
+ * @param {function(number): void} opciones.alCambiarPagina Callback invocado con el nuevo número de página.
+ * @param {function(): Object} [opciones.obtenerEstadoActual] Función que devuelve el estado actual (`{ pagina, totalPaginas }`).
  * @param {string} [opciones.claveParametro='pagina'] Clave para URL.
- * @param {Window} [opciones.ventana=window] Objeto de ventana.
- * @returns {Function} Función para desuscribir o retirar el oyente de eventos.
+ * @param {(Window|null)} [opciones.ventana=window] Objeto de ventana.
+ * @returns {function(): void} Función para desuscribir o retirar el oyente de eventos.
  */
 export function conectarPaginacion(contenedor, opciones = {}) {
   if (!contenedor || typeof opciones.alCambiarPagina !== 'function') {

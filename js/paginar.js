@@ -23,6 +23,8 @@
 
 /**
  * Cantidad por defecto de elementos por página en las vistas de catálogo y listado.
+ *
+ * @type {number}
  */
 export const POR_PAGINA_DEFECTO = 6;
 

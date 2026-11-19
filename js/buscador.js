@@ -9,7 +9,19 @@
  * @module buscador
  */
 
+/**
+ * Retardo en milisegundos por defecto aplicado en las búsquedas con debounce.
+ *
+ * @type {number}
+ */
 export const RETARDO_DEBOUNCE_DEFECTO = 300;
+
+/**
+ * Función envuelta con retardo (debounce) que expone el método `.cancelar()`.
+ *
+ * @typedef {Function} FuncionDebounce
+ * @property {Function} cancelar Anula cualquier ejecución pendiente programada por el temporizador.
+ */
 
 /**
  * Normaliza una cadena de texto para comparaciones de búsqueda insensibles
@@ -38,8 +50,12 @@ export function normalizarTextoBusqueda(texto) {
  *
  * @param {Function} fn Función objetivo a ejecutar tras el retardo.
  * @param {number} [retardoMs=RETARDO_DEBOUNCE_DEFECTO] Milisegundos de espera.
- * @returns {Function & { cancelar: Function }} Función con retardo y método de cancelación.
+ * @returns {FuncionDebounce} Función con retardo y método de cancelación.
  * @throws {TypeError} Si `fn` no es una función.
+ * @example
+ * const buscar = debounce((texto) => console.log(texto), 300);
+ * buscar('elden ring');
+ * buscar.cancelar();
  */
 export function debounce(fn, retardoMs = RETARDO_DEBOUNCE_DEFECTO) {
   if (typeof fn !== 'function') {
@@ -83,6 +99,10 @@ export function debounce(fn, retardoMs = RETARDO_DEBOUNCE_DEFECTO) {
  * @param {string} consulta Texto de búsqueda introducido por el usuario.
  * @param {function(T): (string | string[])} extractorCampos Función que devuelve los textos indexables del elemento.
  * @returns {T[]} Nuevo array con los elementos coincidentes.
+ * @example
+ * const juegos = [{ titulo: 'Pokémon Arceus', plataforma: 'Nintendo Switch' }];
+ * filtrarListaPorTexto(juegos, 'pokemon', (j) => [j.titulo, j.plataforma]);
+ * // [{ titulo: 'Pokémon Arceus', plataforma: 'Nintendo Switch' }]
  */
 export function filtrarListaPorTexto(lista, consulta, extractorCampos) {
   if (!Array.isArray(lista)) return [];

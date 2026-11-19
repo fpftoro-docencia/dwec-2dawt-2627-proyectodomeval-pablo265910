@@ -9,33 +9,45 @@
 
 /**
  * Expresión regular para nombres de usuario (3 a 15 caracteres alfanuméricos o guiones).
+ *
+ * @type {RegExp}
  */
 export const REGEX_USUARIO = /^[a-zA-Z0-9_-]{3,15}$/;
 
 /**
  * Expresión regular para correo electrónico según estándar habitual.
+ *
+ * @type {RegExp}
  */
 export const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Expresión regular para código de catálogo/inventario SKU (ej. GAME-RPG-0042).
  * Formato: prefijo GAME-, 3 letras mayúsculas de género y 4 dígitos correlativos.
+ *
+ * @type {RegExp}
  */
 export const REGEX_SKU = /^GAME-[A-Z]{3}-\d{4}$/;
 
 /**
  * Expresión regular para código de barras numérico de 13 dígitos (EAN-13).
+ *
+ * @type {RegExp}
  */
 export const REGEX_EAN13 = /^\d{13}$/;
 
 /**
  * Expresión regular para ubicación física en estantería (ej. EST-A-03).
  * Formato: prefijo EST-, letra mayúscula de estantería y 2 dígitos de balda.
+ *
+ * @type {RegExp}
  */
 export const REGEX_ESTANTERIA = /^EST-[A-Z]-\d{2}$/;
 
 /**
  * Plataformas oficiales admitidas en el catálogo de GameVault.
+ *
+ * @type {string[]}
  */
 export const PLATAFORMAS_VALIDAS = [
   'PC',
@@ -47,16 +59,22 @@ export const PLATAFORMAS_VALIDAS = [
 
 /**
  * Formatos de edición admitidos para un videojuego.
+ *
+ * @type {string[]}
  */
 export const FORMATOS_VALIDOS = ['fisico', 'digital'];
 
 /**
  * Estados de progreso de un videojuego en la biblioteca personal.
+ *
+ * @type {string[]}
  */
 export const ESTADOS_PROGRESO_VALIDOS = ['pendiente', 'jugando', 'completado', 'abandonado'];
 
 /**
  * Tiendas digitales admitidas para videojuegos en formato digital.
+ *
+ * @type {string[]}
  */
 export const TIENDAS_DIGITALES_VALIDAS = [
   'Steam',
@@ -68,11 +86,15 @@ export const TIENDAS_DIGITALES_VALIDAS = [
 
 /**
  * Estados admitidos para contenidos descargables o expansiones (DLCs).
+ *
+ * @type {string[]}
  */
 export const ESTADOS_DLC_VALIDOS = ['pendiente', 'jugando', 'completado'];
 
 /**
  * Mensajes de error oficiales de validación para los formularios de la aplicación.
+ *
+ * @type {Object.<string, string>}
  */
 export const MENSAJES_ERROR = {
   usuario: 'El usuario debe tener entre 3 y 15 caracteres alfanuméricos y no estar ocupado.',
@@ -123,6 +145,17 @@ export function validarCorreo(valor) {
 }
 
 /**
+ * Resultado detallado de la evaluación de requisitos de seguridad de una contraseña.
+ *
+ * @typedef {Object} RequisitosClave
+ * @property {boolean} longitud Indica si tiene al menos 8 caracteres.
+ * @property {boolean} minuscula Indica si incluye al menos una letra minúscula.
+ * @property {boolean} mayuscula Indica si incluye al menos una letra mayúscula.
+ * @property {boolean} digito Indica si incluye al menos un dígito numérico.
+ * @property {boolean} valida Indica si se cumplen todos los requisitos simultáneamente.
+ */
+
+/**
  * Comprueba los requisitos individuales de seguridad de una contraseña.
  *
  * Requisitos:
@@ -132,7 +165,12 @@ export function validarCorreo(valor) {
  * - digito: al menos un dígito (\d)
  *
  * @param {string} clave
- * @returns {{ longitud: boolean, minuscula: boolean, mayuscula: boolean, digito: boolean, valida: boolean }}
+ * @returns {RequisitosClave}
+ * @example
+ * evaluarRequisitosClave('Abc12345');
+ * // { longitud: true, minuscula: true, mayuscula: true, digito: true, valida: true }
+ * evaluarRequisitosClave('abc');
+ * // { longitud: false, minuscula: true, mayuscula: false, digito: false, valida: false }
  */
 export function evaluarRequisitosClave(clave) {
   const str = typeof clave === 'string' ? clave : '';
@@ -156,6 +194,9 @@ export function evaluarRequisitosClave(clave) {
  *
  * @param {string} clave
  * @returns {boolean}
+ * @example
+ * validarClave('Abc12345'); // true
+ * validarClave('debil'); // false
  */
 export function validarClave(clave) {
   return evaluarRequisitosClave(clave).valida;
@@ -406,6 +447,8 @@ export function validarDlcs(dlcs) {
  *
  * Permite que los formularios dinámicos seleccionen el validador adecuado mediante
  * el atributo HTML `data-validar="<nombre>"`.
+ *
+ * @type {Object.<string, Function>}
  */
 export const VALIDADORES = {
   usuario: validarNombreUsuario,
