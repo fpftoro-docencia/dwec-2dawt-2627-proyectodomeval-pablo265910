@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Crear Cuenta — GameVault</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/png" href="img/logo.png" />
+    <link rel="stylesheet" href="css/estilos.css" />
+  </head>
+  <body>
+    <!-- Cabecera Frosted Glass estilo Apple -->
+    <header class="gv-header">
+      <div class="container py-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <a href="index.html" class="gv-brand" aria-label="GameVault Inicio">
+          <span class="gv-brand-icon" aria-hidden="true">GV</span>
+          <span>GameVault</span>
+        </a>
+
+        <nav aria-label="Navegación principal" class="d-flex align-items-center gap-2">
+          <a href="index.html" class="gv-nav-link">Iniciar sesión</a>
+          <a href="registro.html" class="gv-nav-link" aria-current="page">Crear cuenta</a>
+        </nav>
+
+        <div id="panel-sesion" class="d-flex align-items-center gap-2" hidden>
+          <div class="gv-session-pill">
+            <span id="sesion-usuario" class="fw-medium">Invitado</span>
+            <span id="sesion-rol" class="gv-badge gv-badge-meta">Sin sesión</span>
+          </div>
+          <button type="button" id="btn-cerrar-sesion" class="btn-gv-ghost">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="container flex-grow-1 d-flex align-items-center justify-content-center py-5">
+      <section
+        class="gv-surface p-4 p-sm-5 w-100 animate-fade-up"
+        style="max-width: 540px"
+        aria-labelledby="titulo-registro"
+      >
+        <div class="mb-4">
+          <span class="apple-eyebrow">Registro de Usuario</span>
+          <h1 id="titulo-registro" class="apple-headline h3 mb-2">Crear cuenta en GameVault</h1>
+          <p class="text-secondary small mb-0">
+            Configura tu perfil para organizar tu colección física y digital con precisión.
+          </p>
+        </div>
+
+        <form id="form-registro" action="#" method="post" novalidate>
+          <!-- Nombre de usuario (3-15 caracteres alfanuméricos/guiones) -->
+          <div class="mb-3">
+            <label for="reg-usuario" class="form-label">Nombre de usuario</label>
+            <input
+              type="text"
+              id="reg-usuario"
+              name="usuario"
+              class="form-control"
+              placeholder="ej. nega-player99"
+              minlength="3"
+              maxlength="15"
+              pattern="^[a-zA-Z0-9\-]{3,15}$"
+              autocomplete="username"
+              required
+              aria-invalid="false"
+              aria-describedby="ayuda-reg-usuario error-reg-usuario"
+            />
+            <div id="ayuda-reg-usuario" class="form-text text-secondary small">
+              De 3 a 15 caracteres alfanuméricos o guiones.
+            </div>
+            <div id="error-reg-usuario" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+
+          <!-- Correo electrónico -->
+          <div class="mb-3">
+            <label for="reg-email" class="form-label">Correo electrónico</label>
+            <input
+              type="email"
+              id="reg-email"
+              name="email"
+              class="form-control"
+              placeholder="tu@correo.com"
+              autocomplete="email"
+              required
+              aria-invalid="false"
+              aria-describedby="error-reg-email"
+            />
+            <div id="error-reg-email" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+
+          <!-- Contraseña + Panel reactivo de requisitos visuales estilo Apple Keychain -->
+          <div class="mb-3">
+            <label for="reg-password" class="form-label">Contraseña</label>
+            <input
+              type="password"
+              id="reg-password"
+              name="password"
+              class="form-control"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="new-password"
+              required
+              aria-invalid="false"
+              aria-describedby="panel-requisitos-pwd error-reg-password"
+            />
+
+            <div
+              id="panel-requisitos-pwd"
+              class="gv-pwd-requirements"
+              aria-label="Requisitos de seguridad de la contraseña"
+            >
+              <ul class="gv-req-list">
+                <li id="req-longitud" class="gv-req-item" data-req="length">
+                  <span class="gv-req-dot" aria-hidden="true"></span>
+                  <span>Mínimo 8 caracteres</span>
+                </li>
+                <li id="req-minuscula" class="gv-req-item" data-req="lower">
+                  <span class="gv-req-dot" aria-hidden="true"></span>
+                  <span>Al menos una minúscula</span>
+                </li>
+                <li id="req-mayuscula" class="gv-req-item" data-req="upper">
+                  <span class="gv-req-dot" aria-hidden="true"></span>
+                  <span>Al menos una mayúscula</span>
+                </li>
+                <li id="req-numero" class="gv-req-item" data-req="number">
+                  <span class="gv-req-dot" aria-hidden="true"></span>
+                  <span>Al menos un número</span>
+                </li>
+              </ul>
+            </div>
+            <div id="error-reg-password" class="field-error" role="alert" aria-live="polite"></div>
+          </div>
+
+          <!-- Repetir contraseña -->
+          <div class="mb-3">
+            <label for="reg-password-confirm" class="form-label">Repetir contraseña</label>
+            <input
+              type="password"
+              id="reg-password-confirm"
+              name="passwordConfirm"
+              class="form-control"
+              placeholder="Repite tu contraseña"
+              autocomplete="new-password"
+              required
+              aria-invalid="false"
+              aria-describedby="error-reg-password-confirm"
+            />
+            <div
+              id="error-reg-password-confirm"
+              class="field-error"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- Aceptación de condiciones -->
+          <div class="mb-4">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                id="reg-condiciones"
+                name="condiciones"
+                class="form-check-input"
+                required
+                aria-invalid="false"
+                aria-describedby="error-reg-condiciones"
+              />
+              <label for="reg-condiciones" class="form-check-label small text-secondary">
+                Acepto las condiciones de uso y la política de privacidad de GameVault.
+              </label>
+            </div>
+            <div
+              id="error-reg-condiciones"
+              class="field-error"
+              role="alert"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- Botón de registro -->
+          <button type="submit" id="btn-submit-registro" class="btn-gv-primary w-100 py-2">
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span class="btn-text">Completar registro</span>
+          </button>
+        </form>
+
+        <hr class="my-4 border-secondary border-opacity-25" />
+
+        <p class="text-center text-secondary small mb-0">
+          ¿Ya tienes cuenta en GameVault?
+          <a
+            href="index.html"
+            class="text-decoration-none fw-medium"
+            style="color: var(--apple-blue)"
+            >Inicia sesión</a
+          >
+        </p>
+      </section>
+    </main>
+
+    <!-- Contenedor global de notificaciones -->
+    <div
+      id="region-avisos"
+      class="gv-toast-region"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <script type="module">
+      import { iniciarAvisos } from './js/avisos.js';
+      import { iniciarRegistro } from './js/registro.js';
+
+      iniciarAvisos();
+      iniciarRegistro();
+    </script>
+  </body>
+</html>
