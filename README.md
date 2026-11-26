@@ -493,6 +493,14 @@ Para verificar que el empaquetado final en `dist/` y las rutas desplegadas funci
   - Lanza `npm run e2e` definiendo `BASE_URL: ${{ github.event.deployment_status.environment_url }}`, de forma que `playwright.config.js` apunta directamente a la URL desplegada sin arrancar `serve`.
   - Si alguna prueba falla (`if: failure()`), sube `playwright-report/` como artefacto (`informe-playwright-desplegado`) para facilitar el diagnóstico.
 
+### Prueba de humo (`e2e/humo.spec.js`)
+
+La prueba de humo ([`e2e/humo.spec.js`](e2e/humo.spec.js)) realiza una verificación rápida y no destructiva sobre la aplicación publicada (ejecutable de forma aislada con `BASE_URL=https://gamevault-pablo.vercel.app npx playwright test e2e/humo.spec.js` y también incluida en `npm run e2e`):
+
+- Comprueba que la página de inicio (`/index.html`) responde con estado HTTP `200` y el título `Iniciar Sesión — GameVault`.
+- Verifica que el encabezado principal, los controles del formulario de inicio de sesión (`Nombre de usuario`, `Contraseña`, botón `Entrar en mi biblioteca`) y la región accesible de avisos (`role="status"`) están cargados.
+- Comprueba que la navegación hacia `registro.html` mediante el enlace `Crear cuenta` carga el título y el formulario de registro correctamente.
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
 | *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
