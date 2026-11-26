@@ -2,13 +2,14 @@
  * Controlador de la página de inicio de sesión (`index.html`).
  *
  * Gestiona la autenticación de usuarios mediante resúmenes SHA-256,
+ * validación en tiempo real con `conectarValidacionTiempoReal`,
  * protección anti-doble envío, vaciado de contraseña y foco ante error,
  * y redirección automática si ya existe sesión activa.
  *
  * HTML requerido en `index.html`:
  * - `#form-login`: Formulario principal de inicio de sesión (`novalidate`).
- * - `#login-usuario`: Campo de texto para el nombre de usuario.
- * - `#login-password`: Campo de contraseña.
+ * - `#login-usuario`: Campo de texto para el nombre de usuario (`required`).
+ * - `#login-password`: Campo de contraseña (`required`).
  * - `#btn-submit-login`: Botón de envío (gestiona `disabled` y clase `.loading`).
  * - `#error-login-usuario`: Caja de error accesible asociada a `#login-usuario`.
  * - `#error-login-password`: Caja de error accesible asociada a `#login-password`.
@@ -21,11 +22,14 @@
 import { haySesion, iniciarSesion } from './sesion.js';
 import { autenticarUsuario } from './usuarios.js';
 import { guardarAviso, lanzarAviso } from './avisos.js';
+import { conectarValidacionTiempoReal } from './validacion.js';
 
 /**
  * Inicializa la lógica de inicio de sesión.
  *
  * @listens blur
+ * @listens input
+ * @listens change
  * @listens submit
  * @fires aviso
  * @param {Document} [documento=document] Instancia de Document del DOM.
@@ -33,7 +37,7 @@ import { guardarAviso, lanzarAviso } from './avisos.js';
  * @param {Storage} [opciones.almacenSesion] Almacén de sesión (sessionStorage o doble).
  * @param {Storage} [opciones.almacenUsuarios] Almacén de usuarios (localStorage o doble).
  * @param {Function} [opciones.navegar] Función de navegación/redirección.
- * @returns {void}
+ * @returns {function(): void} Función para desconectar los oyentes de eventos.
  */
 export function iniciarLogin(documento = document, opciones = {}) {
   const {
@@ -47,68 +51,30 @@ export function iniciarLogin(documento = document, opciones = {}) {
   // 1. Guarda de ruta: si ya hay sesión activa, va directamente al listado
   if (haySesion(almacenSesion)) {
     navegar('listado.html');
-    return;
+    return () => {};
   }
 
   const formulario = documento.querySelector('#form-login');
-  if (!formulario) return;
+  if (!formulario) return () => {};
 
   const inputUsuario = documento.querySelector('#login-usuario');
   const inputPassword = documento.querySelector('#login-password');
   const btnSubmit = documento.querySelector('#btn-submit-login');
-  const errorUsuario = documento.querySelector('#error-login-usuario');
-  const errorPassword = documento.querySelector('#error-login-password');
   const errorGeneral = documento.querySelector('#error-login-general');
 
-  /**
-   * Muestra u oculta mensaje de error en un campo de forma accesible.
-   *
-   * @private
-   * @param {HTMLInputElement} input Campo de entrada asociado.
-   * @param {HTMLElement} cajaError Contenedor donde se muestra el mensaje de error.
-   * @param {string} mensaje Texto de error (cadena vacía para limpiar el estado).
-   * @returns {void}
-   */
-  function establecerError(input, cajaError, mensaje) {
-    if (!input || !cajaError) return;
-    if (mensaje) {
-      input.setAttribute('aria-invalid', 'true');
-      cajaError.textContent = mensaje;
-      cajaError.classList.add('d-block');
-    } else {
-      input.setAttribute('aria-invalid', 'false');
-      cajaError.textContent = '';
-      cajaError.classList.remove('d-block');
+  const limpiarErrorGeneral = () => {
+    if (errorGeneral) {
+      errorGeneral.textContent = '';
+      errorGeneral.classList.remove('d-block');
     }
-  }
+  };
 
-  // Validación al salir de los campos (blur)
-  if (inputUsuario) {
-    inputUsuario.addEventListener('blur', () => {
-      const val = inputUsuario.value.trim();
-      if (!val) {
-        establecerError(inputUsuario, errorUsuario, 'Introduce tu nombre de usuario.');
-      } else {
-        establecerError(inputUsuario, errorUsuario, '');
-      }
-    });
-  }
-
-  if (inputPassword) {
-    inputPassword.addEventListener('blur', () => {
-      const val = inputPassword.value;
-      if (!val) {
-        establecerError(inputPassword, errorPassword, 'Introduce tu contraseña.');
-      } else {
-        establecerError(inputPassword, errorPassword, '');
-      }
-    });
-  }
+  formulario.addEventListener('input', limpiarErrorGeneral);
 
   // Envío del formulario y autenticación con protección anti-doble envío
   let enviando = false;
 
-  formulario.addEventListener('submit', async (e) => {
+  const alEnviarValido = async (e) => {
     e.preventDefault();
 
     // Si ya se está procesando un envío, ignorar clics o intros adicionales
@@ -117,29 +83,7 @@ export function iniciarLogin(documento = document, opciones = {}) {
     const usuarioVal = inputUsuario?.value.trim() || '';
     const passVal = inputPassword?.value || '';
 
-    let hayErrores = false;
-
-    if (!usuarioVal) {
-      establecerError(inputUsuario, errorUsuario, 'Introduce tu nombre de usuario.');
-      hayErrores = true;
-    } else {
-      establecerError(inputUsuario, errorUsuario, '');
-    }
-
-    if (!passVal) {
-      establecerError(inputPassword, errorPassword, 'Introduce tu contraseña.');
-      hayErrores = true;
-    } else {
-      establecerError(inputPassword, errorPassword, '');
-    }
-
-    if (hayErrores) {
-      if (errorGeneral) {
-        errorGeneral.textContent = '';
-        errorGeneral.classList.remove('d-block');
-      }
-      return;
-    }
+    limpiarErrorGeneral();
 
     // Activar estado de envío y bloquear nuevo envío
     enviando = true;
@@ -201,5 +145,16 @@ export function iniciarLogin(documento = document, opciones = {}) {
       }
       lanzarAviso(formulario, mensaje, 'danger');
     }
+  };
+
+  const desconectarValidacion = conectarValidacionTiempoReal(formulario, {
+    mensajeErrorFormulario: 'Por favor, introduce tu usuario y contraseña para entrar.',
+    alEnviarInvalido: limpiarErrorGeneral,
+    alEnviarValido,
   });
+
+  return function desconectarLogin() {
+    formulario.removeEventListener('input', limpiarErrorGeneral);
+    desconectarValidacion();
+  };
 }
