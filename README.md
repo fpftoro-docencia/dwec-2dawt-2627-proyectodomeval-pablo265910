@@ -1,11 +1,6 @@
 # GameVault (Gestor de Biblioteca y Backlog de Videojuegos)
 
-<!-- Sprint 2: la insignia de tu workflow, con tu organización y tu repositorio. -->
 ![Integración continua](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/workflows/ci.yml/badge.svg)
-
-<!-- Completa cada sección a medida que avanzas en los sprints. Borra los comentarios como este
-     cuando termines. Este README es también la portada de la documentación que genera `npm run docs`.
-     No cambies los títulos de las secciones (##): la corrección los busca por su nombre. -->
 
 ## Mi proyecto
 
@@ -51,13 +46,100 @@
 
 ## Arquitectura y módulos
 
-<!-- 1. Un diagrama (Mermaid) de tus módulos y de qué usa cada uno.
-     2. Tabla con cada módulo: qué hace, si usa el DOM y qué exporta.
-     3. Cómo están hechos tus objetos (funciones fábrica o clases) y qué patrones de diseño usas
-         (al menos dos): dónde y por qué.
-     4. Cómo reciben las páginas lo que necesitan (almacenamiento, sesión, navegación) y por qué así
-         se pueden probar.
-     5. Qué documenta tu JSDoc y cómo se genera la documentación (`npm run docs`). -->
+GameVault se estructura en **17 módulos ES6 nativos** dentro de `js/`, separados en cuatro capas con responsabilidades claras: **datos y criptografía**, **lógica pura (sin DOM)**, **componentes transversales de UI** y **controladores de página**.
+
+### Diagrama de módulos y dependencias
+
+```mermaid
+flowchart TD
+    subgraph Paginas["Controladores de página"]
+        login["login.js (index.html)"]
+        registro["registro.js (registro.html)"]
+        listado["listado.js (listado.html)"]
+        ficha["ficha.js (ficha.html)"]
+        admin["admin-usuarios.js (usuarios.html)"]
+    end
+
+    subgraph Componentes["Componentes comunes y control de acceso"]
+        cabecera["cabecera.js"]
+        rutas["rutas.js"]
+        avisos["avisos.js"]
+        validacion["validacion.js"]
+        paginacion["paginacion.js"]
+    end
+
+    subgraph Pura["Lógica pura (sin DOM)"]
+        validadores["validadores.js"]
+        paginar["paginar.js"]
+        buscador["buscador.js"]
+    end
+
+    subgraph Datos["Persistencia y criptografía"]
+        sesion["sesion.js"]
+        usuarios["usuarios.js"]
+        juegos["juegos.js"]
+        clave["clave.js"]
+    end
+
+    login --> sesion & usuarios & avisos
+    registro --> sesion & usuarios & validadores & avisos
+    listado --> sesion & juegos & buscador & paginar & paginacion & avisos
+    ficha --> sesion & juegos & validadores & validacion & avisos
+    admin --> sesion & usuarios & buscador & paginar & paginacion & avisos
+
+    cabecera --> sesion
+    rutas --> sesion & avisos
+    validacion --> validadores
+    paginacion --> paginar
+    usuarios --> clave
+```
+
+### Catálogo de módulos (`js/`)
+
+| Módulo | Capa | ¿Usa DOM? | Qué hace | Exportaciones principales |
+|---|---|:---:|---|---|
+| `js/clave.js` | Criptografía | No | Calcula el resumen criptográfico SHA-256 mediante Web Crypto API (`crypto.subtle.digest`). | `resumirClave` |
+| `js/sesion.js` | Datos | No | Gestiona la sesión activa (`usuario` y `rol`) en `sessionStorage` con protección ante JSON corrupto. | `CLAVE_SESION`, `obtenerSesion`, `iniciarSesion`, `guardarSesion`, `cerrarSesion`, `haySesion`, `esAdministrador`, `esAdmin` |
+| `js/usuarios.js` | Datos | No | CRUD y autenticación de usuarios en `localStorage`; asigna `administrador` al primer usuario registrado. | `CLAVE_USUARIOS`, `obtenerUsuarios`, `guardarUsuarios`, `obtenerUsuarioPorNombre`, `existeUsuario`, `registrarUsuario`, `autenticarUsuario`, `cambiarRolUsuario`, `eliminarUsuario`, `vaciarUsuarios` |
+| `js/juegos.js` | Datos | No | CRUD de videojuegos aislado por usuario (`gamevault_juegos_<usuario>`) en `localStorage`. | `PREFIJO_CLAVE_JUEGOS`, `obtenerClaveJuegos`, `generarIdJuego`, `obtenerJuegos`, `obtenerJuegoPorId`, `guardarJuegos`, `crearJuego`, `actualizarJuego`, `guardarJuego`, `eliminarJuego`, `vaciarJuegos` |
+| `js/validadores.js` | Lógica pura | No | Expresiones regulares, algoritmo ponderado módulo 10 de EAN-13 y mapa unificado de validadores. | `VALIDADORES`, `MENSAJES_ERROR`, `evaluarRequisitosClave`, `validarNombreUsuario`, `validarCorreo`, `validarClave`, `validarSKU`, `validarEAN13`, `validarEstanteria`, `validarTitulo`, `validarPlataforma`, `validarFormato`, `validarFechaAdquisicion`, `validarHorasJugadas`, `validarEstadoProgreso`, `validarTiendaDigital`, `validarDlc`, `validarDlcs` |
+| `js/paginar.js` | Lógica pura | No | Función matemática pura de paginación con ajuste automático de límites y lista vacía. | `paginar` |
+| `js/buscador.js` | Lógica pura | No | Normalización Unicode NFD (sin tildes ni mayúsculas), `debounce` cancelable y filtrado genérico. | `RETARDO_DEBOUNCE_DEFECTO`, `normalizarTextoBusqueda`, `debounce`, `filtrarListaPorTexto` |
+| `js/avisos.js` | Componente | Sí | Emisor y receptor global del evento propio `aviso` (`CustomEvent`) y avisos diferidos en `sessionStorage`. | `CLAVE_AVISO_PENDIENTE`, `lanzarAviso`, `normalizarTipoAviso`, `renderizarAviso`, `guardarAviso`, `consumirAviso`, `iniciarAvisos` |
+| `js/cabecera.js` | Componente | Sí | Sincroniza nombre de usuario, insignia de rol, enlace condicional «Usuarios» y botón «Cerrar sesión». | `iniciarCabecera` |
+| `js/rutas.js` | Control de acceso | No *(Location)* | Guardas de navegación para páginas privadas y exclusivas de administradores con `location.replace`. | `protegerPaginaPrivada`, `protegerPaginaAdmin` |
+| `js/paginacion.js` | Componente | Sí | Renderiza botones accesibles («Anterior», páginas con `aria-current="page"`, «Siguiente»), delega clics y sincroniza `?pagina=X` con `history.replaceState`. | `obtenerPaginaUrl`, `fijarPaginaUrl`, `renderizarControlesPaginacion`, `conectarPaginacion`, `paginar` |
+| `js/validacion.js` | Componente | Sí | Motor genérico de validación en tiempo real (`blur` en captura, `input`/`change` en burbuja, `setCustomValidity`, `aria-invalid`, `aria-describedby` y foco en primer error). | `esCampoValidable`, `obtenerCajaError`, `mostrarErrorCampo`, `validarCampo`, `validarFormulario`, `conectarValidacionTiempoReal` |
+| `js/login.js` | Página | Sí | Controlador de `index.html`: guarda de sesión, autenticación SHA-256, vaciado + foco en error y bloqueo anti-doble envío. | `iniciarLogin` |
+| `js/registro.js` | Página | Sí | Controlador de `registro.html`: requisitos reactivos de clave (`\p{Ll}`, `\p{Lu}`), alta, inicio de sesión automático y redirección con aviso. | `iniciarRegistro` |
+| `js/listado.js` | Página | Sí | Controlador de `listado.html`: tarjetas Spatial Flip 3D desde `<template>`, buscador con *debounce*, paginación y confirmación de borrado con `<dialog>`. | `MAPA_ICONOS_CONSOLAS`, `MAPA_CLAVES_PLATAFORMA`, `alternarGiroTarjeta`, `filtrarJuegos`, `renderizarTarjetaJuego`, `renderizarListadoJuegos`, `actualizarContadorResultados`, `alternarEstadoVacio`, `conectarModalBorrado`, `iniciarListado` |
+| `js/ficha.js` | Página | Sí | Controlador de `ficha.html`: alta y edición (`?id=`), fecha máxima dinámica, secciones condicionales (`hidden` + `disabled`), DLCs (0–3) desde `<template>` y lectura con `FormData`. | `MAX_DLCS`, `MIN_DLCS`, `inyectarFechaMaxima`, `alternarSeccionFormato`, `anadirFilaDlc`, `quitarFilaDlc`, `sincronizarBotonAnadirDlc`, `conectarDlcs`, `leerDatosFormulario`, `rellenarFormulario`, `iniciarFicha` |
+| `js/admin-usuarios.js` | Página | Sí | Controlador de `usuarios.html`: tabla de usuarios con buscador, paginación y alternancia de roles con bloqueo de auto-revocación. | `USUARIOS_POR_PAGINA_DEFECTO`, `MENSAJE_AUTO_REVOCACION`, `filtrarUsuarios`, `renderizarFilaUsuario`, `renderizarTablaUsuarios`, `iniciarAdminUsuarios` |
+
+### Modelo de objetos y patrones de diseño
+
+Todos los objetos de dominio (`Usuario`, `Sesion`, `Videojuego`, `Dlc`, `ResultadoPaginacion`) se construyen mediante **funciones fábrica que devuelven objetos literales planos** serializables directamente a JSON (sin clases ni prototipos innecesarios), evitando pérdida de métodos al guardar y recuperar desde `localStorage` o `sessionStorage`.
+
+Se aplican cuatro patrones de diseño principales:
+
+1. **Inyección de dependencias (*Dependency Injection*):** Todas las funciones de datos (`usuarios.js`, `sesion.js`, `juegos.js`, `avisos.js`) y controladores de página (`iniciarLogin`, `iniciarRegistro`, `iniciarListado`, `iniciarFicha`, `iniciarAdminUsuarios`, `protegerPaginaPrivada`) aceptan sus dependencias por parámetro con valores por defecto del navegador (`localStorage`, `sessionStorage`, `window`, `navegar`). Así las pruebas unitarias y de integración sustituyen el almacenamiento por `AlmacenFalso` y la navegación por dobles `vi.fn()` sin tocar el entorno global.
+2. **Observador / Publicador-Suscriptor (*Observer / Pub-Sub*) con `CustomEvent`:** Cualquier módulo emite notificaciones con `lanzarAviso(elemento, mensaje, tipo)` sin conocer la estructura de `#region-avisos`; un único suscriptor global en `document` (`iniciarAvisos`) captura el evento `aviso` en fase de burbuja y renderiza la alerta Bootstrap.
+3. **Delegación de eventos (*Event Delegation*):** En los contenedores dinámicos (`#grid-catalogo`, `#paginacion-catalogo`, `#paginacion-usuarios`, `#tabla-usuarios-body`, `#lista-dlcs`) se registra un único oyente en el padre que identifica el control pulsado con `evento.target.closest(...)`, manteniendo el coste en memoria constante aunque los nodos se regeneren.
+4. **Módulo ES6 + Estrategia (*Strategy*) en validación:** El objeto `VALIDADORES` de `js/validadores.js` actúa como tabla de estrategias que `js/validacion.js` selecciona dinámicamente mediante el atributo declarativo `data-validar` de cada campo HTML.
+
+### Documentación JSDoc (`npm run docs`)
+
+Los 17 módulos incorporan comentarios **JSDoc** completos:
+- **Requisitos HTML de cada página** en la cabecera `@file` de los controladores (IDs, templates y diálogos necesarios).
+- **Tipos de datos (`@typedef`):** `Usuario`, `Sesion`, `Videojuego`, `Dlc`, `ResultadoPaginacion`, `ObjetoRequisitos`, etc.
+- **Eventos (`@fires`, `@listens`):** documentan el evento propio `aviso` y los eventos DOM escuchados por cada módulo.
+- **Ejemplos ejecutables (`@example`):** incluidos en las funciones puras (`validadores.js`, `paginar.js`, `buscador.js`).
+
+La documentación HTML navegable se genera automáticamente en la carpeta `docs/` (excluida de Git en `.gitignore`) utilizando `README.md` como portada según `jsdoc.json`:
+
+```bash
+npm run docs
+```
 
 ## Cómo ejecutarlo
 
@@ -69,19 +151,19 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
    ```
 
 2. **Visualizar la aplicación web:**
-   Abrir cualquiera de las páginas (`index.html`, `registro.html`, `listado.html`, `ficha.html`, `usuarios.html`) con la extensión **Live Server** de VS Code o sirviendo el directorio raíz con cualquier servidor estático local.
+   Servir la raíz del repositorio en el puerto `3901` (el Dev Container arranca `serve` automáticamente) o usar `npx serve@14.2.6 --listen 3901 .` y abrir `http://localhost:3901/index.html`.
 
 3. **Ejecutar tests unitarios y de integración:**
    ```bash
    npm test
    ```
-   Ejecuta la suite completa de Vitest (127 pruebas en verde en 10 suites de prueba).
+   Ejecuta la suite completa de Vitest (**472 pruebas en verde en 21 archivos de prueba**).
 
 4. **Comprobar cobertura de código:**
    ```bash
    npm run coverage
    ```
-   Genera el reporte de cobertura mediante V8, superando ampliamente el 90% requerido en funciones lógicas puras (100% en validadores y hashing criptográfico).
+   Genera el informe de cobertura V8 y exige un umbral mínimo del **90 % de líneas por archivo** en las funciones puras y de datos (`validadores.js`, `paginar.js`, `buscador.js` y `juegos.js`).
 
 5. **Verificar calidad estática y formato:**
    ```bash
@@ -94,7 +176,16 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
    ```bash
    npm run e2e
    ```
-   Arranca automáticamente el servidor estático (`serve` en el puerto `3901`) según `playwright.config.js` y ejecuta los recorridos reales en Chromium. También admite la variable `BASE_URL` para lanzar las mismas pruebas contra una web ya desplegada (por ejemplo, `BASE_URL=https://mi-proyecto.vercel.app npm run e2e`).
+   Arranca automáticamente el servidor estático (`serve` en el puerto `3901`) según `playwright.config.js` y ejecuta los 3 recorridos reales en Chromium (`humo.spec.js`, `sesion.spec.js` y `crud.spec.js`). Con la variable `BASE_URL` lanza las mismas pruebas contra la web desplegada sin arrancar `serve`:
+   ```bash
+   BASE_URL=https://gamevault-pablo.vercel.app npm run e2e
+   ```
+
+7. **Generar documentación JSDoc y distribución para producción:**
+   ```bash
+   npm run docs   # Genera la documentación HTML en docs/
+   npm run build  # Empaqueta la web distribuible en dist/
+   ```
 
 ## Almacenamiento y sesión
 
@@ -381,14 +472,84 @@ if (!resultado.esValido) {
 
 ## Pruebas y cobertura
 
-<!-- 1. Tabla de la pirámide: tipo (unitario, de integración o de extremo a extremo), fichero,
-        qué prueba y cuántos tests tiene. Por qué cada cosa se prueba en ese nivel y no en otro.
-     2. Cómo simulas al usuario (eventos, requestSubmit), los servicios (AlmacenFalso, el resumen
-        de la contraseña, la navegación) y el tiempo (temporizadores falsos).
-     3. Cómo se ejecutan las mismas pruebas de extremo a extremo con serve y contra la web
-        desplegada (BASE_URL).
-     4. Pega la salida de `npm run coverage` (con el resumen de la cobertura) y de `npm run e2e`.
-        Explica qué umbral has puesto, a qué ficheros y qué queda sin probar y por qué. -->
+La estrategia de pruebas de GameVault sigue la **pirámide de pruebas** en tres niveles complementarios (475 pruebas automatizadas en 24 ficheros): muchas pruebas unitarias rápidas en la base, pruebas de integración en Happy-DOM en el nivel intermedio y tres recorridos críticos de extremo a extremo en navegador real en la cúspide.
+
+### Pirámide de pruebas
+
+| Nivel | Fichero | Qué prueba | Tests |
+|---|---|---|---:|
+| Unitario | `tests/unitarios/validadores.test.js` | Expresiones regulares, algoritmo EAN-13 módulo 10, fechas, DLCs y límites con tablas `it.each` | 199 |
+| Unitario | `tests/unitarios/ficha.test.js` | Fecha máxima dinámica, campos condicionales, DLCs (0–3), `FormData` y alta/edición | 48 |
+| Unitario | `tests/unitarios/validacion.test.js` | Motor de validación en tiempo real (`blur` en captura, `input`/`change`, `aria-invalid`, foco) | 27 |
+| Unitario | `tests/unitarios/paginacion.test.js` | Controles accesibles de paginación, delegación `closest` y sincronización de `?pagina=` | 24 |
+| Unitario | `tests/unitarios/juegos.test.js` | CRUD de videojuegos con `AlmacenFalso`, aislamiento por usuario y datos corruptos | 22 |
+| Unitario | `tests/unitarios/listado.test.js` | Renderizado seguro con `<template>`, giro 3D, `<dialog>` de borrado y buscador | 21 |
+| Unitario | `tests/unitarios/paginar.test.js` | Función pura `paginar`: primera/última página, fuera de rango y lista vacía | 20 |
+| Unitario | `tests/unitarios/usuarios.test.js` | Registro (1er usuario admin), duplicados, SHA-256, roles y JSON corrupto con `AlmacenFalso` | 20 |
+| Unitario | `tests/unitarios/sesion.test.js` | Lectura/escritura de sesión en `sessionStorage`, alias y resiliencia ante errores | 19 |
+| Unitario | `tests/unitarios/buscador.test.js` | Normalización Unicode NFD (sin tildes/mayúsculas), `debounce` cancelable y filtrado | 16 |
+| Unitario | `tests/unitarios/avisos.test.js` | `CustomEvent('aviso')`, burbujeo, avisos diferidos y cierre automático con temporizadores | 11 |
+| Unitario | `tests/unitarios/admin-usuarios.test.js` | Tabla de administración, protección contra auto-revocación y búsqueda con *debounce* | 9 |
+| Unitario | `tests/unitarios/clave.test.js` | Vectores deterministas SHA-256 con Web Crypto API (`resumirClave`) | 6 |
+| Unitario | `tests/unitarios/rutas.test.js` | Guardas `protegerPaginaPrivada` y `protegerPaginaAdmin` con `location.replace` | 6 |
+| Unitario | `tests/unitarios/cabecera.test.js` | Visibilidad condicional de «Usuarios» según rol y cierre de sesión | 3 |
+| Integración | `tests/integracion/ficha.test.js` | `ficha.html` real en Happy-DOM: validación `blur`/`input`, alta física con DLC y edición | 4 |
+| Integración | `tests/integracion/listado.test.js` | `listado.html` real: paginación + URL, buscador con `vi.useFakeTimers()`, `<dialog>` y giro 3D | 4 |
+| Integración | `tests/integracion/login.test.js` | `index.html`: sesión previa, campos vacíos, clave errónea y acceso válido con aviso | 4 |
+| Integración | `tests/integracion/registro.test.js` | `registro.html`: requisitos reactivos de clave, alta admin inicial y redirección | 4 |
+| Integración | `tests/integracion/admin-usuarios.test.js` | `usuarios.html` real: expulsión de no administradores, cambio de rol y auto-revocación | 3 |
+| Integración | `tests/integracion/ejemplo.test.js` | Plantilla base de integración del repositorio | 2 |
+| E2E | `e2e/humo.spec.js` | Prueba de humo rápida: HTTP 200 en `/index.html`, acceso principal y navegación a registro | 1 |
+| E2E | `e2e/sesion.spec.js` | Recorrido 1: registro inicial (admin), acceso a «Usuarios», logout, ruta privada y login | 1 |
+| E2E | `e2e/crud.spec.js` | Recorrido 2: alta física con DLC, giro 3D, recarga, edición digital y borrado en `<dialog>` | 1 |
+
+**Por qué cada cosa se prueba en su nivel:**
+- **Unitarias (451 tests):** verifican en milisegundos las reglas de negocio puras, expresiones regulares, casos límite, algoritmos (EAN-13, paginación, normalización NFD) y resiliencia ante JSON corrupto sin levantar navegadores.
+- **Integración (21 tests):** comprueban la colaboración real entre el HTML de cada página (`tests/pagina.js`) y varios módulos ES6 juntos (controlador + validación + almacenamiento + eventos) en Happy-DOM, aislando únicamente los efectos externos.
+- **Extremo a extremo (3 recorridos):** validan en Chromium real lo que Happy-DOM no puede garantizar: persistencia real entre recargas completas de página, navegación entre ficheros HTML, estilos/visibilidad reales, `<dialog>` nativo y respuesta HTTP del servidor o de Vercel.
+
+### Simulación de usuario, servicios y tiempo
+
+- **Interacciones de usuario:** en los tests de integración (`tests/pagina.js`) se carga el `<body>` real de cada página HTML y se simulan acciones mediante eventos DOM reales (`escribir`, `salir`, `dispatchEvent`, `requestSubmit()`). En E2E se interactúa exclusivamente mediante localizadores semánticos accesibles (`getByRole`, `getByLabel`, `getByText`).
+- **Servicios externos:** mediante inyección de dependencias se sustituyen `localStorage` y `sessionStorage` por `AlmacenFalso` (`tests/AlmacenFalso.js`), el resumen de contraseña por una función asíncrona controlada cuando conviene y la navegación (`location.href`/`replace`) por espías `vi.fn()`.
+- **Tiempo:** las pruebas del buscador con *debounce* (`300 ms`) y del autocierre de alertas (`5000 ms`) emplean temporizadores falsos de Vitest (`vi.useFakeTimers()` y `vi.advanceTimersByTime(...)`) para ser deterministas e instantáneas.
+
+### Ejecución de E2E en local (`serve`) frente a la web desplegada (`BASE_URL`)
+
+`playwright.config.js` lee la variable de entorno `BASE_URL`:
+- **Sin `BASE_URL` (`npm run e2e`):** arranca automáticamente `serve@14.2.6` en `http://localhost:3901` y ejecuta los 3 recorridos en local (y en el trabajo `E2E` de `ci.yml`).
+- **Con `BASE_URL` (`BASE_URL=https://gamevault-pablo.vercel.app npm run e2e`):** desactiva `webServer` y ejecuta exactamente los mismos recorridos contra la URL proporcionada (utilizado tanto en `despliegue.yml` contra vistas previas/producción como en `release.yml` para `e2e/humo.spec.js`), gracias a que todas las pruebas usan rutas relativas (`/index.html`, `/registro.html`, `/listado.html`).
+
+### Salida real de `npm run coverage` y `npm run e2e`
+
+Salida de **`npm run coverage`**:
+
+```text
+ Test Files  21 passed (21)
+      Tests  472 passed (472)
+   Duration  4.90s
+
+File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+----------------|---------|----------|---------|---------|-------------------
+All files       |   98.44 |    96.37 |     100 |   98.64 |
+ buscador.js    |   96.87 |    92.00 |     100 |     100 | 118-120
+ juegos.js      |   97.11 |    94.44 |     100 |   96.77 | 62,270,309
+ paginar.js     |     100 |      100 |     100 |     100 |
+ validadores.js |     100 |      100 |     100 |     100 |
+```
+
+Salida de **`npm run e2e`**:
+
+```text
+Running 3 tests using 2 workers
+  ✓  1 [chromium] › e2e/humo.spec.js:4:3 › Prueba de humo de GameVault › responde con HTTP 200 y muestra el acceso y el registro (491ms)
+  ✓  3 [chromium] › e2e/sesion.spec.js:5:3 › Recorrido 1: Sesión, roles y control de acceso › el primer usuario se registra como administrador, accede a Usuarios, cierra sesión y vuelve a entrar (3.2s)
+  ✓  2 [chromium] › e2e/crud.spec.js:5:3 › Recorrido 2: CRUD completo de GameVault y persistencia › da de alta un videojuego con DLCs, lo edita, recarga y lo borra tras confirmar en <dialog> (8.0s)
+
+  3 passed (13.9s)
+```
+
+**Umbral de cobertura y alcance:** en `vitest.config.js` se configura `provider: 'v8'` con `thresholds: { lines: 90, perFile: true }` aplicado a los cuatro módulos de lógica pura y persistencia de la entidad (`js/validadores.js`, `js/paginar.js`, `js/buscador.js` y `js/juegos.js`), alcanzando un **98,64 % de líneas global** (100 % en `validadores.js`, `paginar.js` y `buscador.js`). Las pocas líneas no cubiertas en `juegos.js` (62, 270, 309) corresponden a ramas defensivas de fallback cuando `window`/`localStorage` no existen en el entorno global. Los controladores DOM y estilos CSS no forman parte del umbral V8 porque su comportamiento integral se valida mediante los tests de integración en Happy-DOM y las pruebas E2E en Chromium real.
 
 ## Integración continua
 
@@ -461,11 +622,6 @@ El flujo sigue un escalonamiento de menor a mayor coste computacional aplicando 
 
 ## Despliegue continuo
 
-<!-- Sprint 3 pendientes:
-     2. Qué hacen despliegue.yml y release.yml, y qué comprueba tu prueba de humo.
-     3. El camino de un cambio, con tus palabras: desde tu git push en una rama hasta que se ve en
-        la web, qué se comprueba en cada paso y qué pasa si algo falla. -->
-
 **Web publicada:** https://gamevault-pablo.vercel.app/
 
 ### Configuración de Vercel
@@ -509,14 +665,34 @@ Cada vez que se sube una etiqueta de versión que comienza por `v` (por ejemplo,
 2. **`Humo`** (`needs: comprobar`): instala Chromium y ejecuta exclusivamente `npx playwright test e2e/humo.spec.js` contra la dirección de producción (`BASE_URL: https://gamevault-pablo.vercel.app`) para verificar que la web publicada está operativa antes de empaquetar la versión.
 3. **`Release`** (`needs: humo`): genera la distribución limpia con `npm run build` en `dist/`, la comprime en `gamevault-<tag>.zip` usando `github.ref_name` y crea automáticamente la Release en GitHub con `gh release create --generate-notes` autenticándose mediante el *token* efímero `GH_TOKEN: ${{ github.token }}`.
 
+### El camino de un cambio
+
+Desde que se escribe una mejora en local hasta que llega a los usuarios en https://gamevault-pablo.vercel.app/, cada cambio recorre un circuito protegido por dos barreras automáticas:
+
+1. **Rama de funcionalidad y *pull request*:** el desarrollo se realiza en una rama propia con commits atómicos y se sube con `git push`. Al abrir una *pull request* hacia `main`, ocurren dos procesos en paralelo:
+   - **Integración continua (`ci.yml`):** encadena `Calidad` (ESLint + Prettier) → `Tests` (Vitest + cobertura ≥ 90 % por archivo + artefacto `coverage/`) → `E2E` (Playwright contra `serve` en local, subiendo `playwright-report/` solo si falla).
+   - **Vista previa y pruebas desplegadas (`despliegue.yml`):** Vercel ejecuta `npm run build` (`dist/`), genera una URL HTTPS de vista previa comentada en la PR y emite `deployment_status`. Cuando termina en `success`, GitHub Actions dispara `E2E desplegado` con `BASE_URL` apuntando a esa vista previa para validar el paquete real en la nube.
+   - **Si algo falla en la PR:** los checks salen en rojo y **no se fusiona**; se corrige en la misma rama y cada nuevo `push` cancela ejecuciones previas (`concurrency`) y revalida todo.
+2. **Fusión en `main` y promoción controlada a producción:** una vez todo está en verde y se fusiona con *merge commit* en `main`:
+   - GitHub Actions vuelve a ejecutar `ci.yml` (`Calidad` → `Tests` → `E2E`) sobre el commit final de `main`.
+   - En paralelo, Vercel construye la nueva versión de producción en estado *Staged* y espera a los **Deployment Checks** (`Calidad`, `Tests`, `E2E` y `E2E desplegado`).
+   - **Si todas las comprobaciones pasan:** Vercel promociona automáticamente la nueva versión al dominio público https://gamevault-pablo.vercel.app/.
+   - **Si alguna comprobación falla:** Vercel marca el despliegue como **`Checks Failed`**, **retiene** esa versión sin asignar el dominio de producción y los usuarios siguen viendo sin interrupción la última versión buena anterior.
+3. **Publicación de versión (`release.yml`):** al etiquetar `main` con un *tag* `v*` (`git tag v1.0 && git push origin v1.0`), GitHub Actions ejecuta `Comprobar` → `Humo` (`e2e/humo.spec.js` contra producción) → `Release`, generando `gamevault-<tag>.zip` desde `dist/` y publicando la Release con sus notas automáticas.
+
+### Evidencias de Despliegue Continuo
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
-| *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
-| Versión retenida por Vercel | <!-- enlace a la ejecución en rojo --> | `img/vercel-retenido.png` |
-| Release `v1.0` | <!-- enlace a la Release --> | — |
+| *Pull request* con su vista previa y `E2E desplegado` | [PR #41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/41) · [Vista previa](https://dwec-2dawt-2627-proyectodomeval-pablo2659-git-66743d-pablo-dfe7.vercel.app) · [Ejecución `E2E desplegado`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45844937354) | ![Comprobaciones en verde en PR #41](img/pr-comprobaciones.png) |
+| Versión retenida por Vercel | [Ejecución en rojo (#45847405642)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847405642) · [Despliegue retenido en Vercel](https://vercel.com/pablo-dfe7/dwec-2dawt-2627-proyectodomeval-pablo265910/EaNQWD4ariSYmixguK7fJtmfcB7q) · [Reversión en verde (#45847873622)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847873622) | ![Despliegue retenido en Vercel](img/vercel-retenido.png) |
+| Release de prueba (`v0.9`) y Release final (`v1.0`) | [Release `v0.9` verificada](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/releases/tag/v0.9) · [Release `v1.0`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/releases/tag/v1.0) | — |
 
-<!-- Qué rompiste a propósito para la versión retenida, qué viste en Vercel y cómo comprobaste que la
-     web seguía con la versión anterior. -->
+#### Detalle de la prueba de versión retenida
+- **Qué se rompió a propósito:** en el commit `f8380d0` sobre `main` se modificó el encabezado `<h1>` de `index.html` de `Bienvenido a GameVault` a `Prueba retenida en main`, manteniendo intactos ESLint, Prettier y los tests unitarios/integración para que fallase específicamente la prueba de extremo a extremo `e2e/humo.spec.js`.
+- **Qué ocurrió en GitHub Actions y Vercel:** en la ejecución [#45847405642](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847405642), `Calidad` y `Tests` pasaron en verde pero **`E2E` falló en rojo** (subiendo el artefacto `informe-playwright`). En el panel de Vercel ([despliegue `EaNQWD4ar`](https://vercel.com/pablo-dfe7/dwec-2dawt-2627-proyectodomeval-pablo265910/EaNQWD4ariSYmixguK7fJtmfcB7q), captura `img/vercel-retenido.png`), Vercel mostró **`Status: Checks Failed`**, **`Environment: Production Staged`** y **`Assigning Custom Domains` en pausa**, reteniendo el despliegue sin promocionarlo al dominio público.
+- **Cómo se comprobó que producción seguía con la versión anterior:** al abrir https://gamevault-pablo.vercel.app/ mientras el despliegue permanecía retenido, la portada continuaba mostrando el encabezado **`Bienvenido a GameVault`** (y no `Prueba retenida en main`).
+- **Recuperación:** tras revertir el commit (`5ed9869`), la ejecución [#45847873622](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847873622) y `E2E desplegado` ([#45848141528](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45848141528)) volvieron a verde y Vercel promovió normalmente la nueva versión.
 
 ## Organización del trabajo
 
@@ -526,12 +702,12 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 
 - [x] **Funcionalidad completa:** El código implementa todos los requisitos técnicos y de negocio de la tarea respetando el contrato de la aplicación sin librerías externas de JS.
 - [x] **Semántica y Accesibilidad:** Estructura HTML basada en elementos semánticos estándar (`<dialog>`, `<template>`, `<select>`, `<button>`), con gestión accesible de estados e interacción (`role="status"`, `aria-invalid`, `aria-describedby`, `aria-current="page"`).
-- [x] **Calidad de código (Linting & Formato):** El código cumple con las reglas configuradas en ESLint (incluidas las 3 reglas adicionales) y Prettier; `npm run lint` y `npm run format:check` se ejecutan sin errores ni advertencias.
+- [x] **Calidad de código (Linting & Formato):** El código cumple con las reglas configuradas en ESLint (incluidas las 4 reglas adicionales) y Prettier; `npm run lint` y `npm run format:check` se ejecutan sin errores ni advertencias.
 - [x] **Pruebas automatizadas en verde:** Se han desarrollado los tests unitarios o de integración correspondientes con `AlmacenFalso` y pasan limpiamente al ejecutar `npm test`.
 - [x] **Cobertura verificada:** Las funciones lógicas puras (validadores y paginación) mantienen una cobertura de líneas igual o superior al 90% (`npm run coverage`).
 - [x] **Empaquetado validado:** El script de compilación `npm run build` genera la versión distribuible en la carpeta `dist/` sin errores.
 - [x] **Control de versiones ordenado:** El desarrollo se realiza en una rama propia de funcionalidad con commits semánticos y concisos.
-- [x] **Integración Continua aprobada:** La Pull Request asociada cuenta con todos los checks del workflow de GitHub Actions (`ci.yml`) en verde antes de fusionarse a `main`.
+- [x] **Integración Continua aprobada:** La Pull Request asociada cuenta con todos los checks del workflow de GitHub Actions (`ci.yml` y `despliegue.yml`) en verde antes de fusionarse a `main`.
 - [x] **Sincronización del tablero:** La tarjeta correspondiente en Trello se ha desplazado a la columna «Hecho».
 
 ### Sprints
@@ -540,11 +716,11 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 |--------|--------------|-------|-------------|-----------|
 | 1 | 12 nov 2026 | `v0.1` | Usuarios, sesión en `sessionStorage`, roles con primer usuario administrador, registro con validador reactivo de contraseña (`\p{Ll}`, `\p{Lu}`), login con SHA-256 (`resumirClave`), maquetación base de las 5 páginas, sistema de eventos propios `aviso`, tests unitarios con `AlmacenFalso` y workflow CI paso 1 (calidad y tests). | El Sprint 1 ha establecido con éxito los cimientos arquitectónicos de GameVault. Se ha implementado un flujo de autenticación, control de roles y sesiones completamente desacoplado y protegido contra datos corruptos en el navegador del cliente. La suite de 127 tests en Vitest con `AlmacenFalso` y el pipeline de CI en GitHub Actions garantizan una base de código limpia y con cobertura verificada superior al 90%. El mayor aprendizaje ha sido la aplicación práctica de inyección de dependencias y eventos nativos (`CustomEvent`), fundamentales para lograr un diseño modular y fácilmente testeable. |
 | 2 | 19 nov 2026 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y estantería, lógica condicional de formato físico vs digital, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | El Sprint 2 ha completado toda la funcionalidad CRUD de GameVault y su pirámide de pruebas sin recurrir a JavaScript de Bootstrap ni librerías externas. Destacan la reutilización transversal de `paginar.js`, `paginacion.js` y `buscador.js` entre el catálogo y la administración de usuarios, el motor genérico de validación en tiempo real (`blur` en captura, `setCustomValidity` y `aria-describedby`) y la gestión accesible del modal nativo `<dialog>` y de las secciones condicionales con `<fieldset disabled>` y `FormData`. Cubrir los tres niveles de prueba (unitarias con umbral >= 90% en funciones puras, integración en Happy-DOM con temporizadores falsos y E2E en Playwright con selectores semánticos) ha reforzado la accesibilidad real y la fiabilidad previa al despliegue continuo del Sprint 3. |
-| 3 | 26 nov 2026 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3.* |
+| 3 | 26 nov 2026 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3 (`[S3-08]`).* |
 
 **Tablero de Trello:** [GameVault - Tablero de Seguimiento (DWEC)](https://trello.com/b/b1iXcn0Q/gamevault-proyecto-dom-dwec) *(compartido con el profesor)*
 
-**Blog del proyecto:** [blog/README.md](blog/README.md) <!-- dificultades y problemas conceptuales de cada sprint -->
+**Blog del proyecto:** [blog/README.md](blog/README.md)
 
 ### Ramas y versiones
 
@@ -555,17 +731,37 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `cabecera-sesion` | [S1-03] Cabecera común, menú de navegación y sesión de usuario | [#7](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/7) |
 | `nueva-estetica-minimalista` | Actualización de diseño Dark Minimalism, plantillas HTML y recursos gráficos | [#8](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/8) |
 | `avisos-custom-event` | [S1-04] Sistema de eventos de avisos personalizados ('aviso') | [#11](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/11) |
-| `modulo-sesion` | [S1-05] Módulo de gestión de sesión (sesion.js) | [#12](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/12) |
-| `modulo-usuarios` | [S1-06] Módulo de gestión de usuarios y roles (usuarios.js) | [#13](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/13) |
-| `pagina-registro` | [S1-07] Página y formulario de registro (registro.html) | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/14) |
-| `pagina-login` | [S1-08] Página de inicio de sesión (index.html) | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/15) |
+| `modulo-sesion` | [S1-05] Módulo de gestión de sesión (`sesion.js`) | [#12](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/12) |
+| `modulo-usuarios` | [S1-06] Módulo de gestión de usuarios y roles (`usuarios.js`) | [#13](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/13) |
+| `pagina-registro` | [S1-07] Página y formulario de registro (`registro.html`) | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/14) |
+| `pagina-login` | [S1-08] Página de inicio de sesión (`index.html`) | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/15) |
 | `rutas-privadas` | [S1-09] Control de acceso y protección de rutas privadas | [#16](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/16) |
 | `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/17) |
-| `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
+| `tests-unitarios` | [S1-11] Tests unitarios con `AlmacenFalso` (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
-| `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
-| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
-| `ci-paso-2-cierre-sprint-2` | [S2-17][S2-18] Workflow CI Paso 2 (E2E y artefactos), blog y cierre del Sprint 2 (v0.2) | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37) |
+| `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag `v0.1` y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
+| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (`juegos.js`) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
+| `validadores-videojuego` | [S2-02] Validadores de la entidad Videojuego (EAN-13, SKU, Estantería) | [#22](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/22) |
+| `logica-paginacion` | [S2-03] Lógica pura de paginación (`paginar.js`) | [#23](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/23) |
+| `componente-paginacion` | [S2-04] Componente visual de paginación y gestión de URL (`paginacion.js`) | [#24](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/24) |
+| `ficha-campos-base` | [S2-05] Ficha: campos base, `FormData` y fecha máxima dinámica | [#25](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/25) |
+| `ficha-campo-condicional` | [S2-06] Ficha: campo condicional (Formato Físico vs Digital) | [#26](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/26) |
+| `ficha-dlcs-dinamicos` | [S2-07] Ficha: grupo dinámico de DLCs con `<template>` (0 a 3) | [#27](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/27) |
+| `motor-validacion-accesibilidad` | [S2-08] Motor genérico de validación en tiempo real y accesibilidad | [#28](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/28) |
+| `ficha-alta-edicion` | [S2-09] Flujo completo de alta y edición en `ficha.html` | [#29](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/29) |
+| `listado-template-dialog` | [S2-10] Listado con `<template>` y diálogo modal `<dialog>` | [#30](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/30) |
+| `buscador-debounce` | [S2-11] Buscador con *debounce* y normalización Unicode NFD | [#31](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/31) |
+| `admin-usuarios` | [S2-12] Zona de administración de usuarios con protección auto-revocación | [#32](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/32) |
+| `documentacion-eventos` | [S2-13] Delegación de eventos y documentación de propagación | [#33](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/33) |
+| `cobertura-unitaria` | [S2-14] Pruebas unitarias de entidad y cobertura ≥ 90 % | [#34](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/34) |
+| `tests-integracion` | [S2-15] Tests de integración con Happy-DOM | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/35) |
+| `pruebas-e2e` | [S2-16] Pruebas End-to-End con Playwright (`sesion.spec.js`, `crud.spec.js`) | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/36) |
+| `ci-paso-2-cierre-sprint-2` | [S2-17][S2-18] Workflow CI Paso 2 (E2E y artefactos), blog y cierre Sprint 2 (`v0.2`) | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37) |
+| `jsdoc-documentacion` | [S3-05] Documentación JSDoc completa de los 17 módulos (`npm run docs`) | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/38) |
+| `vercel-produccion` | [S3-01] Despliegue de producción en Vercel y rediseño Spatial Flip 3D | [#39](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/39) |
+| `vistas-previas-e2e` | [S3-02] Vistas previas en PRs y workflow `despliegue.yml` (`E2E desplegado`) | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/40) |
+| `prueba-humo` | [S3-03] Prueba de humo rápida (`e2e/humo.spec.js`) | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/41) |
+| `workflow-release` | [S3-04] Workflow de GitHub Release automatizado con archivo ZIP (`release.yml`) | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/42) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
