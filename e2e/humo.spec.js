@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Prueba de humo de GameVault', () => {
   test('responde con HTTP 200 y muestra el acceso y el registro', async ({ page }) => {
-    const respuesta = await page.goto('/');
+    const respuesta = await page.goto('/index.html');
     expect(respuesta?.status()).toBe(200);
 
     await expect(page).toHaveTitle('Iniciar Sesión — GameVault');

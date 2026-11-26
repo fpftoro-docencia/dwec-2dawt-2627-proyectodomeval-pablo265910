@@ -497,7 +497,7 @@ Para verificar que el empaquetado final en `dist/` y las rutas desplegadas funci
 
 La prueba de humo ([`e2e/humo.spec.js`](e2e/humo.spec.js)) realiza una verificación rápida y no destructiva sobre la aplicación publicada (ejecutable de forma aislada con `BASE_URL=https://gamevault-pablo.vercel.app npx playwright test e2e/humo.spec.js` y también incluida en `npm run e2e`):
 
-- Comprueba que la raíz `/` responde con estado HTTP `200` y el título `Iniciar Sesión — GameVault`.
+- Comprueba que la página de inicio (`/index.html`) responde con estado HTTP `200` y el título `Iniciar Sesión — GameVault`.
 - Verifica que el encabezado principal, los controles del formulario de inicio de sesión (`Nombre de usuario`, `Contraseña`, botón `Entrar en mi biblioteca`) y la región accesible de avisos (`role="status"`) están cargados.
 - Comprueba que la navegación hacia `registro.html` mediante el enlace `Crear cuenta` carga el título y el formulario de registro correctamente.
 
