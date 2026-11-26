@@ -8,10 +8,10 @@
  * - Actualización de estado accesible: aria-invalid, aria-describedby y cajas de error con role="alert".
  * - Integración con la Constraint Validation API nativa mediante setCustomValidity y validity.
  * - Feedback visual con clases de Bootstrap (.is-invalid, .invalid-feedback).
- * - Foco automático en el primer campo no válido al intentar enviar el formulario con errores.
+ * - Aviso accesible y foco automático en el primer campo no válido al intentar enviar con errores.
  *
  * Requisitos HTML esperados en los formularios:
- * - Contenedor `<form novalidate>` (ej. `#form-registro` en `registro.html` o `#form-ficha` en `ficha.html`).
+ * - Contenedor `<form novalidate>` (`#form-login`, `#form-registro` o `#form-ficha`).
  * - Controles (`input`, `select`, `textarea`) con atributos `data-validar="<clave>"` (vinculados a
  *   `VALIDADORES`), `data-coincidir-con="<id-o-name>"` (para confirmación cruzada), `required`,
  *   `aria-invalid="false"|"true"` y `aria-describedby` apuntando al ID de la caja de error.
@@ -22,6 +22,7 @@
  */
 
 import { VALIDADORES, MENSAJES_ERROR } from './validadores.js';
+import { lanzarAviso } from './avisos.js';
 
 /**
  * Resultado de la validación de un control individual de formulario.
@@ -172,11 +173,13 @@ export function mostrarErrorCampo(campo, mensaje = '', formulario = campo ? camp
 }
 
 /**
- * Valida un campo individual de formulario según sus reglas y tipo de validador.
+ * Valida un campo individual de formulario combinando la Constraint Validation API
+ * nativa (`validity` y `setCustomValidity`) con los validadores de `VALIDADORES`.
  *
  * @param {(HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement)} campo Control a validar.
  * @param {Object} [opciones={}] Opciones de validación.
  * @param {(Date|string)} [opciones.fechaReferencia] Fecha de referencia para controles `data-validar="fecha"`.
+ * @param {Object.<string, Function>} [opciones.validadoresExtra] Validaciones adicionales por clave `data-validar`.
  * @returns {ResultadoValidacionCampo}
  */
 export function validarCampo(campo, opciones = {}) {
@@ -184,16 +187,24 @@ export function validarCampo(campo, opciones = {}) {
     return { valido: true, mensaje: '' };
   }
 
+  // Reiniciar customValidity antes de inspeccionar `campo.validity` para evitar estados pegajosos
+  if (typeof campo.setCustomValidity === 'function') {
+    campo.setCustomValidity('');
+  }
+
   const formulario = campo.form || (campo.ownerDocument ? campo.ownerDocument : null);
+  const estado = campo.validity || {};
   let mensaje = '';
   const tipoValidador = campo.dataset.validar;
+  const mensajeVacio = campo.dataset.mensajeVacio;
   const valor = typeof campo.value === 'string' ? campo.value : '';
   const valorLimpio = valor.trim();
 
   // 1. Casillas de verificación (checkbox)
   if (campo.type === 'checkbox') {
-    if (campo.required && !campo.checked) {
+    if ((campo.required || estado.valueMissing) && !campo.checked) {
       mensaje =
+        mensajeVacio ||
         MENSAJES_ERROR[tipoValidador] ||
         MENSAJES_ERROR.terminos ||
         'Debes aceptar las condiciones de uso para continuar.';
@@ -201,16 +212,30 @@ export function validarCampo(campo, opciones = {}) {
   }
   // 2. Grupos de botones de opción (radio)
   else if (campo.type === 'radio') {
-    if (campo.required && formulario) {
-      const radios = formulario.querySelectorAll(`input[type="radio"][name="${campo.name}"]`);
+    const radios =
+      formulario && campo.name
+        ? formulario.querySelectorAll(`input[type="radio"][name="${campo.name}"]`)
+        : [campo];
+
+    if (campo.required || estado.valueMissing) {
       const algunoMarcado = Array.from(radios).some((r) => r.checked);
       if (!algunoMarcado) {
         mensaje =
+          mensajeVacio ||
           MENSAJES_ERROR[tipoValidador] ||
           MENSAJES_ERROR.formato ||
           'Debes seleccionar una opción.';
       }
     }
+
+    Array.from(radios).forEach((radio) => {
+      mostrarErrorCampo(radio, mensaje, formulario);
+    });
+
+    return {
+      valido: !mensaje,
+      mensaje,
+    };
   }
   // 3. Campos con comprobación de coincidencia (ej. repetir contraseña)
   else if (campo.dataset.coincidirCon) {
@@ -223,16 +248,16 @@ export function validarCampo(campo, opciones = {}) {
         MENSAJES_ERROR[tipoValidador] ||
         MENSAJES_ERROR.repetirClave ||
         'Las contraseñas no coinciden.';
-    } else if (campo.required && !valorLimpio) {
-      mensaje = 'Este campo es obligatorio.';
+    } else if ((campo.required || estado.valueMissing) && !valorLimpio) {
+      mensaje = mensajeVacio || 'Este campo es obligatorio.';
     }
   }
   // 4. Validadores registrados en el mapa VALIDADORES con data-validar
   else if (tipoValidador && VALIDADORES[tipoValidador]) {
     const fnValidador = VALIDADORES[tipoValidador];
 
-    if (campo.required && !valorLimpio) {
-      mensaje = MENSAJES_ERROR[tipoValidador] || 'Este campo es obligatorio.';
+    if ((campo.required || estado.valueMissing) && !valorLimpio) {
+      mensaje = mensajeVacio || MENSAJES_ERROR[tipoValidador] || 'Este campo es obligatorio.';
     } else if (valorLimpio) {
       const esValido =
         tipoValidador === 'fecha'
@@ -241,15 +266,33 @@ export function validarCampo(campo, opciones = {}) {
 
       if (!esValido) {
         mensaje = MENSAJES_ERROR[tipoValidador] || 'El valor introducido no es válido.';
+      } else if (
+        opciones.validadoresExtra &&
+        typeof opciones.validadoresExtra[tipoValidador] === 'function'
+      ) {
+        const errorExtra = opciones.validadoresExtra[tipoValidador](valorLimpio, campo);
+        if (errorExtra) {
+          mensaje = errorExtra;
+        }
       }
     }
   }
   // 5. Campos requeridos estándar sin validador específico
-  else if (campo.required && !valorLimpio) {
-    mensaje = MENSAJES_ERROR[tipoValidador] || 'Este campo es obligatorio.';
+  else if ((campo.required || estado.valueMissing) && !valorLimpio) {
+    mensaje = mensajeVacio || MENSAJES_ERROR[tipoValidador] || 'Este campo es obligatorio.';
   }
-  // 6. Validación nativa HTML5 de respaldo
-  else if (typeof campo.checkValidity === 'function' && !campo.checkValidity()) {
+  // 6. Validación nativa HTML5 de respaldo mediante `campo.validity`
+  else if (estado.typeMismatch) {
+    mensaje = MENSAJES_ERROR.correo || campo.validationMessage || 'El formato no es válido.';
+  } else if (
+    estado.patternMismatch ||
+    estado.tooShort ||
+    estado.tooLong ||
+    estado.rangeUnderflow ||
+    estado.rangeOverflow
+  ) {
+    mensaje = campo.validationMessage || 'El valor introducido no cumple con el formato requerido.';
+  } else if (typeof campo.checkValidity === 'function' && !campo.checkValidity()) {
     mensaje = campo.validationMessage || 'El valor introducido no cumple con el formato requerido.';
   }
 
@@ -268,6 +311,7 @@ export function validarCampo(campo, opciones = {}) {
  * @param {Object} [opciones={}] Opciones configurables.
  * @param {boolean} [opciones.focoAlPrimerError=true] Si es `false`, evita mover el foco al primer error.
  * @param {(Date|string)} [opciones.fechaReferencia] Fecha de referencia para validadores de fecha.
+ * @param {Object.<string, Function>} [opciones.validadoresExtra] Validaciones adicionales por clave `data-validar`.
  * @returns {ResultadoValidacionFormulario}
  */
 export function validarFormulario(formulario, opciones = {}) {
@@ -317,16 +361,20 @@ export function validarFormulario(formulario, opciones = {}) {
  * - Validación inicial al salir del campo ('blur' capturado).
  * - Validación reactiva continua tras visita ('input' / 'change' en burbuja).
  * - Revalidación automática de campos dependientes (data-coincidir-con).
- * - Prevención de envío y foco en el primer error ante 'submit' inválido.
+ * - Prevención de envío, aviso accesible (`aviso`) y foco en el primer error ante 'submit' inválido.
  *
  * @listens blur
  * @listens input
  * @listens change
  * @listens submit
+ * @fires aviso
  * @param {HTMLFormElement} formulario Formulario `<form novalidate>` a supervisar.
  * @param {Object} [opciones={}] Opciones de configuración.
  * @param {function(Event): void} [opciones.alEnviarValido] Callback invocado si el evento `submit` supera la validación.
+ * @param {function(ResultadoValidacionFormulario, Event): void} [opciones.alEnviarInvalido] Callback opcional ante envío inválido.
+ * @param {string} [opciones.mensajeErrorFormulario] Mensaje emitido en el evento `aviso` si hay errores al enviar.
  * @param {(Date|string)} [opciones.fechaReferencia] Fecha de referencia para validadores de fecha.
+ * @param {Object.<string, Function>} [opciones.validadoresExtra] Validaciones adicionales por clave `data-validar`.
  * @returns {function(): void} Función para desconectar los oyentes de eventos.
  */
 export function conectarValidacionTiempoReal(formulario, opciones = {}) {
@@ -352,7 +400,13 @@ export function conectarValidacionTiempoReal(formulario, opciones = {}) {
     const campo = evento.target;
     if (!esCampoValidable(campo)) return;
 
-    if (camposTocados.has(campo) || campo.classList.contains('is-invalid')) {
+    if (
+      camposTocados.has(campo) ||
+      campo.classList.contains('is-invalid') ||
+      campo.type === 'radio' ||
+      campo.type === 'checkbox'
+    ) {
+      camposTocados.add(campo);
       validarCampo(campo, opciones);
     }
 
@@ -385,6 +439,14 @@ export function conectarValidacionTiempoReal(formulario, opciones = {}) {
     if (!resultado.esValido) {
       evento.preventDefault();
       evento.stopPropagation();
+      lanzarAviso(
+        formulario,
+        opciones.mensajeErrorFormulario || 'Por favor, corrige los errores antes de continuar.',
+        'danger',
+      );
+      if (typeof opciones.alEnviarInvalido === 'function') {
+        opciones.alEnviarInvalido(resultado, evento);
+      }
     } else if (typeof opciones.alEnviarValido === 'function') {
       opciones.alEnviarValido(evento);
     }
