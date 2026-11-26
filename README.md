@@ -1,11 +1,6 @@
 # GameVault (Gestor de Biblioteca y Backlog de Videojuegos)
 
-<!-- Sprint 2: la insignia de tu workflow, con tu organización y tu repositorio. -->
 ![Integración continua](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/workflows/ci.yml/badge.svg)
-
-<!-- Completa cada sección a medida que avanzas en los sprints. Borra los comentarios como este
-     cuando termines. Este README es también la portada de la documentación que genera `npm run docs`.
-     No cambies los títulos de las secciones (##): la corrección los busca por su nombre. -->
 
 ## Mi proyecto
 
@@ -51,13 +46,100 @@
 
 ## Arquitectura y módulos
 
-<!-- 1. Un diagrama (Mermaid) de tus módulos y de qué usa cada uno.
-     2. Tabla con cada módulo: qué hace, si usa el DOM y qué exporta.
-     3. Cómo están hechos tus objetos (funciones fábrica o clases) y qué patrones de diseño usas
-         (al menos dos): dónde y por qué.
-     4. Cómo reciben las páginas lo que necesitan (almacenamiento, sesión, navegación) y por qué así
-         se pueden probar.
-     5. Qué documenta tu JSDoc y cómo se genera la documentación (`npm run docs`). -->
+GameVault se estructura en **17 módulos ES6 nativos** dentro de `js/`, separados en cuatro capas con responsabilidades claras: **datos y criptografía**, **lógica pura (sin DOM)**, **componentes transversales de UI** y **controladores de página**.
+
+### Diagrama de módulos y dependencias
+
+```mermaid
+flowchart TD
+    subgraph Paginas["Controladores de página"]
+        login["login.js (index.html)"]
+        registro["registro.js (registro.html)"]
+        listado["listado.js (listado.html)"]
+        ficha["ficha.js (ficha.html)"]
+        admin["admin-usuarios.js (usuarios.html)"]
+    end
+
+    subgraph Componentes["Componentes comunes y control de acceso"]
+        cabecera["cabecera.js"]
+        rutas["rutas.js"]
+        avisos["avisos.js"]
+        validacion["validacion.js"]
+        paginacion["paginacion.js"]
+    end
+
+    subgraph Pura["Lógica pura (sin DOM)"]
+        validadores["validadores.js"]
+        paginar["paginar.js"]
+        buscador["buscador.js"]
+    end
+
+    subgraph Datos["Persistencia y criptografía"]
+        sesion["sesion.js"]
+        usuarios["usuarios.js"]
+        juegos["juegos.js"]
+        clave["clave.js"]
+    end
+
+    login --> sesion & usuarios & avisos
+    registro --> sesion & usuarios & validadores & avisos
+    listado --> sesion & juegos & buscador & paginar & paginacion & avisos
+    ficha --> sesion & juegos & validadores & validacion & avisos
+    admin --> sesion & usuarios & buscador & paginar & paginacion & avisos
+
+    cabecera --> sesion
+    rutas --> sesion & avisos
+    validacion --> validadores
+    paginacion --> paginar
+    usuarios --> clave
+```
+
+### Catálogo de módulos (`js/`)
+
+| Módulo | Capa | ¿Usa DOM? | Qué hace | Exportaciones principales |
+|---|---|:---:|---|---|
+| `js/clave.js` | Criptografía | No | Calcula el resumen criptográfico SHA-256 mediante Web Crypto API (`crypto.subtle.digest`). | `resumirClave` |
+| `js/sesion.js` | Datos | No | Gestiona la sesión activa (`usuario` y `rol`) en `sessionStorage` con protección ante JSON corrupto. | `CLAVE_SESION`, `obtenerSesion`, `iniciarSesion`, `guardarSesion`, `cerrarSesion`, `haySesion`, `esAdministrador`, `esAdmin` |
+| `js/usuarios.js` | Datos | No | CRUD y autenticación de usuarios en `localStorage`; asigna `administrador` al primer usuario registrado. | `CLAVE_USUARIOS`, `obtenerUsuarios`, `guardarUsuarios`, `obtenerUsuarioPorNombre`, `existeUsuario`, `registrarUsuario`, `autenticarUsuario`, `cambiarRolUsuario`, `eliminarUsuario`, `vaciarUsuarios` |
+| `js/juegos.js` | Datos | No | CRUD de videojuegos aislado por usuario (`gamevault_juegos_<usuario>`) en `localStorage`. | `PREFIJO_CLAVE_JUEGOS`, `obtenerClaveJuegos`, `generarIdJuego`, `obtenerJuegos`, `obtenerJuegoPorId`, `guardarJuegos`, `crearJuego`, `actualizarJuego`, `guardarJuego`, `eliminarJuego`, `vaciarJuegos` |
+| `js/validadores.js` | Lógica pura | No | Expresiones regulares, algoritmo ponderado módulo 10 de EAN-13 y mapa unificado de validadores. | `VALIDADORES`, `MENSAJES_ERROR`, `evaluarRequisitosClave`, `validarNombreUsuario`, `validarCorreo`, `validarClave`, `validarSKU`, `validarEAN13`, `validarEstanteria`, `validarTitulo`, `validarPlataforma`, `validarFormato`, `validarFechaAdquisicion`, `validarHorasJugadas`, `validarEstadoProgreso`, `validarTiendaDigital`, `validarDlc`, `validarDlcs` |
+| `js/paginar.js` | Lógica pura | No | Función matemática pura de paginación con ajuste automático de límites y lista vacía. | `paginar` |
+| `js/buscador.js` | Lógica pura | No | Normalización Unicode NFD (sin tildes ni mayúsculas), `debounce` cancelable y filtrado genérico. | `RETARDO_DEBOUNCE_DEFECTO`, `normalizarTextoBusqueda`, `debounce`, `filtrarListaPorTexto` |
+| `js/avisos.js` | Componente | Sí | Emisor y receptor global del evento propio `aviso` (`CustomEvent`) y avisos diferidos en `sessionStorage`. | `CLAVE_AVISO_PENDIENTE`, `lanzarAviso`, `normalizarTipoAviso`, `renderizarAviso`, `guardarAviso`, `consumirAviso`, `iniciarAvisos` |
+| `js/cabecera.js` | Componente | Sí | Sincroniza nombre de usuario, insignia de rol, enlace condicional «Usuarios» y botón «Cerrar sesión». | `iniciarCabecera` |
+| `js/rutas.js` | Control de acceso | No *(Location)* | Guardas de navegación para páginas privadas y exclusivas de administradores con `location.replace`. | `protegerPaginaPrivada`, `protegerPaginaAdmin` |
+| `js/paginacion.js` | Componente | Sí | Renderiza botones accesibles («Anterior», páginas con `aria-current="page"`, «Siguiente»), delega clics y sincroniza `?pagina=X` con `history.replaceState`. | `obtenerPaginaUrl`, `fijarPaginaUrl`, `renderizarControlesPaginacion`, `conectarPaginacion`, `paginar` |
+| `js/validacion.js` | Componente | Sí | Motor genérico de validación en tiempo real (`blur` en captura, `input`/`change` en burbuja, `setCustomValidity`, `aria-invalid`, `aria-describedby` y foco en primer error). | `esCampoValidable`, `obtenerCajaError`, `mostrarErrorCampo`, `validarCampo`, `validarFormulario`, `conectarValidacionTiempoReal` |
+| `js/login.js` | Página | Sí | Controlador de `index.html`: guarda de sesión, autenticación SHA-256, vaciado + foco en error y bloqueo anti-doble envío. | `iniciarLogin` |
+| `js/registro.js` | Página | Sí | Controlador de `registro.html`: requisitos reactivos de clave (`\p{Ll}`, `\p{Lu}`), alta, inicio de sesión automático y redirección con aviso. | `iniciarRegistro` |
+| `js/listado.js` | Página | Sí | Controlador de `listado.html`: tarjetas Spatial Flip 3D desde `<template>`, buscador con *debounce*, paginación y confirmación de borrado con `<dialog>`. | `MAPA_ICONOS_CONSOLAS`, `MAPA_CLAVES_PLATAFORMA`, `alternarGiroTarjeta`, `filtrarJuegos`, `renderizarTarjetaJuego`, `renderizarListadoJuegos`, `actualizarContadorResultados`, `alternarEstadoVacio`, `conectarModalBorrado`, `iniciarListado` |
+| `js/ficha.js` | Página | Sí | Controlador de `ficha.html`: alta y edición (`?id=`), fecha máxima dinámica, secciones condicionales (`hidden` + `disabled`), DLCs (0–3) desde `<template>` y lectura con `FormData`. | `MAX_DLCS`, `MIN_DLCS`, `inyectarFechaMaxima`, `alternarSeccionFormato`, `anadirFilaDlc`, `quitarFilaDlc`, `sincronizarBotonAnadirDlc`, `conectarDlcs`, `leerDatosFormulario`, `rellenarFormulario`, `iniciarFicha` |
+| `js/admin-usuarios.js` | Página | Sí | Controlador de `usuarios.html`: tabla de usuarios con buscador, paginación y alternancia de roles con bloqueo de auto-revocación. | `USUARIOS_POR_PAGINA_DEFECTO`, `MENSAJE_AUTO_REVOCACION`, `filtrarUsuarios`, `renderizarFilaUsuario`, `renderizarTablaUsuarios`, `iniciarAdminUsuarios` |
+
+### Modelo de objetos y patrones de diseño
+
+Todos los objetos de dominio (`Usuario`, `Sesion`, `Videojuego`, `Dlc`, `ResultadoPaginacion`) se construyen mediante **funciones fábrica que devuelven objetos literales planos** serializables directamente a JSON (sin clases ni prototipos innecesarios), evitando pérdida de métodos al guardar y recuperar desde `localStorage` o `sessionStorage`.
+
+Se aplican cuatro patrones de diseño principales:
+
+1. **Inyección de dependencias (*Dependency Injection*):** Todas las funciones de datos (`usuarios.js`, `sesion.js`, `juegos.js`, `avisos.js`) y controladores de página (`iniciarLogin`, `iniciarRegistro`, `iniciarListado`, `iniciarFicha`, `iniciarAdminUsuarios`, `protegerPaginaPrivada`) aceptan sus dependencias por parámetro con valores por defecto del navegador (`localStorage`, `sessionStorage`, `window`, `navegar`). Así las pruebas unitarias y de integración sustituyen el almacenamiento por `AlmacenFalso` y la navegación por dobles `vi.fn()` sin tocar el entorno global.
+2. **Observador / Publicador-Suscriptor (*Observer / Pub-Sub*) con `CustomEvent`:** Cualquier módulo emite notificaciones con `lanzarAviso(elemento, mensaje, tipo)` sin conocer la estructura de `#region-avisos`; un único suscriptor global en `document` (`iniciarAvisos`) captura el evento `aviso` en fase de burbuja y renderiza la alerta Bootstrap.
+3. **Delegación de eventos (*Event Delegation*):** En los contenedores dinámicos (`#grid-catalogo`, `#paginacion-catalogo`, `#paginacion-usuarios`, `#tabla-usuarios-body`, `#lista-dlcs`) se registra un único oyente en el padre que identifica el control pulsado con `evento.target.closest(...)`, manteniendo el coste en memoria constante aunque los nodos se regeneren.
+4. **Módulo ES6 + Estrategia (*Strategy*) en validación:** El objeto `VALIDADORES` de `js/validadores.js` actúa como tabla de estrategias que `js/validacion.js` selecciona dinámicamente mediante el atributo declarativo `data-validar` de cada campo HTML.
+
+### Documentación JSDoc (`npm run docs`)
+
+Los 17 módulos incorporan comentarios **JSDoc** completos:
+- **Requisitos HTML de cada página** en la cabecera `@file` de los controladores (IDs, templates y diálogos necesarios).
+- **Tipos de datos (`@typedef`):** `Usuario`, `Sesion`, `Videojuego`, `Dlc`, `ResultadoPaginacion`, `ObjetoRequisitos`, etc.
+- **Eventos (`@fires`, `@listens`):** documentan el evento propio `aviso` y los eventos DOM escuchados por cada módulo.
+- **Ejemplos ejecutables (`@example`):** incluidos en las funciones puras (`validadores.js`, `paginar.js`, `buscador.js`).
+
+La documentación HTML navegable se genera automáticamente en la carpeta `docs/` (excluida de Git en `.gitignore`) utilizando `README.md` como portada según `jsdoc.json`:
+
+```bash
+npm run docs
+```
 
 ## Cómo ejecutarlo
 
@@ -69,19 +151,19 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
    ```
 
 2. **Visualizar la aplicación web:**
-   Abrir cualquiera de las páginas (`index.html`, `registro.html`, `listado.html`, `ficha.html`, `usuarios.html`) con la extensión **Live Server** de VS Code o sirviendo el directorio raíz con cualquier servidor estático local.
+   Servir la raíz del repositorio en el puerto `3901` (el Dev Container arranca `serve` automáticamente) o usar `npx serve@14.2.6 --listen 3901 .` y abrir `http://localhost:3901/index.html`.
 
 3. **Ejecutar tests unitarios y de integración:**
    ```bash
    npm test
    ```
-   Ejecuta la suite completa de Vitest (127 pruebas en verde en 10 suites de prueba).
+   Ejecuta la suite completa de Vitest (**472 pruebas en verde en 21 archivos de prueba**).
 
 4. **Comprobar cobertura de código:**
    ```bash
    npm run coverage
    ```
-   Genera el reporte de cobertura mediante V8, superando ampliamente el 90% requerido en funciones lógicas puras (100% en validadores y hashing criptográfico).
+   Genera el informe de cobertura V8 y exige un umbral mínimo del **90 % de líneas por archivo** en las funciones puras y de datos (`validadores.js`, `paginar.js`, `buscador.js` y `juegos.js`).
 
 5. **Verificar calidad estática y formato:**
    ```bash
@@ -94,7 +176,16 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
    ```bash
    npm run e2e
    ```
-   Arranca automáticamente el servidor estático (`serve` en el puerto `3901`) según `playwright.config.js` y ejecuta los recorridos reales en Chromium. También admite la variable `BASE_URL` para lanzar las mismas pruebas contra una web ya desplegada (por ejemplo, `BASE_URL=https://mi-proyecto.vercel.app npm run e2e`).
+   Arranca automáticamente el servidor estático (`serve` en el puerto `3901`) según `playwright.config.js` y ejecuta los 3 recorridos reales en Chromium (`humo.spec.js`, `sesion.spec.js` y `crud.spec.js`). Con la variable `BASE_URL` lanza las mismas pruebas contra la web desplegada sin arrancar `serve`:
+   ```bash
+   BASE_URL=https://gamevault-pablo.vercel.app npm run e2e
+   ```
+
+7. **Generar documentación JSDoc y distribución para producción:**
+   ```bash
+   npm run docs   # Genera la documentación HTML en docs/
+   npm run build  # Empaqueta la web distribuible en dist/
+   ```
 
 ## Almacenamiento y sesión
 
