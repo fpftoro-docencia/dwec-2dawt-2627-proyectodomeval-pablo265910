@@ -622,11 +622,6 @@ El flujo sigue un escalonamiento de menor a mayor coste computacional aplicando 
 
 ## Despliegue continuo
 
-<!-- Sprint 3 pendientes:
-     2. Qué hacen despliegue.yml y release.yml, y qué comprueba tu prueba de humo.
-     3. El camino de un cambio, con tus palabras: desde tu git push en una rama hasta que se ve en
-        la web, qué se comprueba en cada paso y qué pasa si algo falla. -->
-
 **Web publicada:** https://gamevault-pablo.vercel.app/
 
 ### Configuración de Vercel
@@ -670,14 +665,34 @@ Cada vez que se sube una etiqueta de versión que comienza por `v` (por ejemplo,
 2. **`Humo`** (`needs: comprobar`): instala Chromium y ejecuta exclusivamente `npx playwright test e2e/humo.spec.js` contra la dirección de producción (`BASE_URL: https://gamevault-pablo.vercel.app`) para verificar que la web publicada está operativa antes de empaquetar la versión.
 3. **`Release`** (`needs: humo`): genera la distribución limpia con `npm run build` en `dist/`, la comprime en `gamevault-<tag>.zip` usando `github.ref_name` y crea automáticamente la Release en GitHub con `gh release create --generate-notes` autenticándose mediante el *token* efímero `GH_TOKEN: ${{ github.token }}`.
 
+### El camino de un cambio
+
+Desde que se escribe una mejora en local hasta que llega a los usuarios en https://gamevault-pablo.vercel.app/, cada cambio recorre un circuito protegido por dos barreras automáticas:
+
+1. **Rama de funcionalidad y *pull request*:** el desarrollo se realiza en una rama propia con commits atómicos y se sube con `git push`. Al abrir una *pull request* hacia `main`, ocurren dos procesos en paralelo:
+   - **Integración continua (`ci.yml`):** encadena `Calidad` (ESLint + Prettier) → `Tests` (Vitest + cobertura ≥ 90 % por archivo + artefacto `coverage/`) → `E2E` (Playwright contra `serve` en local, subiendo `playwright-report/` solo si falla).
+   - **Vista previa y pruebas desplegadas (`despliegue.yml`):** Vercel ejecuta `npm run build` (`dist/`), genera una URL HTTPS de vista previa comentada en la PR y emite `deployment_status`. Cuando termina en `success`, GitHub Actions dispara `E2E desplegado` con `BASE_URL` apuntando a esa vista previa para validar el paquete real en la nube.
+   - **Si algo falla en la PR:** los checks salen en rojo y **no se fusiona**; se corrige en la misma rama y cada nuevo `push` cancela ejecuciones previas (`concurrency`) y revalida todo.
+2. **Fusión en `main` y promoción controlada a producción:** una vez todo está en verde y se fusiona con *merge commit* en `main`:
+   - GitHub Actions vuelve a ejecutar `ci.yml` (`Calidad` → `Tests` → `E2E`) sobre el commit final de `main`.
+   - En paralelo, Vercel construye la nueva versión de producción en estado *Staged* y espera a los **Deployment Checks** (`Calidad`, `Tests`, `E2E` y `E2E desplegado`).
+   - **Si todas las comprobaciones pasan:** Vercel promociona automáticamente la nueva versión al dominio público https://gamevault-pablo.vercel.app/.
+   - **Si alguna comprobación falla:** Vercel marca el despliegue como **`Checks Failed`**, **retiene** esa versión sin asignar el dominio de producción y los usuarios siguen viendo sin interrupción la última versión buena anterior.
+3. **Publicación de versión (`release.yml`):** al etiquetar `main` con un *tag* `v*` (`git tag v1.0 && git push origin v1.0`), GitHub Actions ejecuta `Comprobar` → `Humo` (`e2e/humo.spec.js` contra producción) → `Release`, generando `gamevault-<tag>.zip` desde `dist/` y publicando la Release con sus notas automáticas.
+
+### Evidencias de Despliegue Continuo
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
-| *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
-| Versión retenida por Vercel | <!-- enlace a la ejecución en rojo --> | `img/vercel-retenido.png` |
-| Release `v1.0` | <!-- enlace a la Release --> | — |
+| *Pull request* con su vista previa y `E2E desplegado` | [PR #41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/41) · [Vista previa](https://dwec-2dawt-2627-proyectodomeval-pablo2659-git-66743d-pablo-dfe7.vercel.app) · [Ejecución `E2E desplegado`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45844937354) | ![Comprobaciones en verde en PR #41](img/pr-comprobaciones.png) |
+| Versión retenida por Vercel | [Ejecución en rojo (#45847405642)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847405642) · [Despliegue retenido en Vercel](https://vercel.com/pablo-dfe7/dwec-2dawt-2627-proyectodomeval-pablo265910/EaNQWD4ariSYmixguK7fJtmfcB7q) · [Reversión en verde (#45847873622)](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847873622) | ![Despliegue retenido en Vercel](img/vercel-retenido.png) |
+| Release de prueba (`v0.9`) y Release final (`v1.0`) | [Release `v0.9` verificada](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/releases/tag/v0.9) · [Release `v1.0`](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/releases/tag/v1.0) | — |
 
-<!-- Qué rompiste a propósito para la versión retenida, qué viste en Vercel y cómo comprobaste que la
-     web seguía con la versión anterior. -->
+#### Detalle de la prueba de versión retenida
+- **Qué se rompió a propósito:** en el commit `f8380d0` sobre `main` se modificó el encabezado `<h1>` de `index.html` de `Bienvenido a GameVault` a `Prueba retenida en main`, manteniendo intactos ESLint, Prettier y los tests unitarios/integración para que fallase específicamente la prueba de extremo a extremo `e2e/humo.spec.js`.
+- **Qué ocurrió en GitHub Actions y Vercel:** en la ejecución [#45847405642](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847405642), `Calidad` y `Tests` pasaron en verde pero **`E2E` falló en rojo** (subiendo el artefacto `informe-playwright`). En el panel de Vercel ([despliegue `EaNQWD4ar`](https://vercel.com/pablo-dfe7/dwec-2dawt-2627-proyectodomeval-pablo265910/EaNQWD4ariSYmixguK7fJtmfcB7q), captura `img/vercel-retenido.png`), Vercel mostró **`Status: Checks Failed`**, **`Environment: Production Staged`** y **`Assigning Custom Domains` en pausa**, reteniendo el despliegue sin promocionarlo al dominio público.
+- **Cómo se comprobó que producción seguía con la versión anterior:** al abrir https://gamevault-pablo.vercel.app/ mientras el despliegue permanecía retenido, la portada continuaba mostrando el encabezado **`Bienvenido a GameVault`** (y no `Prueba retenida en main`).
+- **Recuperación:** tras revertir el commit (`5ed9869`), la ejecución [#45847873622](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45847873622) y `E2E desplegado` ([#45848141528](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/actions/runs/45848141528)) volvieron a verde y Vercel promovió normalmente la nueva versión.
 
 ## Organización del trabajo
 
@@ -687,12 +702,12 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 
 - [x] **Funcionalidad completa:** El código implementa todos los requisitos técnicos y de negocio de la tarea respetando el contrato de la aplicación sin librerías externas de JS.
 - [x] **Semántica y Accesibilidad:** Estructura HTML basada en elementos semánticos estándar (`<dialog>`, `<template>`, `<select>`, `<button>`), con gestión accesible de estados e interacción (`role="status"`, `aria-invalid`, `aria-describedby`, `aria-current="page"`).
-- [x] **Calidad de código (Linting & Formato):** El código cumple con las reglas configuradas en ESLint (incluidas las 3 reglas adicionales) y Prettier; `npm run lint` y `npm run format:check` se ejecutan sin errores ni advertencias.
+- [x] **Calidad de código (Linting & Formato):** El código cumple con las reglas configuradas en ESLint (incluidas las 4 reglas adicionales) y Prettier; `npm run lint` y `npm run format:check` se ejecutan sin errores ni advertencias.
 - [x] **Pruebas automatizadas en verde:** Se han desarrollado los tests unitarios o de integración correspondientes con `AlmacenFalso` y pasan limpiamente al ejecutar `npm test`.
 - [x] **Cobertura verificada:** Las funciones lógicas puras (validadores y paginación) mantienen una cobertura de líneas igual o superior al 90% (`npm run coverage`).
 - [x] **Empaquetado validado:** El script de compilación `npm run build` genera la versión distribuible en la carpeta `dist/` sin errores.
 - [x] **Control de versiones ordenado:** El desarrollo se realiza en una rama propia de funcionalidad con commits semánticos y concisos.
-- [x] **Integración Continua aprobada:** La Pull Request asociada cuenta con todos los checks del workflow de GitHub Actions (`ci.yml`) en verde antes de fusionarse a `main`.
+- [x] **Integración Continua aprobada:** La Pull Request asociada cuenta con todos los checks del workflow de GitHub Actions (`ci.yml` y `despliegue.yml`) en verde antes de fusionarse a `main`.
 - [x] **Sincronización del tablero:** La tarjeta correspondiente en Trello se ha desplazado a la columna «Hecho».
 
 ### Sprints
@@ -701,11 +716,11 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 |--------|--------------|-------|-------------|-----------|
 | 1 | 12 nov 2026 | `v0.1` | Usuarios, sesión en `sessionStorage`, roles con primer usuario administrador, registro con validador reactivo de contraseña (`\p{Ll}`, `\p{Lu}`), login con SHA-256 (`resumirClave`), maquetación base de las 5 páginas, sistema de eventos propios `aviso`, tests unitarios con `AlmacenFalso` y workflow CI paso 1 (calidad y tests). | El Sprint 1 ha establecido con éxito los cimientos arquitectónicos de GameVault. Se ha implementado un flujo de autenticación, control de roles y sesiones completamente desacoplado y protegido contra datos corruptos en el navegador del cliente. La suite de 127 tests en Vitest con `AlmacenFalso` y el pipeline de CI en GitHub Actions garantizan una base de código limpia y con cobertura verificada superior al 90%. El mayor aprendizaje ha sido la aplicación práctica de inyección de dependencias y eventos nativos (`CustomEvent`), fundamentales para lograr un diseño modular y fácilmente testeable. |
 | 2 | 19 nov 2026 | `v0.2` | Entidad Videojuego, CRUD `juegos.js` por usuario, validadores con algoritmo EAN-13, SKU y estantería, lógica condicional de formato físico vs digital, grupo dinámico de DLCs (0 a 3) clonado de `<template>`, catálogo con buscador con debounce y modal `<dialog>`, paginación pura, zona de administración de usuarios, delegación de eventos, tests de integración y E2E Playwright con cobertura >= 90% y CI completo. | El Sprint 2 ha completado toda la funcionalidad CRUD de GameVault y su pirámide de pruebas sin recurrir a JavaScript de Bootstrap ni librerías externas. Destacan la reutilización transversal de `paginar.js`, `paginacion.js` y `buscador.js` entre el catálogo y la administración de usuarios, el motor genérico de validación en tiempo real (`blur` en captura, `setCustomValidity` y `aria-describedby`) y la gestión accesible del modal nativo `<dialog>` y de las secciones condicionales con `<fieldset disabled>` y `FormData`. Cubrir los tres niveles de prueba (unitarias con umbral >= 90% en funciones puras, integración en Happy-DOM con temporizadores falsos y E2E en Playwright con selectores semánticos) ha reforzado la accesibilidad real y la fiabilidad previa al despliegue continuo del Sprint 3. |
-| 3 | 26 nov 2026 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3.* |
+| 3 | 26 nov 2026 | `v1.0` | Despliegue continuo en Vercel, vistas previas automáticas en Pull Requests probadas con Playwright (`BASE_URL`), prueba de humo en producción (`humo.spec.js`), automatización de GitHub Releases con archivo ZIP en tags `v*`, documentación JSDoc completa y evidencias finales. | *Pendiente de cierre de Sprint 3 (`[S3-08]`).* |
 
 **Tablero de Trello:** [GameVault - Tablero de Seguimiento (DWEC)](https://trello.com/b/b1iXcn0Q/gamevault-proyecto-dom-dwec) *(compartido con el profesor)*
 
-**Blog del proyecto:** [blog/README.md](blog/README.md) <!-- dificultades y problemas conceptuales de cada sprint -->
+**Blog del proyecto:** [blog/README.md](blog/README.md)
 
 ### Ramas y versiones
 
@@ -716,17 +731,37 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `cabecera-sesion` | [S1-03] Cabecera común, menú de navegación y sesión de usuario | [#7](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/7) |
 | `nueva-estetica-minimalista` | Actualización de diseño Dark Minimalism, plantillas HTML y recursos gráficos | [#8](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/8) |
 | `avisos-custom-event` | [S1-04] Sistema de eventos de avisos personalizados ('aviso') | [#11](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/11) |
-| `modulo-sesion` | [S1-05] Módulo de gestión de sesión (sesion.js) | [#12](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/12) |
-| `modulo-usuarios` | [S1-06] Módulo de gestión de usuarios y roles (usuarios.js) | [#13](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/13) |
-| `pagina-registro` | [S1-07] Página y formulario de registro (registro.html) | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/14) |
-| `pagina-login` | [S1-08] Página de inicio de sesión (index.html) | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/15) |
+| `modulo-sesion` | [S1-05] Módulo de gestión de sesión (`sesion.js`) | [#12](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/12) |
+| `modulo-usuarios` | [S1-06] Módulo de gestión de usuarios y roles (`usuarios.js`) | [#13](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/13) |
+| `pagina-registro` | [S1-07] Página y formulario de registro (`registro.html`) | [#14](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/14) |
+| `pagina-login` | [S1-08] Página de inicio de sesión (`index.html`) | [#15](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/15) |
 | `rutas-privadas` | [S1-09] Control de acceso y protección de rutas privadas | [#16](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/16) |
 | `calidad-codigo` | [S1-10] Configuración de calidad de código con ESLint y Prettier | [#17](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/17) |
-| `tests-unitarios` | [S1-11] Tests unitarios con AlmacenFalso (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
+| `tests-unitarios` | [S1-11] Tests unitarios con `AlmacenFalso` (Usuarios, Sesión y Validadores) | [#18](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/18) |
 | `workflow-ci` | [S1-12] Workflow de Integración Continua - Paso 1: Calidad y Tests | [#19](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/19) |
-| `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag v0.1 y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
-| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (juegos.js) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
-| `ci-paso-2-cierre-sprint-2` | [S2-17][S2-18] Workflow CI Paso 2 (E2E y artefactos), blog y cierre del Sprint 2 (v0.2) | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37) |
+| `cierre-sprint-1` | [S1-13] Cierre del Sprint 1: Blog, Tag `v0.1` y Reflexión | [#20](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/20) |
+| `modulo-juegos` | [S2-01] Módulo de persistencia de videojuegos (`juegos.js`) | [#21](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/21) |
+| `validadores-videojuego` | [S2-02] Validadores de la entidad Videojuego (EAN-13, SKU, Estantería) | [#22](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/22) |
+| `logica-paginacion` | [S2-03] Lógica pura de paginación (`paginar.js`) | [#23](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/23) |
+| `componente-paginacion` | [S2-04] Componente visual de paginación y gestión de URL (`paginacion.js`) | [#24](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/24) |
+| `ficha-campos-base` | [S2-05] Ficha: campos base, `FormData` y fecha máxima dinámica | [#25](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/25) |
+| `ficha-campo-condicional` | [S2-06] Ficha: campo condicional (Formato Físico vs Digital) | [#26](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/26) |
+| `ficha-dlcs-dinamicos` | [S2-07] Ficha: grupo dinámico de DLCs con `<template>` (0 a 3) | [#27](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/27) |
+| `motor-validacion-accesibilidad` | [S2-08] Motor genérico de validación en tiempo real y accesibilidad | [#28](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/28) |
+| `ficha-alta-edicion` | [S2-09] Flujo completo de alta y edición en `ficha.html` | [#29](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/29) |
+| `listado-template-dialog` | [S2-10] Listado con `<template>` y diálogo modal `<dialog>` | [#30](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/30) |
+| `buscador-debounce` | [S2-11] Buscador con *debounce* y normalización Unicode NFD | [#31](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/31) |
+| `admin-usuarios` | [S2-12] Zona de administración de usuarios con protección auto-revocación | [#32](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/32) |
+| `documentacion-eventos` | [S2-13] Delegación de eventos y documentación de propagación | [#33](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/33) |
+| `cobertura-unitaria` | [S2-14] Pruebas unitarias de entidad y cobertura ≥ 90 % | [#34](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/34) |
+| `tests-integracion` | [S2-15] Tests de integración con Happy-DOM | [#35](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/35) |
+| `pruebas-e2e` | [S2-16] Pruebas End-to-End con Playwright (`sesion.spec.js`, `crud.spec.js`) | [#36](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/36) |
+| `ci-paso-2-cierre-sprint-2` | [S2-17][S2-18] Workflow CI Paso 2 (E2E y artefactos), blog y cierre Sprint 2 (`v0.2`) | [#37](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/37) |
+| `jsdoc-documentacion` | [S3-05] Documentación JSDoc completa de los 17 módulos (`npm run docs`) | [#38](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/38) |
+| `vercel-produccion` | [S3-01] Despliegue de producción en Vercel y rediseño Spatial Flip 3D | [#39](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/39) |
+| `vistas-previas-e2e` | [S3-02] Vistas previas en PRs y workflow `despliegue.yml` (`E2E desplegado`) | [#40](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/40) |
+| `prueba-humo` | [S3-03] Prueba de humo rápida (`e2e/humo.spec.js`) | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/41) |
+| `workflow-release` | [S3-04] Workflow de GitHub Release automatizado con archivo ZIP (`release.yml`) | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/42) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
