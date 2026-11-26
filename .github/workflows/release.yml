@@ -1,0 +1,98 @@
+name: Publicar versión
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  comprobar:
+    name: Comprobar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias limpias
+        run: npm ci
+
+      - name: Comprobar calidad estática con ESLint
+        run: npm run lint
+
+      - name: Comprobar formato de código con Prettier
+        run: npm run format:check
+
+      - name: Ejecutar pruebas unitarias y de integración
+        run: npm test
+
+  humo:
+    name: Humo
+    needs: comprobar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias limpias
+        run: npm ci
+
+      - name: Instalar navegador Chromium de Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar prueba de humo contra producción
+        env:
+          BASE_URL: https://gamevault-pablo.vercel.app
+        run: npx playwright test e2e/humo.spec.js
+
+      - name: Subir informe de Playwright si falla
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: informe-playwright-humo
+          path: playwright-report/
+
+  release:
+    name: Release
+    needs: humo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node.js 24 con la caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependencias limpias
+        run: npm ci
+
+      - name: Construir la web en dist/
+        run: npm run build
+
+      - name: Comprimir la web en un archivo ZIP
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: (cd dist && zip -r "../gamevault-$VERSION.zip" .)
+
+      - name: Crear GitHub Release con notas y archivo ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.ref_name }}
+        run: gh release create "$VERSION" "gamevault-$VERSION.zip" --generate-notes
