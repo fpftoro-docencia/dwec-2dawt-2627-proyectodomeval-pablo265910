@@ -501,6 +501,14 @@ La prueba de humo ([`e2e/humo.spec.js`](e2e/humo.spec.js)) realiza una verificac
 - Verifica que el encabezado principal, los controles del formulario de inicio de sesión (`Nombre de usuario`, `Contraseña`, botón `Entrar en mi biblioteca`) y la región accesible de avisos (`role="status"`) están cargados.
 - Comprueba que la navegación hacia `registro.html` mediante el enlace `Crear cuenta` carga el título y el formulario de registro correctamente.
 
+### Publicación automática de versiones (`.github/workflows/release.yml`)
+
+Cada vez que se sube una etiqueta de versión que comienza por `v` (por ejemplo, `v0.9` o `v1.0`), el *workflow* [`.github/workflows/release.yml`](.github/workflows/release.yml) con permisos `contents: write` ejecuta tres trabajos encadenados mediante `needs`:
+
+1. **`Comprobar`:** instala dependencias limpias (`npm ci`) y valida calidad (`npm run lint`), formato (`npm run format:check`) y la suite unitaria e integración (`npm test`).
+2. **`Humo`** (`needs: comprobar`): instala Chromium y ejecuta exclusivamente `npx playwright test e2e/humo.spec.js` contra la dirección de producción (`BASE_URL: https://gamevault-pablo.vercel.app`) para verificar que la web publicada está operativa antes de empaquetar la versión.
+3. **`Release`** (`needs: humo`): genera la distribución limpia con `npm run build` en `dist/`, la comprime en `gamevault-<tag>.zip` usando `github.ref_name` y crea automáticamente la Release en GitHub con `gh release create --generate-notes` autenticándose mediante el *token* efímero `GH_TOKEN: ${{ github.token }}`.
+
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
 | *Pull request* con su vista previa y `E2E desplegado` | <!-- enlace a la pull request --> | `img/pr-comprobaciones.png` |
