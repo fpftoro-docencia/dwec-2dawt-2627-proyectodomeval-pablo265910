@@ -199,12 +199,18 @@ export function alternarSeccionFormato(formulario, formato) {
     controlesFisicos.forEach((control) => {
       control.disabled = !esFisico;
       if (!esFisico) {
+        if (typeof control.setCustomValidity === 'function') {
+          control.setCustomValidity('');
+        }
         control.classList.remove('is-invalid', 'is-valid');
         control.setAttribute('aria-invalid', 'false');
         const descId = control.getAttribute('aria-describedby');
         if (descId) {
           const cajaError = formulario.querySelector(`#${descId}`);
-          if (cajaError) cajaError.textContent = '';
+          if (cajaError) {
+            cajaError.textContent = '';
+            cajaError.classList.remove('d-block');
+          }
         }
       }
     });
@@ -217,12 +223,18 @@ export function alternarSeccionFormato(formulario, formato) {
     controlesDigitales.forEach((control) => {
       control.disabled = !esDigital;
       if (!esDigital) {
+        if (typeof control.setCustomValidity === 'function') {
+          control.setCustomValidity('');
+        }
         control.classList.remove('is-invalid', 'is-valid');
         control.setAttribute('aria-invalid', 'false');
         const descId = control.getAttribute('aria-describedby');
         if (descId) {
           const cajaError = formulario.querySelector(`#${descId}`);
-          if (cajaError) cajaError.textContent = '';
+          if (cajaError) {
+            cajaError.textContent = '';
+            cajaError.classList.remove('d-block');
+          }
         }
       }
     });
