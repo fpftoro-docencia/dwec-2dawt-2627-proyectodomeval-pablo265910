@@ -67,6 +67,7 @@ export async function cerrarSesion(page) {
 export async function crearVideojuegoDesdeFicha(page, datos) {
   await page.getByRole('link', { name: '+ Añadir videojuego' }).click();
   await expect(page).toHaveURL(/ficha\.html/);
+  await expect(page.getByRole('heading', { name: 'Alta de Videojuego' })).toBeVisible();
 
   await page.getByLabel(/Título del videojuego/i).fill(datos.titulo);
   await page.getByLabel(/Plataforma/i).selectOption(datos.plataforma);

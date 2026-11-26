@@ -476,7 +476,22 @@ El proyecto está conectado al repositorio de GitHub mediante la aplicación ofi
 - **Build Command:** `npm run build`. Ejecuta `scripts/construir.js`, que genera la carpeta `dist/` copiando las 5 páginas HTML, `css/`, `js/`, `img/` y la hoja de estilos CSS de Bootstrap (`node_modules/bootstrap/dist/css/bootstrap.min.css`).
 - **Output Directory:** `dist` (directorio de salida que Vercel publica en producción y en cada vista previa).
 - **Deployment Protection:** Se ha desactivado *Vercel Authentication* para que tanto el entorno de producción como las URLs de vista previa sean accesibles públicamente sin iniciar sesión en Vercel, requisito indispensable para que Playwright pueda ejecutar las pruebas automatizadas contra la web desplegada.
-- **Deployment Checks (`Settings → Build and Deployment → Deployment Checks` → GitHub):** Se han vinculado como comprobaciones obligatorias los trabajos `Calidad`, `Tests` y `E2E` del *workflow* de GitHub Actions (`ci.yml`), manteniendo activada la asignación automática del dominio de producción. Con esta configuración, cada `push` a `main` construye el despliegue en paralelo, pero Vercel bloquea su promoción al dominio público de producción si cualquiera de las comprobaciones de CI falla, conservando activa la versión anterior en verde (`E2E desplegado` se incorporará en el siguiente paso al configurar las vistas previas).
+- **Deployment Checks (`Settings → Build and Deployment → Deployment Checks` → GitHub):** Se han vinculado como comprobaciones obligatorias los trabajos `Calidad`, `Tests`, `E2E` (`ci.yml`) y `E2E desplegado` (`despliegue.yml`), manteniendo activada la asignación automática del dominio de producción. Con esta configuración, cada `push` a `main` construye el despliegue en paralelo, pero Vercel bloquea su promoción al dominio público de producción si cualquiera de las comprobaciones falla, conservando activa la versión anterior en verde.
+
+### Vistas previas y pruebas contra lo desplegado (`.github/workflows/despliegue.yml`)
+
+Cada *pull request* abierta contra `main` genera automáticamente un despliegue de **vista previa** (*Preview Deployment*) en Vercel con su propia URL HTTPS pública, publicada por el bot de Vercel en un comentario de la *pull request*.
+
+Para verificar que el empaquetado final en `dist/` y las rutas desplegadas funcionan igual que en local, el *workflow* [`.github/workflows/despliegue.yml`](.github/workflows/despliegue.yml) ejecuta los recorridos de Playwright directamente contra cada despliegue de Vercel:
+
+- **Evento disparador:** `deployment_status`, emitido por Vercel al finalizar la construcción de una vista previa de *pull request* o de una versión de producción en `main`.
+- **Permisos:** `permissions: contents: read`.
+- **Trabajo `E2E desplegado`:**
+  - Condición `if: github.event.deployment_status.state == 'success'` para ejecutarse únicamente cuando el despliegue se ha construido correctamente.
+  - Descarga el commit exacto del despliegue mediante `actions/checkout@v7` con `ref: ${{ github.event.deployment.sha }}`.
+  - Instala Node.js 24 con caché de npm (`actions/setup-node@v7`), dependencias limpias (`npm ci`) y Chromium (`npx playwright install --with-deps chromium`).
+  - Lanza `npm run e2e` definiendo `BASE_URL: ${{ github.event.deployment_status.environment_url }}`, de forma que `playwright.config.js` apunta directamente a la URL desplegada sin arrancar `serve`.
+  - Si alguna prueba falla (`if: failure()`), sube `playwright-report/` como artefacto (`informe-playwright-desplegado`) para facilitar el diagnóstico.
 
 | Evidencia | Enlace | Captura |
 |-----------|--------|---------|
