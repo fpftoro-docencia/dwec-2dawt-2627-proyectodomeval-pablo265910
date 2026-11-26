@@ -88,3 +88,58 @@ Fragmento de [`js/listado.js`](../js/listado.js#L292-L308) gestionando el cierre
   modal.addEventListener('click', manejadorClickBackdrop);
   modal.addEventListener('cancel', manejadorCancel);
 ```
+
+## 26/11/2026 · Sprint 3 · Despliegue continuo, vistas previas y entrega final (v1.0)
+
+### Dificultades y cómo las resolví
+
+La primera dificultad técnica del Sprint 3 apareció al conectar Vercel con el *workflow* `.github/workflows/despliegue.yml`. Aunque Vercel construía y comentaba automáticamente las vistas previas en cada *pull request*, la API de *Deployments* de GitHub devolvía `0` despliegues y el evento `deployment_status` nunca se disparaba. Tras revisar la configuración de integración, comprobamos dos claves fundamentales: en primer lugar, activar explícitamente **`deployment_status` Events** en *Settings → Git* del proyecto en Vercel (y añadir después **`E2E desplegado`** a los *Deployment Checks* junto a `Calidad`, `Tests` y `E2E`); en segundo lugar, entender que GitHub Actions solo escucha eventos `deployment_status` cuando el archivo `despliegue.yml` ya existe en la rama por defecto (`main`), y que es imprescindible pasar `ref: ${{ github.event.deployment.sha }}` en `actions/checkout@v7` para descargar el commit exacto de la vista previa en lugar de quedarse en `main`.
+
+La segunda dificultad real ocurrió en la PR #41 al estrenar la prueba de humo (`e2e/humo.spec.js`): **`E2E desplegado` pasó en verde** contra la vista previa de Vercel, pero el trabajo **`E2E` local falló en rojo**. Inspeccionando el log de GitHub Actions vimos que al navegar con `page.goto('/')`, Vercel servía `index.html` automáticamente, mientras que `serve@14.2.6` con `"cleanUrls": false` (configurado en `serve.json` para conservar parámetros como `ficha.html?id=…`) devolvía un listado de directorio (`Files within ...`) en lugar de la página de inicio. Lo resolví cambiando la navegación inicial a `page.goto('/index.html')`, garantizando un comportamiento idéntico en `serve`, en vistas previas de Vercel y en producción.
+
+La tercera dificultad fue prevenir condiciones de carrera en las pruebas E2E contra despliegues remotos por HTTPS. En local, los módulos ES6 de `ficha.html` cargan de forma casi instantánea, pero sobre red remota `await expect(page).toHaveURL(/ficha\.html/)` en `e2e/ayudas.js` puede resolverse antes de que `iniciarFicha()` haya registrado los oyentes del formato condicional y los DLCs. Lo solucioné esperando de forma semántica a que aparezca el encabezado `Alta de Videojuego` (texto que `js/ficha.js` establece precisamente al inicializarse), evitando esperas fijas arbitrarias (`waitForTimeout`).
+
+Por último, al redactar `.github/workflows/release.yml`, tuvimos en cuenta que Prettier valida también los archivos YAML dentro de `.github/workflows/` con `printWidth: 100`. Extraer `${{ github.ref_name }}` a una variable de entorno `VERSION` dentro de `env:` permitió mantener los comandos de compresión ZIP y `gh release create` cortos, legibles, conformes a `npm run format:check` y protegidos frente a interpolación directa en el intérprete de comandos.
+
+### Problemas conceptuales
+
+Uno de los conceptos que cobró pleno sentido en este sprint fue entender **qué es una vista previa (*Preview Deployment*)** y cómo se coordina el circuito completo entre GitHub Actions y los **Deployment Checks** de Vercel. Antes parecía redundante ejecutar Playwright dos veces (`E2E` en `ci.yml` y `E2E desplegado` en `despliegue.yml`), pero al construir `dist/` con `scripts/construir.js` comprendí que una prueba local con `serve` no detecta un recurso olvidado en `dist/`, un error de ruta relativa o un problema de protección de acceso (*Vercel Authentication*). Al probar la versión retenida rompiendo a propósito el encabezado `<h1>` de `index.html` en `main` (`f8380d0`), vimos en directo cómo `E2E` fallaba, Vercel dejaba el despliegue en **`Production Staged / Checks Failed`** sin asignar el dominio público y `https://gamevault-pablo.vercel.app/` continuaba sirviendo la versión anterior intacta hasta revertir el commit.
+
+Fragmento de [`.github/workflows/despliegue.yml`](../.github/workflows/despliegue.yml#L10-L33) donde se verifica el estado `success`, se descarga el SHA exacto desplegado y se inyecta `BASE_URL`:
+
+```yaml
+  e2e-desplegado:
+    name: E2E desplegado
+    if: github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código del despliegue
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+...
+      - name: Ejecutar pruebas E2E contra el despliegue
+        env:
+          BASE_URL: ${{ github.event.deployment_status.environment_url }}
+        run: npm run e2e
+```
+
+El otro concepto clave fue la diferencia entre el ciclo de pruebas de una PR y la **prueba de humo (*smoke test*) previa a una Release**. Una prueba de humo no intenta cubrir cada caso límite del CRUD (eso ya lo hicieron los 472 tests de Vitest y los recorridos E2E), sino comprobar en pocos segundos y de forma no destructiva que la web publicada en producción responde con HTTP `200` y renderiza sus puntos de entrada críticos. Encadenarla con `needs` dentro de `.github/workflows/release.yml` (`Comprobar` → `Humo` → `Release`) garantiza que jamás se publique un archivo ZIP ni una Release de GitHub si el código o la producción tienen algún fallo, utilizando además el *token* temporal `GH_TOKEN: ${{ github.token }}` con `permissions: contents: write` sin almacenar secretos manuales.
+
+Fragmento de [`.github/workflows/release.yml`](../.github/workflows/release.yml#L68-L98) que construye `dist/`, genera el archivo ZIP con el nombre del *tag* y publica la Release automáticamente:
+
+```yaml
+      - name: Construir la web en dist/
+        run: npm run build
+
+      - name: Comprimir la web en un archivo ZIP
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: (cd dist && zip -r "../gamevault-$VERSION.zip" .)
+
+      - name: Crear GitHub Release con notas y archivo ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ github.ref_name }}
+        run: gh release create "$VERSION" "gamevault-$VERSION.zip" --generate-notes
+```
