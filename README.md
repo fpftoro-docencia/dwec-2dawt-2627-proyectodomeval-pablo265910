@@ -472,14 +472,84 @@ if (!resultado.esValido) {
 
 ## Pruebas y cobertura
 
-<!-- 1. Tabla de la pirámide: tipo (unitario, de integración o de extremo a extremo), fichero,
-        qué prueba y cuántos tests tiene. Por qué cada cosa se prueba en ese nivel y no en otro.
-     2. Cómo simulas al usuario (eventos, requestSubmit), los servicios (AlmacenFalso, el resumen
-        de la contraseña, la navegación) y el tiempo (temporizadores falsos).
-     3. Cómo se ejecutan las mismas pruebas de extremo a extremo con serve y contra la web
-        desplegada (BASE_URL).
-     4. Pega la salida de `npm run coverage` (con el resumen de la cobertura) y de `npm run e2e`.
-        Explica qué umbral has puesto, a qué ficheros y qué queda sin probar y por qué. -->
+La estrategia de pruebas de GameVault sigue la **pirámide de pruebas** en tres niveles complementarios (475 pruebas automatizadas en 24 ficheros): muchas pruebas unitarias rápidas en la base, pruebas de integración en Happy-DOM en el nivel intermedio y tres recorridos críticos de extremo a extremo en navegador real en la cúspide.
+
+### Pirámide de pruebas
+
+| Nivel | Fichero | Qué prueba | Tests |
+|---|---|---|---:|
+| Unitario | `tests/unitarios/validadores.test.js` | Expresiones regulares, algoritmo EAN-13 módulo 10, fechas, DLCs y límites con tablas `it.each` | 199 |
+| Unitario | `tests/unitarios/ficha.test.js` | Fecha máxima dinámica, campos condicionales, DLCs (0–3), `FormData` y alta/edición | 48 |
+| Unitario | `tests/unitarios/validacion.test.js` | Motor de validación en tiempo real (`blur` en captura, `input`/`change`, `aria-invalid`, foco) | 27 |
+| Unitario | `tests/unitarios/paginacion.test.js` | Controles accesibles de paginación, delegación `closest` y sincronización de `?pagina=` | 24 |
+| Unitario | `tests/unitarios/juegos.test.js` | CRUD de videojuegos con `AlmacenFalso`, aislamiento por usuario y datos corruptos | 22 |
+| Unitario | `tests/unitarios/listado.test.js` | Renderizado seguro con `<template>`, giro 3D, `<dialog>` de borrado y buscador | 21 |
+| Unitario | `tests/unitarios/paginar.test.js` | Función pura `paginar`: primera/última página, fuera de rango y lista vacía | 20 |
+| Unitario | `tests/unitarios/usuarios.test.js` | Registro (1er usuario admin), duplicados, SHA-256, roles y JSON corrupto con `AlmacenFalso` | 20 |
+| Unitario | `tests/unitarios/sesion.test.js` | Lectura/escritura de sesión en `sessionStorage`, alias y resiliencia ante errores | 19 |
+| Unitario | `tests/unitarios/buscador.test.js` | Normalización Unicode NFD (sin tildes/mayúsculas), `debounce` cancelable y filtrado | 16 |
+| Unitario | `tests/unitarios/avisos.test.js` | `CustomEvent('aviso')`, burbujeo, avisos diferidos y cierre automático con temporizadores | 11 |
+| Unitario | `tests/unitarios/admin-usuarios.test.js` | Tabla de administración, protección contra auto-revocación y búsqueda con *debounce* | 9 |
+| Unitario | `tests/unitarios/clave.test.js` | Vectores deterministas SHA-256 con Web Crypto API (`resumirClave`) | 6 |
+| Unitario | `tests/unitarios/rutas.test.js` | Guardas `protegerPaginaPrivada` y `protegerPaginaAdmin` con `location.replace` | 6 |
+| Unitario | `tests/unitarios/cabecera.test.js` | Visibilidad condicional de «Usuarios» según rol y cierre de sesión | 3 |
+| Integración | `tests/integracion/ficha.test.js` | `ficha.html` real en Happy-DOM: validación `blur`/`input`, alta física con DLC y edición | 4 |
+| Integración | `tests/integracion/listado.test.js` | `listado.html` real: paginación + URL, buscador con `vi.useFakeTimers()`, `<dialog>` y giro 3D | 4 |
+| Integración | `tests/integracion/login.test.js` | `index.html`: sesión previa, campos vacíos, clave errónea y acceso válido con aviso | 4 |
+| Integración | `tests/integracion/registro.test.js` | `registro.html`: requisitos reactivos de clave, alta admin inicial y redirección | 4 |
+| Integración | `tests/integracion/admin-usuarios.test.js` | `usuarios.html` real: expulsión de no administradores, cambio de rol y auto-revocación | 3 |
+| Integración | `tests/integracion/ejemplo.test.js` | Plantilla base de integración del repositorio | 2 |
+| E2E | `e2e/humo.spec.js` | Prueba de humo rápida: HTTP 200 en `/index.html`, acceso principal y navegación a registro | 1 |
+| E2E | `e2e/sesion.spec.js` | Recorrido 1: registro inicial (admin), acceso a «Usuarios», logout, ruta privada y login | 1 |
+| E2E | `e2e/crud.spec.js` | Recorrido 2: alta física con DLC, giro 3D, recarga, edición digital y borrado en `<dialog>` | 1 |
+
+**Por qué cada cosa se prueba en su nivel:**
+- **Unitarias (451 tests):** verifican en milisegundos las reglas de negocio puras, expresiones regulares, casos límite, algoritmos (EAN-13, paginación, normalización NFD) y resiliencia ante JSON corrupto sin levantar navegadores.
+- **Integración (21 tests):** comprueban la colaboración real entre el HTML de cada página (`tests/pagina.js`) y varios módulos ES6 juntos (controlador + validación + almacenamiento + eventos) en Happy-DOM, aislando únicamente los efectos externos.
+- **Extremo a extremo (3 recorridos):** validan en Chromium real lo que Happy-DOM no puede garantizar: persistencia real entre recargas completas de página, navegación entre ficheros HTML, estilos/visibilidad reales, `<dialog>` nativo y respuesta HTTP del servidor o de Vercel.
+
+### Simulación de usuario, servicios y tiempo
+
+- **Interacciones de usuario:** en los tests de integración (`tests/pagina.js`) se carga el `<body>` real de cada página HTML y se simulan acciones mediante eventos DOM reales (`escribir`, `salir`, `dispatchEvent`, `requestSubmit()`). En E2E se interactúa exclusivamente mediante localizadores semánticos accesibles (`getByRole`, `getByLabel`, `getByText`).
+- **Servicios externos:** mediante inyección de dependencias se sustituyen `localStorage` y `sessionStorage` por `AlmacenFalso` (`tests/AlmacenFalso.js`), el resumen de contraseña por una función asíncrona controlada cuando conviene y la navegación (`location.href`/`replace`) por espías `vi.fn()`.
+- **Tiempo:** las pruebas del buscador con *debounce* (`300 ms`) y del autocierre de alertas (`5000 ms`) emplean temporizadores falsos de Vitest (`vi.useFakeTimers()` y `vi.advanceTimersByTime(...)`) para ser deterministas e instantáneas.
+
+### Ejecución de E2E en local (`serve`) frente a la web desplegada (`BASE_URL`)
+
+`playwright.config.js` lee la variable de entorno `BASE_URL`:
+- **Sin `BASE_URL` (`npm run e2e`):** arranca automáticamente `serve@14.2.6` en `http://localhost:3901` y ejecuta los 3 recorridos en local (y en el trabajo `E2E` de `ci.yml`).
+- **Con `BASE_URL` (`BASE_URL=https://gamevault-pablo.vercel.app npm run e2e`):** desactiva `webServer` y ejecuta exactamente los mismos recorridos contra la URL proporcionada (utilizado tanto en `despliegue.yml` contra vistas previas/producción como en `release.yml` para `e2e/humo.spec.js`), gracias a que todas las pruebas usan rutas relativas (`/index.html`, `/registro.html`, `/listado.html`).
+
+### Salida real de `npm run coverage` y `npm run e2e`
+
+Salida de **`npm run coverage`**:
+
+```text
+ Test Files  21 passed (21)
+      Tests  472 passed (472)
+   Duration  4.90s
+
+File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+----------------|---------|----------|---------|---------|-------------------
+All files       |   98.44 |    96.37 |     100 |   98.64 |
+ buscador.js    |   96.87 |    92.00 |     100 |     100 | 118-120
+ juegos.js      |   97.11 |    94.44 |     100 |   96.77 | 62,270,309
+ paginar.js     |     100 |      100 |     100 |     100 |
+ validadores.js |     100 |      100 |     100 |     100 |
+```
+
+Salida de **`npm run e2e`**:
+
+```text
+Running 3 tests using 2 workers
+  ✓  1 [chromium] › e2e/humo.spec.js:4:3 › Prueba de humo de GameVault › responde con HTTP 200 y muestra el acceso y el registro (491ms)
+  ✓  3 [chromium] › e2e/sesion.spec.js:5:3 › Recorrido 1: Sesión, roles y control de acceso › el primer usuario se registra como administrador, accede a Usuarios, cierra sesión y vuelve a entrar (3.2s)
+  ✓  2 [chromium] › e2e/crud.spec.js:5:3 › Recorrido 2: CRUD completo de GameVault y persistencia › da de alta un videojuego con DLCs, lo edita, recarga y lo borra tras confirmar en <dialog> (8.0s)
+
+  3 passed (13.9s)
+```
+
+**Umbral de cobertura y alcance:** en `vitest.config.js` se configura `provider: 'v8'` con `thresholds: { lines: 90, perFile: true }` aplicado a los cuatro módulos de lógica pura y persistencia de la entidad (`js/validadores.js`, `js/paginar.js`, `js/buscador.js` y `js/juegos.js`), alcanzando un **98,64 % de líneas global** (100 % en `validadores.js`, `paginar.js` y `buscador.js`). Las pocas líneas no cubiertas en `juegos.js` (62, 270, 309) corresponden a ramas defensivas de fallback cuando `window`/`localStorage` no existen en el entorno global. Los controladores DOM y estilos CSS no forman parte del umbral V8 porque su comportamiento integral se valida mediante los tests de integración en Happy-DOM y las pruebas E2E en Chromium real.
 
 ## Integración continua
 
