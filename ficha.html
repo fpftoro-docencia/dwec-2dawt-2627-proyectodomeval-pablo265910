@@ -124,13 +124,14 @@
 
             <!-- Fila 2: SKU, Fecha, Horas y Estado de progreso alineados -->
             <div class="col-12 col-sm-6 col-md-3">
-              <label for="ficha-sku" class="form-label text-nowrap">Código SKU</label>
+              <label for="ficha-sku" class="form-label text-nowrap">Código SKU *</label>
               <input
                 type="text"
                 id="ficha-sku"
                 name="sku"
                 class="form-control font-mono"
                 placeholder="GAME-RPG-0042"
+                required
                 data-validar="sku"
                 aria-invalid="false"
                 aria-describedby="error-ficha-sku"
@@ -258,7 +259,7 @@
           <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Física</legend>
           <div class="row g-3">
             <div class="col-12 col-md-6">
-              <label for="ficha-ean" class="form-label">Código de barras EAN-13</label>
+              <label for="ficha-ean" class="form-label">Código de barras EAN-13 *</label>
               <input
                 type="text"
                 id="ficha-ean"
@@ -267,6 +268,7 @@
                 placeholder="4020628663124"
                 maxlength="13"
                 inputmode="numeric"
+                required
                 data-validar="ean13"
                 aria-invalid="false"
                 aria-describedby="error-ficha-ean"
@@ -276,13 +278,14 @@
             </div>
 
             <div class="col-12 col-md-6">
-              <label for="ficha-ubicacion" class="form-label">Ubicación en estantería</label>
+              <label for="ficha-ubicacion" class="form-label">Ubicación en estantería *</label>
               <input
                 type="text"
                 id="ficha-ubicacion"
                 name="ubicacion"
                 class="form-control font-mono"
                 placeholder="EST-A-03"
+                required
                 data-validar="estanteria"
                 aria-invalid="false"
                 aria-describedby="error-ficha-ubicacion"
@@ -303,11 +306,12 @@
           <legend class="h6 fw-semibold text-light small mb-3">Detalles de Edición Digital</legend>
           <div class="row g-3">
             <div class="col-12">
-              <label for="ficha-tienda" class="form-label">Tienda digital</label>
+              <label for="ficha-tienda" class="form-label">Tienda digital *</label>
               <select
                 id="ficha-tienda"
                 name="tiendaDigital"
                 class="form-select"
+                required
                 data-validar="tienda"
                 aria-invalid="false"
                 aria-describedby="error-ficha-tienda"
