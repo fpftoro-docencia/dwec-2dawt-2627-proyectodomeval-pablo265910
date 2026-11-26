@@ -60,9 +60,10 @@
               placeholder="ej. nega-player99"
               minlength="3"
               maxlength="15"
-              pattern="^[a-zA-Z0-9\-]{3,15}$"
+              pattern="^[a-zA-Z0-9_-]{3,15}$"
               autocomplete="username"
               required
+              data-validar="usuario"
               aria-invalid="false"
               aria-describedby="ayuda-reg-usuario error-reg-usuario"
             />
@@ -83,6 +84,7 @@
               placeholder="tu@correo.com"
               autocomplete="email"
               required
+              data-validar="correo"
               aria-invalid="false"
               aria-describedby="error-reg-email"
             />
@@ -100,6 +102,7 @@
               placeholder="Mínimo 8 caracteres"
               autocomplete="new-password"
               required
+              data-validar="clave"
               aria-invalid="false"
               aria-describedby="panel-requisitos-pwd error-reg-password"
             />
@@ -142,6 +145,7 @@
               placeholder="Repite tu contraseña"
               autocomplete="new-password"
               required
+              data-coincidir-con="reg-password"
               aria-invalid="false"
               aria-describedby="error-reg-password-confirm"
             />
@@ -162,6 +166,7 @@
                 name="condiciones"
                 class="form-check-input"
                 required
+                data-validar="terminos"
                 aria-invalid="false"
                 aria-describedby="error-reg-condiciones"
               />

@@ -2,22 +2,22 @@
  * Controlador de la página de registro (`registro.html`).
  *
  * Gestiona la validación reactiva de la contraseña, control de errores accesible
- * en los campos, verificación de disponibilidad del nombre de usuario,
- * registro, auto-login, aviso diferido y redirección.
+ * en tiempo real mediante `conectarValidacionTiempoReal`, verificación de
+ * disponibilidad del nombre de usuario, registro, auto-login, aviso diferido y redirección.
  *
  * HTML requerido en `registro.html`:
  * - `#form-registro`: Formulario de registro (`novalidate`).
- * - `#reg-usuario`: Campo de texto para el nombre de usuario.
- * - `#reg-email`: Campo de correo electrónico.
- * - `#reg-password`: Campo de contraseña.
- * - `#reg-password-confirm`: Campo de confirmación de contraseña.
- * - `#reg-condiciones`: Casilla de aceptación de condiciones de uso.
+ * - `#reg-usuario`: Campo de texto para el nombre de usuario (`data-validar="usuario"`).
+ * - `#reg-email`: Campo de correo electrónico (`data-validar="correo"`).
+ * - `#reg-password`: Campo de contraseña (`data-validar="clave"`).
+ * - `#reg-password-confirm`: Campo de confirmación (`data-coincidir-con="reg-password"`).
+ * - `#reg-condiciones`: Casilla de aceptación de condiciones (`data-validar="terminos"`).
  * - `#btn-submit-registro`: Botón de envío (gestiona `disabled` y clase `.loading`).
  * - `#panel-requisitos-pwd`: Contenedor del indicador visual de requisitos de contraseña:
  *   - `#req-longitud`: Indicador de mínimo 8 caracteres.
- *   - `#req-minuscula`: Indicador de letra minúscula.
- *   - `#req-mayuscula`: Indicador de letra mayúscula.
- *   - `#req-numero`: Indicador de dígito numérico.
+ *   - `#req-minuscula`: Indicador de letra minúscula (`\p{Ll}`).
+ *   - `#req-mayuscula`: Indicador de letra mayúscula (`\p{Lu}`).
+ *   - `#req-numero`: Indicador de dígito numérico (`\d`).
  * - Cajas de error accesibles: `#error-reg-usuario`, `#error-reg-email`, `#error-reg-password`,
  *   `#error-reg-password-confirm`, `#error-reg-condiciones`.
  * - `#region-avisos`: Contenedor global donde `avisos.js` renderiza eventos `aviso`.
@@ -28,7 +28,8 @@
 import { haySesion, iniciarSesion } from './sesion.js';
 import { existeUsuario, registrarUsuario } from './usuarios.js';
 import { guardarAviso, lanzarAviso } from './avisos.js';
-import { validarNombreUsuario, validarCorreo, evaluarRequisitosClave } from './validadores.js';
+import { evaluarRequisitosClave } from './validadores.js';
+import { conectarValidacionTiempoReal } from './validacion.js';
 
 /**
  * Inicializa la lógica de la página de registro.
@@ -43,7 +44,7 @@ import { validarNombreUsuario, validarCorreo, evaluarRequisitosClave } from './v
  * @param {Storage} [opciones.almacenSesion] Almacén de sesión (sessionStorage o doble).
  * @param {Storage} [opciones.almacenUsuarios] Almacén de usuarios (localStorage o doble).
  * @param {Function} [opciones.navegar] Función de redirección.
- * @returns {void}
+ * @returns {function(): void} Función para desconectar los oyentes de eventos.
  */
 export function iniciarRegistro(documento = document, opciones = {}) {
   const {
@@ -57,17 +58,15 @@ export function iniciarRegistro(documento = document, opciones = {}) {
   // 1. Guarda de ruta: si ya hay sesión iniciada, redirige al catálogo
   if (haySesion(almacenSesion)) {
     navegar('listado.html');
-    return;
+    return () => {};
   }
 
   const formulario = documento.querySelector('#form-registro');
-  if (!formulario) return;
+  if (!formulario) return () => {};
 
   const inputUsuario = documento.querySelector('#reg-usuario');
   const inputEmail = documento.querySelector('#reg-email');
   const inputPassword = documento.querySelector('#reg-password');
-  const inputPasswordConfirm = documento.querySelector('#reg-password-confirm');
-  const inputCondiciones = documento.querySelector('#reg-condiciones');
   const btnSubmit = documento.querySelector('#btn-submit-registro');
 
   // Elementos del indicador de requisitos
@@ -76,221 +75,38 @@ export function iniciarRegistro(documento = document, opciones = {}) {
   const reqMayuscula = documento.querySelector('#req-mayuscula');
   const reqNumero = documento.querySelector('#req-numero');
 
-  // Cajas de error
-  const errorUsuario = documento.querySelector('#error-reg-usuario');
-  const errorEmail = documento.querySelector('#error-reg-email');
-  const errorPassword = documento.querySelector('#error-reg-password');
-  const errorPasswordConfirm = documento.querySelector('#error-reg-password-confirm');
-  const errorCondiciones = documento.querySelector('#error-reg-condiciones');
+  // --- Indicador visual reactivo de los requisitos de contraseña ---
+  const actualizarRequisitosClave = () => {
+    const valor = inputPassword?.value || '';
+    const evalRequisitos = evaluarRequisitosClave(valor);
 
-  /**
-   * Muestra u oculta el mensaje de error de un campo de forma accesible.
-   *
-   * @private
-   * @param {HTMLInputElement} input Campo de entrada asociado.
-   * @param {HTMLElement} cajaError Contenedor donde se muestra el mensaje de error.
-   * @param {string} mensaje Texto de error (cadena vacía para limpiar el estado).
-   * @returns {void}
-   */
-  function establecerError(input, cajaError, mensaje) {
-    if (!input || !cajaError) return;
-    if (mensaje) {
-      input.setAttribute('aria-invalid', 'true');
-      cajaError.textContent = mensaje;
-      cajaError.classList.add('d-block');
-    } else {
-      input.setAttribute('aria-invalid', 'false');
-      cajaError.textContent = '';
-      cajaError.classList.remove('d-block');
-    }
-  }
+    const actualizarItem = (el, cumplido) => {
+      if (!el) return;
+      el.classList.toggle('requisito-cumplido', cumplido);
+      el.classList.toggle('text-success', cumplido);
+    };
 
-  // --- Validación reactiva del panel de contraseña ---
-  if (inputPassword) {
-    inputPassword.addEventListener('input', () => {
-      const valor = inputPassword.value;
-      const evalRequisitos = evaluarRequisitosClave(valor);
-
-      const actualizarItem = (el, cumplido) => {
-        if (!el) return;
-        el.classList.toggle('requisito-cumplido', cumplido);
-        el.classList.toggle('text-success', cumplido);
-      };
-
-      actualizarItem(reqLongitud, evalRequisitos.longitud);
-      actualizarItem(reqMinuscula, evalRequisitos.minuscula);
-      actualizarItem(reqMayuscula, evalRequisitos.mayuscula);
-      actualizarItem(reqNumero, evalRequisitos.digito);
-
-      // Si el campo ya tiene error previo, revalidar en tiempo real
-      if (inputPassword.getAttribute('aria-invalid') === 'true') {
-        if (evalRequisitos.valida) {
-          establecerError(inputPassword, errorPassword, '');
-        }
-      }
-
-      // Revalidar confirmación si ya tiene contenido
-      if (inputPasswordConfirm && inputPasswordConfirm.value) {
-        if (inputPasswordConfirm.value === valor) {
-          establecerError(inputPasswordConfirm, errorPasswordConfirm, '');
-        }
-      }
-    });
-  }
-
-  // --- Validación individual en fase de salida (blur) ---
-  if (inputUsuario) {
-    inputUsuario.addEventListener('blur', () => {
-      const val = inputUsuario.value.trim();
-      if (!val) {
-        establecerError(inputUsuario, errorUsuario, 'El nombre de usuario es obligatorio.');
-      } else if (!validarNombreUsuario(val)) {
-        establecerError(
-          inputUsuario,
-          errorUsuario,
-          'El usuario debe tener entre 3 y 15 caracteres alfanuméricos o guiones.',
-        );
-      } else if (existeUsuario(val, almacenUsuarios)) {
-        establecerError(inputUsuario, errorUsuario, 'Este nombre de usuario ya está ocupado.');
-      } else {
-        establecerError(inputUsuario, errorUsuario, '');
-      }
-    });
-  }
-
-  if (inputEmail) {
-    inputEmail.addEventListener('blur', () => {
-      const val = inputEmail.value.trim();
-      if (!val) {
-        establecerError(inputEmail, errorEmail, 'El correo electrónico es obligatorio.');
-      } else if (!validarCorreo(val)) {
-        establecerError(
-          inputEmail,
-          errorEmail,
-          'Introduce una dirección de correo electrónico válida.',
-        );
-      } else {
-        establecerError(inputEmail, errorEmail, '');
-      }
-    });
-  }
+    actualizarItem(reqLongitud, evalRequisitos.longitud);
+    actualizarItem(reqMinuscula, evalRequisitos.minuscula);
+    actualizarItem(reqMayuscula, evalRequisitos.mayuscula);
+    actualizarItem(reqNumero, evalRequisitos.digito);
+  };
 
   if (inputPassword) {
-    inputPassword.addEventListener('blur', () => {
-      const val = inputPassword.value;
-      const reqs = evaluarRequisitosClave(val);
-      if (!reqs.valida) {
-        establecerError(
-          inputPassword,
-          errorPassword,
-          'La contraseña debe tener al menos 8 caracteres, una minúscula, una mayúscula y un número.',
-        );
-      } else {
-        establecerError(inputPassword, errorPassword, '');
-      }
-    });
-  }
-
-  if (inputPasswordConfirm) {
-    inputPasswordConfirm.addEventListener('blur', () => {
-      const val = inputPasswordConfirm.value;
-      if (!val || val !== inputPassword?.value) {
-        establecerError(
-          inputPasswordConfirm,
-          errorPasswordConfirm,
-          'Las contraseñas no coinciden.',
-        );
-      } else {
-        establecerError(inputPasswordConfirm, errorPasswordConfirm, '');
-      }
-    });
-  }
-
-  if (inputCondiciones) {
-    inputCondiciones.addEventListener('change', () => {
-      if (!inputCondiciones.checked) {
-        establecerError(
-          inputCondiciones,
-          errorCondiciones,
-          'Debes aceptar las condiciones de uso.',
-        );
-      } else {
-        establecerError(inputCondiciones, errorCondiciones, '');
-      }
-    });
+    inputPassword.addEventListener('input', actualizarRequisitosClave);
   }
 
   // --- Envío del formulario con protección anti-doble envío ---
   let enviando = false;
 
-  formulario.addEventListener('submit', async (e) => {
+  const alEnviarValido = async (e) => {
     e.preventDefault();
 
     if (enviando) return;
 
-    // Validación general previa al envío
     const usuarioVal = inputUsuario?.value.trim() || '';
     const emailVal = inputEmail?.value.trim() || '';
     const passVal = inputPassword?.value || '';
-    const passConfirmVal = inputPasswordConfirm?.value || '';
-    const condicionesVal = inputCondiciones?.checked || false;
-
-    let hayErrores = false;
-
-    if (!validarNombreUsuario(usuarioVal)) {
-      establecerError(
-        inputUsuario,
-        errorUsuario,
-        'El usuario debe tener entre 3 y 15 caracteres alfanuméricos o guiones.',
-      );
-      hayErrores = true;
-    } else if (existeUsuario(usuarioVal, almacenUsuarios)) {
-      establecerError(inputUsuario, errorUsuario, 'Este nombre de usuario ya está ocupado.');
-      hayErrores = true;
-    } else {
-      establecerError(inputUsuario, errorUsuario, '');
-    }
-
-    if (!validarCorreo(emailVal)) {
-      establecerError(
-        inputEmail,
-        errorEmail,
-        'Introduce una dirección de correo electrónico válida.',
-      );
-      hayErrores = true;
-    } else {
-      establecerError(inputEmail, errorEmail, '');
-    }
-
-    if (!evaluarRequisitosClave(passVal).valida) {
-      establecerError(
-        inputPassword,
-        errorPassword,
-        'La contraseña debe tener al menos 8 caracteres, una minúscula, una mayúscula y un número.',
-      );
-      hayErrores = true;
-    } else {
-      establecerError(inputPassword, errorPassword, '');
-    }
-
-    if (passVal !== passConfirmVal || !passConfirmVal) {
-      establecerError(inputPasswordConfirm, errorPasswordConfirm, 'Las contraseñas no coinciden.');
-      hayErrores = true;
-    } else {
-      establecerError(inputPasswordConfirm, errorPasswordConfirm, '');
-    }
-
-    if (!condicionesVal) {
-      establecerError(inputCondiciones, errorCondiciones, 'Debes aceptar las condiciones de uso.');
-      hayErrores = true;
-    } else {
-      establecerError(inputCondiciones, errorCondiciones, '');
-    }
-
-    if (hayErrores) {
-      lanzarAviso(formulario, 'Por favor, corrige los errores antes de continuar.', 'danger');
-      return;
-    }
 
     // Activar protección anti-doble envío
     enviando = true;
@@ -330,5 +146,21 @@ export function iniciarRegistro(documento = document, opciones = {}) {
         btnSubmit.classList.remove('loading');
       }
     }
+  };
+
+  const desconectarValidacion = conectarValidacionTiempoReal(formulario, {
+    mensajeErrorFormulario: 'Por favor, corrige los errores antes de continuar.',
+    validadoresExtra: {
+      usuario: (valor) =>
+        existeUsuario(valor, almacenUsuarios) ? 'Este nombre de usuario ya está ocupado.' : '',
+    },
+    alEnviarValido,
   });
+
+  return function desconectarRegistro() {
+    if (inputPassword) {
+      inputPassword.removeEventListener('input', actualizarRequisitosClave);
+    }
+    desconectarValidacion();
+  };
 }

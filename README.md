@@ -81,15 +81,15 @@ flowchart TD
         clave["clave.js"]
     end
 
-    login --> sesion & usuarios & avisos
-    registro --> sesion & usuarios & validadores & avisos
+    login --> sesion & usuarios & validacion & avisos
+    registro --> sesion & usuarios & validadores & validacion & avisos
     listado --> sesion & juegos & buscador & paginar & paginacion & avisos
     ficha --> sesion & juegos & validadores & validacion & avisos
     admin --> sesion & usuarios & buscador & paginar & paginacion & avisos
 
     cabecera --> sesion
     rutas --> sesion & avisos
-    validacion --> validadores
+    validacion --> validadores & avisos
     paginacion --> paginar
     usuarios --> clave
 ```
@@ -105,7 +105,7 @@ flowchart TD
 | `js/validadores.js` | Lógica pura | No | Expresiones regulares, algoritmo ponderado módulo 10 de EAN-13 y mapa unificado de validadores. | `VALIDADORES`, `MENSAJES_ERROR`, `evaluarRequisitosClave`, `validarNombreUsuario`, `validarCorreo`, `validarClave`, `validarSKU`, `validarEAN13`, `validarEstanteria`, `validarTitulo`, `validarPlataforma`, `validarFormato`, `validarFechaAdquisicion`, `validarHorasJugadas`, `validarEstadoProgreso`, `validarTiendaDigital`, `validarDlc`, `validarDlcs` |
 | `js/paginar.js` | Lógica pura | No | Función matemática pura de paginación con ajuste automático de límites y lista vacía. | `paginar` |
 | `js/buscador.js` | Lógica pura | No | Normalización Unicode NFD (sin tildes ni mayúsculas), `debounce` cancelable y filtrado genérico. | `RETARDO_DEBOUNCE_DEFECTO`, `normalizarTextoBusqueda`, `debounce`, `filtrarListaPorTexto` |
-| `js/avisos.js` | Componente | Sí | Emisor y receptor global del evento propio `aviso` (`CustomEvent`) y avisos diferidos en `sessionStorage`. | `CLAVE_AVISO_PENDIENTE`, `lanzarAviso`, `normalizarTipoAviso`, `renderizarAviso`, `guardarAviso`, `consumirAviso`, `iniciarAvisos` |
+| `js/avisos.js` | Componente | Sí | Emisor y receptor global del evento propio `aviso` (`CustomEvent`) y avisos diferidos en `sessionStorage`. | `CLAVE_AVISO_SESION`, `NOMBRE_EVENTO_AVISO`, `TIEMPO_DESAPARICION_MS`, `lanzarAviso`, `normalizarTipoAviso`, `renderizarAviso`, `guardarAviso`, `consumirAviso`, `iniciarAvisos` |
 | `js/cabecera.js` | Componente | Sí | Sincroniza nombre de usuario, insignia de rol, enlace condicional «Usuarios» y botón «Cerrar sesión». | `iniciarCabecera` |
 | `js/rutas.js` | Control de acceso | No *(Location)* | Guardas de navegación para páginas privadas y exclusivas de administradores con `location.replace`. | `protegerPaginaPrivada`, `protegerPaginaAdmin` |
 | `js/paginacion.js` | Componente | Sí | Renderiza botones accesibles («Anterior», páginas con `aria-current="page"`, «Siguiente»), delega clics y sincroniza `?pagina=X` con `history.replaceState`. | `obtenerPaginaUrl`, `fijarPaginaUrl`, `renderizarControlesPaginacion`, `conectarPaginacion`, `paginar` |
@@ -130,8 +130,8 @@ Se aplican cuatro patrones de diseño principales:
 ### Documentación JSDoc (`npm run docs`)
 
 Los 17 módulos incorporan comentarios **JSDoc** completos:
-- **Requisitos HTML de cada página** en la cabecera `@file` de los controladores (IDs, templates y diálogos necesarios).
-- **Tipos de datos (`@typedef`):** `Usuario`, `Sesion`, `Videojuego`, `Dlc`, `ResultadoPaginacion`, `ObjetoRequisitos`, etc.
+- **Requisitos HTML de cada página** en la cabecera `@module` de los controladores (IDs, templates y diálogos necesarios).
+- **Tipos de datos (`@typedef`):** `Usuario`, `Sesion`, `Videojuego`, `DLC`, `DlcItem`, `ResultadoPaginacion`, `RequisitosClave`, etc.
 - **Eventos (`@fires`, `@listens`):** documentan el evento propio `aviso` y los eventos DOM escuchados por cada módulo.
 - **Ejemplos ejecutables (`@example`):** incluidos en las funciones puras (`validadores.js`, `paginar.js`, `buscador.js`).
 
@@ -157,7 +157,7 @@ Para poner en marcha el proyecto en un entorno local o dentro del Dev Container:
    ```bash
    npm test
    ```
-   Ejecuta la suite completa de Vitest (**472 pruebas en verde en 21 archivos de prueba**).
+   Ejecuta la suite completa de Vitest (**470 pruebas en verde en 20 archivos de prueba**).
 
 4. **Comprobar cobertura de código:**
    ```bash
@@ -335,7 +335,7 @@ El formulario de alta y edición de videojuegos implementa la captura y poblaci�
 - **Lectura íntegra y normalización con `FormData` (`leerDatosFormulario`):**
   - Utiliza `new FormData(formulario)` para recopilar de forma declarativa todos los controles del formulario según su atributo `name`.
   - Normaliza campos numéricos (`horas` a entero `>= 0`), campos de texto (con `trim()`) y el formato seleccionado (`fisico` o `digital`).
-  - Extrae de manera estructurada los grupos repetibles (expansiones DLCs) agrupando pares de `dlc-titulo` y `dlc-estado` mediante `formData.getAll()`.
+  - Extrae de manera estructurada los grupos repetibles (expansiones DLCs) agrupando pares de `dlcNombre[]` y `dlcEstado[]` mediante `formData.getAll()`.
   - Asegura que los campos condicionales no aplicables (ej. EAN y estantería en formato digital, o tienda en formato físico) se limpien y no contaminen la entidad.
 - **Campo condicional interactivo (`alternarSeccionFormato`):**
   - Vincula la selección del selector de formato (*Edición Física* vs *Edición Digital*).
@@ -364,9 +364,10 @@ El motor de validación implementa las directrices de los requisitos 19 y 20 del
 - **Revalidación de campos dependientes (`data-coincidir-con`):**
   - Cuando se modifica un campo del que dependen otros (por ejemplo, la contraseña principal), el motor localiza automáticamente los controles dependientes (como repetir contraseña) y los revalida de inmediato.
 - **Accesibilidad y Constraint Validation API:**
+  - **Unificado en los tres formularios:** `index.html` (`js/login.js`), `registro.html` (`js/registro.js`) y `ficha.html` (`js/ficha.js`) delegan su validación en `conectarValidacionTiempoReal`.
   - **Sincronización accesible:** Los campos erróneos reciben `aria-invalid="true"` y se vinculan a través de `aria-describedby` con su caja de mensaje (`role="alert"` o `aria-live="polite"`).
-  - **API nativa:** Se utiliza `setCustomValidity(mensaje)` para alimentar la validación estándar del navegador y clases de Bootstrap (`.is-invalid`, `.invalid-feedback`, `.d-block`).
-  - **Envío y foco automático:** Al pulsar enviar con datos incompletos o erróneos, se cancela el evento `submit` y se transfiere automáticamente el foco (`focus()`) al **primer campo no válido** del formulario.
+  - **API nativa:** Se combina la inspección de `campo.validity` (`valueMissing`, `typeMismatch`, `patternMismatch`, etc.) con `setCustomValidity(mensaje)` y las clases de Bootstrap (`.is-invalid`, `.invalid-feedback`, `.d-block`).
+  - **Envío, aviso y foco automático:** Al pulsar enviar con datos incompletos o erróneos, se cancela el evento `submit`, se emite un aviso de error (`lanzarAviso`) y se transfiere automáticamente el foco (`focus()`) al **primer campo no válido** del formulario.
 
 
 
@@ -413,21 +414,17 @@ Toda la interactividad de GameVault está desacoplada del HTML mediante módulos
 | `aviso` | `document` | `js/avisos.js` | Burbuja (en raíz) | Recibir cualquier `CustomEvent('aviso', { bubbles: true })` emitido desde cualquier módulo y renderizar la alerta en `#region-avisos`. |
 | `click` | Botón de cierre `.btn-close` | `js/avisos.js` | Objetivo | Eliminar del DOM la alerta que el usuario cierra manualmente. |
 | `click` | `#btn-cerrar-sesion` | `js/cabecera.js` | Objetivo | Limpiar la sesión en `sessionStorage` y redirigir a `index.html`. |
-| `blur` | `#login-usuario`, `#login-clave` | `js/login.js` | Objetivo | Validar campos obligatorios de inicio de sesión al salir de cada control. |
-| `submit` | `#form-login` | `js/login.js` | Objetivo / Burbuja | Prevenir recarga, validar y autenticar credenciales con SHA-256 evitando doble envío. |
-| `input` | `#registro-clave` | `js/registro.js` | Objetivo / Burbuja | Marcar en tiempo real los requisitos cumplidos (`#requisitos-clave`) mientras se teclea. |
-| `blur` | `#registro-usuario`, `#registro-correo`, `#registro-clave`, `#registro-repetir-clave` | `js/registro.js` | Objetivo | Validar formato, disponibilidad de usuario y coincidencia de clave al salir del campo. |
-| `change` | `#registro-terminos` | `js/registro.js` | Objetivo / Burbuja | Comprobar la aceptación obligatoria de condiciones al marcar/desmarcar la casilla. |
-| `submit` | `#form-registro` | `js/registro.js` | Objetivo / Burbuja | Prevenir recarga, registrar usuario con SHA-256, iniciar sesión y redirigir con aviso diferido. |
-| `blur` | `<form>` (`useCapture = true`) | `js/validacion.js` | **Captura** | Detectar cuando el usuario abandona cualquier control hijo (`esCampoValidable`), marcarlo como visitado y ejecutar su primera validación. |
-| `input` | `<form>` | `js/validacion.js` | **Burbuja** | Revalidar al instante controles ya visitados o con error y revalidar campos dependientes (`data-coincidir-con`). |
-| `change` | `<form>` | `js/validacion.js` | **Burbuja** | Revalidar `<select>`, `<input type="radio">` y checkboxes al cambiar su valor, además de sus dependientes. |
-| `submit` | `<form>` | `js/validacion.js` | Objetivo / Burbuja | Marcar todos los controles como tocados, validar el formulario entero, detener el envío con foco al primer error o ejecutar `alEnviarValido`. |
+| `input` | `#form-login` | `js/login.js` | **Burbuja** | Limpiar el aviso general de credenciales (`#error-login-general`) en cuanto el usuario modifica sus datos. |
+| `input` | `#reg-password` | `js/registro.js` | Objetivo / Burbuja | Marcar en tiempo real los 4 requisitos cumplidos en `#panel-requisitos-pwd` mientras se teclea. |
+| `blur` | `#form-login`, `#form-registro`, `#form-ficha` (`useCapture = true`) | `js/validacion.js` | **Captura** | Detectar cuando el usuario abandona cualquier control hijo (`esCampoValidable`), marcarlo como visitado y ejecutar su primera validación. |
+| `input` | `#form-login`, `#form-registro`, `#form-ficha` | `js/validacion.js` | **Burbuja** | Revalidar al instante controles ya visitados o con error y revalidar campos dependientes (`data-coincidir-con="reg-password"`). |
+| `change` | `#form-login`, `#form-registro`, `#form-ficha` | `js/validacion.js` | **Burbuja** | Revalidar `<select>`, `<input type="radio">` y checkboxes (`#reg-condiciones`) al cambiar su valor, además de sus dependientes. |
+| `submit` | `#form-login`, `#form-registro`, `#form-ficha` | `js/validacion.js` | Objetivo / Burbuja | Marcar todos los controles como tocados, validar el formulario completo, emitir `aviso` y dar foco al primer error si falla, o ejecutar `alEnviarValido`. |
 | `change` | `#form-ficha` | `js/ficha.js` | **Burbuja** (delegado) | Detectar selección en `name="formato"` (`fisico`/`digital`) para alternar `hidden` y `disabled` en `#bloque-fisico` y `#bloque-digital`. |
 | `click` | `#btn-anadir-dlc` | `js/ficha.js` | Objetivo | Clonar una nueva fila desde `<template id="tpl-dlc">` hasta el límite de 3 expansiones. |
 | `click` | `#lista-dlcs` | `js/ficha.js` | **Burbuja** (delegación) | Interceptar clics en `.js-btn-quitar-dlc` con `closest` para eliminar filas dinámicas y reactivar el botón de añadir. |
 | `input` | `#buscador-catalogo` | `js/listado.js` | Objetivo | Filtrar videojuegos con *debounce* (300 ms) y normalización Unicode NFD reiniciando a página `1`. |
-| `click` | `#grid-catalogo` | `js/listado.js` | **Burbuja** (delegación) | Detectar clics en `.js-btn-eliminar` con `closest` sobre tarjetas dinámicas y abrir `<dialog id="modal-borrar">`. |
+| `click` | `#grid-catalogo` | `js/listado.js` | **Burbuja** (delegación) | Detectar con `closest` los botones de giro 3D (`.js-btn-girar` / `.js-btn-volver`) y `.js-btn-eliminar` para abrir `<dialog id="modal-borrar">`. |
 | `click` | `#btn-cancelar-borrado`, `#btn-confirmar-borrado`, `#modal-borrar` | `js/listado.js` | Objetivo / Burbuja | Gestionar cancelación, clic en *backdrop* y confirmación definitiva de borrado en `<dialog>`. |
 | `cancel` | `<dialog id="modal-borrar">` | `js/listado.js` | Objetivo | Limpiar el ID pendiente y ejecutar `alCancelar` al cerrar el modal con la tecla `Escape`. |
 | `click` | `#paginacion-catalogo`, `#paginacion-usuarios` | `js/paginacion.js` | **Burbuja** (delegación) | Detectar pulsaciones en `button[data-pagina], button[data-page]` mediante `closest` tras cada re-renderizado de páginas. |
@@ -438,7 +435,7 @@ Toda la interactividad de GameVault está desacoplada del HTML mediante módulos
 
 Se aplica delegación en fase de burbuja mediante un único oyente en el contenedor estable padre y verificación con `evento.target.closest(...)` en los cuatro bloques dinámicos de la aplicación:
 
-1. **Listado de videojuegos (`#grid-catalogo` en `js/listado.js`):** detecta `.js-btn-eliminar`.
+1. **Listado de videojuegos (`#grid-catalogo` en `js/listado.js`):** detecta `.js-btn-girar`, `.js-btn-volver` y `.js-btn-eliminar`.
 2. **Paginación compartida (`#paginacion-catalogo` y `#paginacion-usuarios` en `js/paginacion.js`):** detecta `button[data-pagina], button[data-page]`.
 3. **Zona de administración (`#tabla-usuarios-body` en `js/admin-usuarios.js`):** detecta `.js-btn-alternar-rol`.
 4. **Grupo dinámico de DLCs (`#lista-dlcs` en `js/ficha.js`):** detecta `.js-btn-quitar-dlc`.
@@ -472,7 +469,7 @@ if (!resultado.esValido) {
 
 ## Pruebas y cobertura
 
-La estrategia de pruebas de GameVault sigue la **pirámide de pruebas** en tres niveles complementarios (475 pruebas automatizadas en 24 ficheros): muchas pruebas unitarias rápidas en la base, pruebas de integración en Happy-DOM en el nivel intermedio y tres recorridos críticos de extremo a extremo en navegador real en la cúspide.
+La estrategia de pruebas de GameVault sigue la **pirámide de pruebas** en tres niveles complementarios (473 pruebas automatizadas en 23 ficheros): muchas pruebas unitarias rápidas en la base, pruebas de integración en Happy-DOM en el nivel intermedio y tres recorridos críticos de extremo a extremo en navegador real en la cúspide.
 
 ### Pirámide de pruebas
 
@@ -498,14 +495,13 @@ La estrategia de pruebas de GameVault sigue la **pirámide de pruebas** en tres 
 | Integración | `tests/integracion/login.test.js` | `index.html`: sesión previa, campos vacíos, clave errónea y acceso válido con aviso | 4 |
 | Integración | `tests/integracion/registro.test.js` | `registro.html`: requisitos reactivos de clave, alta admin inicial y redirección | 4 |
 | Integración | `tests/integracion/admin-usuarios.test.js` | `usuarios.html` real: expulsión de no administradores, cambio de rol y auto-revocación | 3 |
-| Integración | `tests/integracion/ejemplo.test.js` | Plantilla base de integración del repositorio | 2 |
 | E2E | `e2e/humo.spec.js` | Prueba de humo rápida: HTTP 200 en `/index.html`, acceso principal y navegación a registro | 1 |
 | E2E | `e2e/sesion.spec.js` | Recorrido 1: registro inicial (admin), acceso a «Usuarios», logout, ruta privada y login | 1 |
 | E2E | `e2e/crud.spec.js` | Recorrido 2: alta física con DLC, giro 3D, recarga, edición digital y borrado en `<dialog>` | 1 |
 
 **Por qué cada cosa se prueba en su nivel:**
 - **Unitarias (451 tests):** verifican en milisegundos las reglas de negocio puras, expresiones regulares, casos límite, algoritmos (EAN-13, paginación, normalización NFD) y resiliencia ante JSON corrupto sin levantar navegadores.
-- **Integración (21 tests):** comprueban la colaboración real entre el HTML de cada página (`tests/pagina.js`) y varios módulos ES6 juntos (controlador + validación + almacenamiento + eventos) en Happy-DOM, aislando únicamente los efectos externos.
+- **Integración (19 tests):** comprueban la colaboración real entre el HTML de cada página (`tests/pagina.js`) y varios módulos ES6 juntos (controlador + validación + almacenamiento + eventos) en Happy-DOM, aislando únicamente los efectos externos.
 - **Extremo a extremo (3 recorridos):** validan en Chromium real lo que Happy-DOM no puede garantizar: persistencia real entre recargas completas de página, navegación entre ficheros HTML, estilos/visibilidad reales, `<dialog>` nativo y respuesta HTTP del servidor o de Vercel.
 
 ### Simulación de usuario, servicios y tiempo
@@ -525,8 +521,8 @@ La estrategia de pruebas de GameVault sigue la **pirámide de pruebas** en tres 
 Salida de **`npm run coverage`**:
 
 ```text
- Test Files  21 passed (21)
-      Tests  472 passed (472)
+ Test Files  20 passed (20)
+      Tests  470 passed (470)
    Duration  4.90s
 
 File            | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
@@ -559,14 +555,14 @@ Para asegurar la calidad estática del código y la homogeneidad en el estilo si
 
 #### Reglas añadidas a `eslint.config.js`
 
-Se han incorporado cuatro reglas adicionales a las recomendadas por defecto:
+Además de las reglas base del punto de partida (`no-var`, `prefer-const` y `eqeqeq`), se han incorporado **cuatro reglas adicionales propias** en `eslint.config.js`:
 
 | Regla | Severidad | Qué comprueba | Justificación técnica |
 |---|:---:|---|---|
-| `no-var` | `error` | Prohíbe el uso de la palabra reservada `var` para la declaración de variables. | Evita errores graves provocados por el *hoisting* y la ausencia de ámbito de bloque (`block scope`), forzando el uso exclusivo de `let` y `const` conforme al estándar moderno ECMAScript. |
-| `prefer-const` | `error` | Exige el uso de `const` en todas aquellas variables que nunca son reasignadas tras su inicialización. | Garantiza la inmutabilidad de referencias, reduciendo efectos secundarios no deseados, mejorando la predictibilidad del flujo de datos y comunicando claramente la intención del código. |
-| `eqeqeq` | `error` | Obliga al uso de operadores de igualdad estricta (`===` y `!==`) deshabilitando la igualdad débil (`==` y `!=`). | Previene fallos sutiles causados por la coerción implícita de tipos de JavaScript (por ejemplo, `false == ""` o `null == undefined`). |
-| `no-duplicate-imports` | `error` | Prohíbe declarar múltiples sentencias `import` hacia el mismo módulo en un mismo archivo. | Mantiene las dependencias organizadas, limpias y centralizadas en la cabecera de cada módulo. |
+| `no-duplicate-imports` | `error` | Prohíbe declarar múltiples sentencias `import` hacia el mismo módulo en un mismo archivo. | Mantiene las dependencias organizadas, limpias y centralizadas en la cabecera de cada módulo ES6. |
+| `no-alert` | `error` | Prohíbe el uso de diálogos bloqueantes del navegador (`alert()`, `confirm()` y `prompt()`). | Garantiza que todas las confirmaciones y avisos de GameVault utilicen el elemento nativo accesible `<dialog>` y el sistema de eventos propios `CustomEvent('aviso')`. |
+| `no-eval` | `error` | Prohíbe la evaluación dinámica de cadenas de texto como código JavaScript mediante `eval()`. | Previene vulnerabilidades críticas de inyección de código (XSS) y malas prácticas de seguridad en cliente. |
+| `no-implied-eval` | `error` | Prohíbe pasar cadenas de texto ejecutables a `setTimeout()`, `setInterval()` o `execScript()`. | Refuerza la seguridad CSP obligando a pasar siempre funciones reales a los temporizadores (como en el *debounce* y el autocierre de avisos). |
 
 #### Comprobaciones de calidad en verde
 
@@ -763,9 +759,10 @@ Para dar por terminada una tarea y moverla a la columna **«Hecho»** en el tabl
 | `prueba-humo` | [S3-03] Prueba de humo rápida (`e2e/humo.spec.js`) | [#41](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/41) |
 | `workflow-release` | [S3-04] Workflow de GitHub Release automatizado con archivo ZIP (`release.yml`) | [#42](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/42) |
 | `evidencias-readme-final` | [S3-06] Evidencias de Despliegue Continuo, capturas y `README.md` final | [#43](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/43) |
+| `cierre-sprint-3` | [S3-08] Blog del Sprint 3, reflexión final y cierre de versión `v1.0` | [#44](https://github.com/fpftoro-docencia/dwec-2dawt-2627-proyectodomeval-pablo265910/pull/44) |
 
 **Estrategia de integración:** Se utiliza integración mediante **Merge Commits** (`git merge --no-ff`) para mantener la trazabilidad histórica de cada rama y preservar el contexto exacto de cada Pull Request y sus revisiones asociadas en el repositorio.
 
-**Política de `.gitignore`:** Se excluyen dependencias de paquetes (`node_modules/`), artefactos de build (`dist/`), informes de cobertura (`coverage/`), reportes y trazas de Playwright (`playwright-report/`, `test-results/`), variables de entorno locales (`.env*`) y archivos de configuración del sistema operativo (`.DS_Store`, `Thumbs.db`), ya que son archivos generados en local, volátiles o sensibles que no deben formar parte del repositorio compartido.
+**Política de `.gitignore`:** Se excluyen dependencias de paquetes (`node_modules/`), artefactos de build (`dist/`), documentación HTML generada con JSDoc (`docs/`), informes de cobertura (`coverage/`), reportes y trazas de Playwright (`playwright-report/`, `test-results/`), variables de entorno locales (`.env`, `.env.local`, `.env.*.local`), logs (`*.log`, `*.swp`) y archivos del sistema operativo (`.DS_Store`, `Thumbs.db`), ya que son archivos generados en local, volátiles o sensibles que no deben formar parte del repositorio compartido.
 
 **Versión de entrega:** `v1.0`

@@ -407,12 +407,16 @@ export function actualizarContadorResultados(elementoContador, total = 0) {
 
   const cantidad = Number.isInteger(total) && total >= 0 ? total : 0;
   const plural = cantidad === 1 ? 'videojuego' : 'videojuegos';
+  const doc = elementoContador.ownerDocument || document;
 
   const strong = elementoContador.querySelector('strong');
   if (strong) {
     strong.textContent = String(cantidad);
-    // Preservar estructura existente asegurando el plural correcto
-    elementoContador.innerHTML = `Mostrando <strong class="text-light font-mono">${cantidad}</strong> ${plural}`;
+    elementoContador.replaceChildren(
+      doc.createTextNode('Mostrando '),
+      strong,
+      doc.createTextNode(` ${plural}`),
+    );
   } else {
     elementoContador.textContent = `Mostrando ${cantidad} ${plural}`;
   }

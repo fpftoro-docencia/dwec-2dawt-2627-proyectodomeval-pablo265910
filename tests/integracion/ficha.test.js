@@ -73,12 +73,18 @@ describe('integración ficha.html (validación en salida/escritura y guardado ex
     });
 
     const formulario = document.querySelector('#form-ficha');
+    let avisoInvalido = null;
+    document.addEventListener('aviso', (e) => {
+      avisoInvalido = e.detail;
+    });
 
-    // Intento de envío vacío -> bloqueado y foco en primer campo erróneo
+    // Intento de envío vacío -> bloqueado, avisa y foco en primer campo erróneo
     formulario.requestSubmit();
     expect(obtenerJuegos('pablo_dev', almacenLocal)).toHaveLength(0);
     expect(destinoNavegacion).toBeNull();
     expect(document.activeElement).toBe(document.querySelector('#ficha-titulo'));
+    expect(avisoInvalido).not.toBeNull();
+    expect(avisoInvalido.tipo).toBe('danger');
 
     // Rellenar formulario completo como Edición Física + 1 DLC
     escribir(document.querySelector('#ficha-titulo'), 'The Legend of Zelda: Tears of the Kingdom');

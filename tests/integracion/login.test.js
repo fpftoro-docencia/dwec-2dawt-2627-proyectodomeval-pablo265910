@@ -1,26 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { cargarPagina, escribir, salir } from '../pagina.js';
 import { AlmacenFalso } from '../AlmacenFalso.js';
 import { iniciarLogin } from '../../js/login.js';
 import { registrarUsuario } from '../../js/usuarios.js';
 import { obtenerSesion, CLAVE_SESION } from '../../js/sesion.js';
 import { consumirAviso } from '../../js/avisos.js';
 
-describe('integración página de login (iniciarLogin)', () => {
+describe('integración página de login (index.html + iniciarLogin)', () => {
   let almacenSesion;
   let almacenUsuarios;
-  let documento;
-  let navegacionUrl;
-
-  const mockNavegar = (url) => {
-    navegacionUrl = url;
-  };
+  let mockNavegar;
+  let desconectar;
 
   beforeEach(async () => {
+    cargarPagina('index.html');
     almacenSesion = new AlmacenFalso();
     almacenUsuarios = new AlmacenFalso();
-    navegacionUrl = null;
+    mockNavegar = vi.fn();
+    desconectar = () => {};
 
-    // Crear un usuario de prueba en localStorage
     await registrarUsuario(
       {
         nombre: 'pablo_dev',
@@ -29,123 +27,118 @@ describe('integración página de login (iniciarLogin)', () => {
       },
       almacenUsuarios,
     );
+  });
 
-    // Montar árbol DOM simulado de index.html
-    document.body.innerHTML = `
-      <form id="form-login" novalidate>
-        <input type="text" id="login-usuario">
-        <div id="error-login-usuario" class="field-error"></div>
-
-        <input type="password" id="login-password">
-        <div id="error-login-password" class="field-error"></div>
-
-        <div id="error-login-general" class="field-error"></div>
-
-        <button type="submit" id="btn-submit-login">Entrar</button>
-      </form>
-      <div id="region-avisos"></div>
-    `;
-
-    documento = document;
+  afterEach(() => {
+    desconectar();
+    document.body.innerHTML = '';
   });
 
   it('si ya hay sesión activa, redirige inmediatamente a listado.html', () => {
     almacenSesion.setItem(CLAVE_SESION, JSON.stringify({ usuario: 'ya_logueado', rol: 'usuario' }));
 
-    iniciarLogin(documento, {
+    desconectar = iniciarLogin(document, {
       almacenSesion,
       almacenUsuarios,
       navegar: mockNavegar,
     });
 
-    expect(navegacionUrl).toBe('listado.html');
+    expect(mockNavegar).toHaveBeenCalledWith('listado.html');
   });
 
-  it('muestra errores si se envían campos vacíos', async () => {
-    iniciarLogin(documento, {
+  it('valida al salir (blur), limpia al escribir (input), avisa y enfoca el primer error al enviar', () => {
+    let avisoCapturado = null;
+    document.addEventListener('aviso', (e) => {
+      avisoCapturado = e.detail;
+    });
+
+    desconectar = iniciarLogin(document, {
       almacenSesion,
       almacenUsuarios,
       navegar: mockNavegar,
     });
 
-    const form = documento.querySelector('#form-login');
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    const inputUser = document.querySelector('#login-usuario');
+    const errorUser = document.querySelector('#error-login-usuario');
+    const errorPass = document.querySelector('#error-login-password');
+    const form = document.querySelector('#form-login');
 
-    const errorUser = documento.querySelector('#error-login-usuario');
-    const errorPass = documento.querySelector('#error-login-password');
+    // Validación al salir vacío (blur en captura) y limpieza en vivo (input)
+    salir(inputUser);
+    expect(inputUser.classList.contains('is-invalid')).toBe(true);
+    expect(errorUser.textContent).toMatch(/introduce tu nombre de usuario/i);
+
+    escribir(inputUser, 'pablo_dev');
+    expect(inputUser.classList.contains('is-invalid')).toBe(false);
+    expect(errorUser.textContent).toBe('');
+
+    // Envío con campos vacíos -> aviso, clases Bootstrap y foco en el primer campo inválido
+    escribir(inputUser, '');
+    form.requestSubmit();
 
     expect(errorUser.textContent).toMatch(/introduce tu nombre de usuario/i);
     expect(errorPass.textContent).toMatch(/introduce tu contraseña/i);
-    expect(navegacionUrl).toBeNull();
+    expect(document.activeElement).toBe(inputUser);
+    expect(avisoCapturado).not.toBeNull();
+    expect(avisoCapturado.tipo).toBe('danger');
+    expect(mockNavegar).not.toHaveBeenCalled();
   });
 
-  it('con contraseña incorrecta: muestra error, vacía contraseña y no navega', async () => {
+  it('con contraseña incorrecta: muestra error, vacía contraseña, da foco y no navega', async () => {
     let eventoAvisoCapturado = null;
-    documento.addEventListener('aviso', (e) => {
+    document.addEventListener('aviso', (e) => {
       eventoAvisoCapturado = e.detail;
     });
 
-    iniciarLogin(documento, {
+    desconectar = iniciarLogin(document, {
       almacenSesion,
       almacenUsuarios,
       navegar: mockNavegar,
     });
 
-    const inputUser = documento.querySelector('#login-usuario');
-    const inputPass = documento.querySelector('#login-password');
+    const inputUser = document.querySelector('#login-usuario');
+    const inputPass = document.querySelector('#login-password');
+    const form = document.querySelector('#form-login');
 
-    inputUser.value = 'pablo_dev';
-    inputPass.value = 'ClaveEquivocada99';
-
-    const form = documento.querySelector('#form-login');
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    escribir(inputUser, 'pablo_dev');
+    escribir(inputPass, 'ClaveEquivocada99');
+    form.requestSubmit();
 
     await new Promise((r) => setTimeout(r, 60));
 
-    // 1. Vacía el campo de contraseña
     expect(inputPass.value).toBe('');
+    expect(document.activeElement).toBe(inputPass);
 
-    // 2. Muestra mensaje de error
-    const errorGeneral = documento.querySelector('#error-login-general');
+    const errorGeneral = document.querySelector('#error-login-general');
     expect(errorGeneral.textContent).toMatch(/usuario o la contraseña no son correctos/i);
-
-    // 3. Emite evento de aviso de error
     expect(eventoAvisoCapturado).not.toBeNull();
     expect(eventoAvisoCapturado.tipo).toBe('danger');
-
-    // 4. No hay sesión ni redirección
     expect(obtenerSesion(almacenSesion)).toBeNull();
-    expect(navegacionUrl).toBeNull();
+    expect(mockNavegar).not.toHaveBeenCalled();
   });
 
   it('con credenciales correctas: inicia sesión, guarda aviso y redirige a listado.html', async () => {
-    iniciarLogin(documento, {
+    desconectar = iniciarLogin(document, {
       almacenSesion,
       almacenUsuarios,
       navegar: mockNavegar,
     });
 
-    documento.querySelector('#login-usuario').value = 'pablo_dev';
-    documento.querySelector('#login-password').value = 'Password123';
-
-    const form = documento.querySelector('#form-login');
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    escribir(document.querySelector('#login-usuario'), 'pablo_dev');
+    escribir(document.querySelector('#login-password'), 'Password123');
+    document.querySelector('#form-login').requestSubmit();
 
     await new Promise((r) => setTimeout(r, 60));
 
-    // 1. Sesión activa en sessionStorage
     const sesion = obtenerSesion(almacenSesion);
     expect(sesion).not.toBeNull();
     expect(sesion.usuario).toBe('pablo_dev');
-    expect(sesion.rol).toBe('administrador'); // Primer usuario registrado es admin
+    expect(sesion.rol).toBe('administrador');
 
-    // 2. Aviso diferido para la página siguiente
     const aviso = consumirAviso(almacenSesion);
     expect(aviso).not.toBeNull();
     expect(aviso.tipo).toBe('success');
     expect(aviso.mensaje).toContain('pablo_dev');
-
-    // 3. Redirección a listado.html
-    expect(navegacionUrl).toBe('listado.html');
+    expect(mockNavegar).toHaveBeenCalledWith('listado.html');
   });
 });

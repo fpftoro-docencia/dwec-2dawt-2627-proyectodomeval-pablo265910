@@ -43,7 +43,7 @@ Por último, al redactar las pruebas de extremo a extremo en `e2e/crud.spec.js` 
 
 Un concepto clave que costó interiorizar fue por qué el evento `blur` necesita la **fase de captura** en el motor de formularios (`js/validacion.js`), mientras que la **delegación en fase de burbuja** funciona para botones y paginación. Según la especificación del DOM, `blur` es un evento que **no burbujea** (*non-bubbling*): llega al `<input>` que pierde el foco y termina ahí, sin ascender hacia `<form>`. Si registráramos `formulario.addEventListener('blur', alSalirCampo)` con la configuración por defecto (burbuja), el oyente jamás se enteraría al salir de un campo. Al pasar `true` como tercer parámetro (`useCapture = true`), el formulario intercepta el evento en el trayecto descendente antes de que alcance al control concreto, lo que permite validar con un único oyente incluso filas de DLC añadidas dinámicamente más tarde. En cambio, para acciones `click` sobre tarjetas, filas de usuarios, botones de quitar DLC o controles de paginación, el evento sí sube por el árbol DOM y basta con un único oyente en el contenedor padre usando `evento.target.closest(...)`.
 
-Fragmento de [`js/ficha.js`](../js/ficha.js#L176-L192) donde el `<fieldset disabled>` y la limpieza de atributos de error evitan validaciones y envíos fantasma al cambiar de formato:
+Fragmento de [`js/ficha.js`](../js/ficha.js#L195-L215) donde el `<fieldset disabled>` y la limpieza de atributos de error evitan validaciones y envíos fantasma al cambiar de formato:
 
 ```javascript
   if (bloqueFisico) {
@@ -67,7 +67,7 @@ Fragmento de [`js/ficha.js`](../js/ficha.js#L176-L192) donde el `<fieldset disab
 
 Otro problema conceptual fue delimitar correctamente la **pirámide de pruebas** (unitarias, integración y E2E) y entender cómo se refleja ese mismo escalonamiento en el pipeline de Integración Continua con `needs`. Las funciones lógicas puras sin DOM (`paginar`, `validarEAN13`, `normalizarTextoBusqueda`) deben probarse con tests unitarios rápidos y tablas `it.each`; los tests de integración cargan la estructura HTML real en Happy-DOM y conectan los módulos reales entre sí, sustituyendo únicamente la frontera externa (`AlmacenFalso`, funciones de navegación simuladas y temporizadores falsos); y las pruebas E2E levantan un navegador Chromium real con Playwright para comprobar persistencia tras `page.reload()`, redirecciones reales y modales `<dialog>`. De forma análoga, en `.github/workflows/ci.yml` cada trabajo depende del anterior mediante `needs`: primero `Calidad`, luego `Tests` (con cobertura) y por último `E2E` (`needs: tests`), evitando descargar Chromium y gastar minutos de ejecución si las comprobaciones más rápidas ya han fallado.
 
-Fragmento de [`js/listado.js`](../js/listado.js#L292-L308) gestionando el cierre accesible del modal nativo `<dialog>` al pulsar el *backdrop* o mediante el evento `cancel` de la tecla `Escape`:
+Fragmento de [`js/listado.js`](../js/listado.js#L507-L523) gestionando el cierre accesible del modal nativo `<dialog>` al pulsar el *backdrop* o mediante el evento `cancel` de la tecla `Escape`:
 
 ```javascript
   // Cierre al pulsar el backdrop nativo
@@ -105,7 +105,7 @@ Por último, al redactar `.github/workflows/release.yml`, tuvimos en cuenta que 
 
 Uno de los conceptos que cobró pleno sentido en este sprint fue entender **qué es una vista previa (*Preview Deployment*)** y cómo se coordina el circuito completo entre GitHub Actions y los **Deployment Checks** de Vercel. Antes parecía redundante ejecutar Playwright dos veces (`E2E` en `ci.yml` y `E2E desplegado` en `despliegue.yml`), pero al construir `dist/` con `scripts/construir.js` comprendí que una prueba local con `serve` no detecta un recurso olvidado en `dist/`, un error de ruta relativa o un problema de protección de acceso (*Vercel Authentication*). Al probar la versión retenida rompiendo a propósito el encabezado `<h1>` de `index.html` en `main` (`f8380d0`), vimos en directo cómo `E2E` fallaba, Vercel dejaba el despliegue en **`Production Staged / Checks Failed`** sin asignar el dominio público y `https://gamevault-pablo.vercel.app/` continuaba sirviendo la versión anterior intacta hasta revertir el commit.
 
-Fragmento de [`.github/workflows/despliegue.yml`](../.github/workflows/despliegue.yml#L10-L33) donde se verifica el estado `success`, se descarga el SHA exacto desplegado y se inyecta `BASE_URL`:
+Fragmento de [`.github/workflows/despliegue.yml`](../.github/workflows/despliegue.yml#L11-L34) donde se verifica el estado `success`, se descarga el SHA exacto desplegado y se inyecta `BASE_URL`:
 
 ```yaml
   e2e-desplegado:
@@ -126,7 +126,7 @@ Fragmento de [`.github/workflows/despliegue.yml`](../.github/workflows/despliegu
 
 El otro concepto clave fue la diferencia entre el ciclo de pruebas de una PR y la **prueba de humo (*smoke test*) previa a una Release**. Una prueba de humo no intenta cubrir cada caso límite del CRUD (eso ya lo hicieron los 472 tests de Vitest y los recorridos E2E), sino comprobar en pocos segundos y de forma no destructiva que la web publicada en producción responde con HTTP `200` y renderiza sus puntos de entrada críticos. Encadenarla con `needs` dentro de `.github/workflows/release.yml` (`Comprobar` → `Humo` → `Release`) garantiza que jamás se publique un archivo ZIP ni una Release de GitHub si el código o la producción tienen algún fallo, utilizando además el *token* temporal `GH_TOKEN: ${{ github.token }}` con `permissions: contents: write` sin almacenar secretos manuales.
 
-Fragmento de [`.github/workflows/release.yml`](../.github/workflows/release.yml#L68-L98) que construye `dist/`, genera el archivo ZIP con el nombre del *tag* y publica la Release automáticamente:
+Fragmento de [`.github/workflows/release.yml`](../.github/workflows/release.yml#L86-L98) que construye `dist/`, genera el archivo ZIP con el nombre del *tag* y publica la Release automáticamente:
 
 ```yaml
       - name: Construir la web en dist/
