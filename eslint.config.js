@@ -16,6 +16,9 @@ export default [
       'prefer-const': 'error',
       eqeqeq: 'error',
       'no-duplicate-imports': 'error',
+      'no-alert': 'error',
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
     },
   },
 ];
